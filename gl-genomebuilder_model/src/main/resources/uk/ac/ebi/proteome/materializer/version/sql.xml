@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqllib>
+
+	<sql name="GenomicComponentMetaDataById">
+		select id,component_ac,is_circular,genetic_code,length,type,description,seq_date
+		from genomic_component where id=?
+	</sql>
+	<sql name="GenomicComponentMetaDataByGenomeId">
+		select id,component_ac,is_circular,genetic_code,length,type,description,seq_date
+		from genomic_component where genome_id=?
+	</sql>
+	<sql name="GenomeInfoById">
+		select g.id, g.name, g.organism, g.organism_short,
+		g.organism_file, g.organism_sql, g.organism_gr, g.lineage,
+		g.taxid, g.superregnum, g.scope FROM genome g WHERE g.id=?
+	</sql>
+	<sql name="GenomeInfoByComponentId">
+		select g.id, g.name, g.organism, g.organism_short,
+		g.organism_file, g.organism_sql, g.organism_gr, g.lineage,
+		g.taxid, g.superregnum, g.scope FROM genome g JOIN
+		genomic_component c on c.genome_id=g.id WHERE c.id=?
+	</sql>
+	<sql name="IdForAc">
+		select component_ac from genomic_component where id=?
+	</sql>
+	<sql name="AcForId">
+		select id from genomic_component where component_ac=?
+	</sql>
+
+</sqllib>

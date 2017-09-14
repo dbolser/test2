@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<sqllib>
+	<sql name="one">
+		some sql
+	</sql>
+	<sql name="two">
+	banana
+	{0}
+	{1}
+	</sql>
+	<sql name="three">
+	mango
+	fruit
+	{0}
+	{0}
+	{1}
+	</sql>
+</sqllib>

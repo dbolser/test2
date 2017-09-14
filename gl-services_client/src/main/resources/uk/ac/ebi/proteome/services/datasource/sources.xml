@@ -1,0 +1,842 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sources>
+	<dataSource name="Integr8Gene" tolerateShrinkage="1.0"
+		versioned="true" tolerateFailure="false">
+		<fields>
+			<field name="id" isIndexed="false" isBitmap="false"
+				length="10" type="string">
+				<attribute>id</attribute>
+			</field>
+			<field name="uniProtKbAc" isIndexed="true" isBitmap="false"
+				length="10" type="string">
+				<attribute>uniProtKbAc</attribute>
+			</field>
+			<field name="proteomeId" isIndexed="true" isBitmap="false"
+				length="6" type="string">
+				<attribute>proteomeId</attribute>
+			</field>
+		</fields>
+		<retrievers>
+			<retriever type="sql" retries="0">
+				<uri>jdbc:oracle:thin:proteomes_prod/pprod@ouzo.ebi.ac.uk:1521:PROT</uri>
+				<dataQuery>SELECT gene_id, sptr_ac, proteome_id FROM proteomes.mv_gene WHERE sptr_ac IS NOT NULL</dataQuery>
+				<versionQuery>SELECT MAX(release_id) FROM proteomes.release</versionQuery>
+			</retriever>
+		</retrievers>
+		<processors></processors>
+		<updaters>
+			<updater
+				className="uk.ac.ebi.proteome.mirror.updater.impl.UpdaterImpl">
+				<parameter key="loader">uk.ac.ebi.proteome.util.database.impl.ExternalTableDataLoader</parameter>
+			</updater>
+		</updaters>
+	</dataSource>
+	<dataSource name="EnsemblPeptide" tolerateShrinkage="1.0"
+		versioned="true" tolerateFailure="false">
+		<fields>
+			<field name="id" isIndexed="false" isBitmap="false"
+				length="18" type="string">
+				<attribute>id</attribute>
+			</field>
+			<field name="proteomeId" isIndexed="true" isBitmap="false"
+				length="6" type="string">
+				<attribute>proteomeId</attribute>
+			</field>
+			<field name="ensemblGeneId" isIndexed="false"
+				isBitmap="false" length="18" type="string">
+				<attribute>ensemblGeneId</attribute>
+			</field>
+			<field name="ensemblTranscriptId" isIndexed="false"
+				isBitmap="false" length="18" type="string">
+				<attribute>ensemblTranscriptId</attribute>
+			</field>
+			<field name="chromosomeName" isIndexed="false"
+				isBitmap="false" length="18" type="string">
+				<attribute>chromosomeName</attribute>
+			</field>
+			<field name="startAt" isIndexed="false" isBitmap="false"
+				length="12" type="string">
+				<attribute>startAt</attribute>
+			</field>
+		</fields>
+		<retrievers>
+			<retriever type="sql" retries="0">
+				<uri>jdbc:mysql://ensembldb.ensembl.org:3306/DBNAME?user=anonymous</uri>
+				<dataQuery>SELECT distinct ts.stable_id, 'XXX', gs.stable_id, trs.stable_id, sr.name, g.seq_region_start from seq_region sr, exon e, exon_transcript et, translation_stable_id ts, gene_stable_id gs, translation tl, transcript tr, transcript_stable_id trs, gene g where sr.seq_region_id = e.seq_region_id and e.exon_id = et.exon_id and et.transcript_id = tl.transcript_id and ts.translation_id = tl.translation_id and trs.transcript_id = tr.transcript_id and tl.transcript_id = tr.transcript_id and gs.gene_id = tr.gene_id AND g.gene_id = gs.gene_id</dataQuery>
+				<versionQuery>SELECT DATABASE()</versionQuery>
+				<listHandler
+					className="uk.ac.ebi.proteome.mirror.retriever.impl.EnsemblUriListHandler">
+					<parameter key="proteomeUri">jdbc:oracle:thin:proteomes_prod/pprod@ouzo.ebi.ac.uk:1521:PROT</parameter>
+					<parameter key="ensemblUri">jdbc:mysql://ensembldb.ensembl.org:3306/?user=anonymous</parameter>
+				</listHandler>
+			</retriever>
+		</retrievers>
+		<processors>
+			<processor
+				className="uk.ac.ebi.proteome.mirror.processor.impl.EnsemblPeptideFilterInputStream">
+			</processor>
+		</processors>
+		<updaters>
+			<updater
+				className="uk.ac.ebi.proteome.mirror.updater.impl.UpdaterImpl">
+				<parameter key="loader">uk.ac.ebi.proteome.util.database.impl.ExternalTableDataLoader</parameter>
+			</updater>
+		</updaters>
+	</dataSource>
+	<dataSource name="Gi2EmblProteinId" tolerateShrinkage="1.0"
+		versioned="true" tolerateFailure="false">
+		<fields>
+			<field name="id" isBitmap="false"
+				length="15" type="string">
+				<attribute>id</attribute>
+			</field>
+			<field name="emblProteinId" isIndexed="true"
+				isBitmap="false" length="8" type="string">
+				<attribute>emblProteinId</attribute>
+			</field>
+		</fields>
+		<retrievers>
+			<retriever type="custom" retries="0">
+				<customHandler
+					className="uk.ac.ebi.proteome.mirror.retriever.impl.GiToEmblProteinIdRetriever">
+					<parameter key="uri">ftp://ftp.ncbi.nih.gov/genbank/livelists</parameter>
+					<parameter key="filterPattern">GbAccList\.\d+\.\d+\.gz</parameter>
+				</customHandler>
+			</retriever>
+		</retrievers>
+		<processors>
+			<processor className="java.util.zip.GZIPInputStream"></processor>
+			<processor
+				className="uk.ac.ebi.proteome.mirror.processor.impl.GiToEmblProteinIdFilterInputStream">
+			</processor>
+		</processors>
+		<updaters>
+			<updater
+				className="uk.ac.ebi.proteome.mirror.updater.impl.UpdaterImpl">
+				<parameter key="loader">uk.ac.ebi.proteome.util.database.impl.ExternalTableDataLoader</parameter>
+			</updater>
+		</updaters>
+	</dataSource>
+	<dataSource name="RefSeqSeq" tolerateShrinkage="1.0"
+		versioned="true" tolerateFailure="false">
+		<fields>
+			<field name="id" isIndexed="false" isBitmap="false"
+				length="15" type="string">
+				<attribute>id</attribute>
+			</field>
+			<field name="length" isIndexed="false" isBitmap="false"
+				length="5" type="string">
+				<attribute>length</attribute>
+			</field>
+			<field name="crc64" isIndexed="true" isBitmap="false"
+				length="16" type="string">
+				<attribute>crc64</attribute>
+			</field>
+			<field name="upi" isIndexed="false" isBitmap="false"
+				length="13" type="string">
+				<attribute>upi</attribute>
+			</field>
+		</fields>
+		<retrievers>
+			<retriever type="sql" retries="0">
+				<uri>jdbc:oracle:thin:proteomes_prod/pprod@grappa.ebi.ac.uk:1531:IPRO</uri>
+				<dataQuery>SELECT x.ac, p.len, p.crc64, p.upi FROM uniparc.xref x, uniparc.protein p WHERE x.dbid = 41 AND p.upi = x.upi AND x.deleted = 'N'</dataQuery>
+				<versionQuery>SELECT MAX (id) FROM uniparc.cv_release WHERE dbid = 41</versionQuery>
+			</retriever>
+		</retrievers>
+		<processors></processors>
+		<updaters>
+			<updater
+				className="uk.ac.ebi.proteome.mirror.updater.impl.UpdaterImpl">
+				<parameter key="loader">uk.ac.ebi.proteome.util.database.impl.ExternalTableDataLoader</parameter>
+			</updater>
+		</updaters>
+	</dataSource>
+	<dataSource name="Taxonomy" tolerateShrinkage="1.0"
+		versioned="true" tolerateFailure="false">
+		<fields>
+			<field name="id" isIndexed="false" isBitmap="false"
+				length="10" type="string">
+				<attribute>id</attribute>
+			</field>
+			<field name="proteomeId" isIndexed="true" isBitmap="false"
+				length="6" type="string">
+				<attribute>proteomeId</attribute>
+			</field>
+			<field name="taxId" isIndexed="true" isBitmap="false"
+				length="15" type="string">
+				<attribute>taxId</attribute>
+			</field>
+			<field name="taxAndProt" isIndexed="true" isBitmap="false"
+				length="10" type="composite">
+				<attribute>proteomeId</attribute>
+				<attribute>taxId</attribute>
+			</field>
+		</fields>
+		<retrievers>
+			<retriever type="custom" retries="0">
+				<customHandler
+					className="uk.ac.ebi.proteome.mirror.retriever.impl.TaxonomyRetriever">
+					<parameter key="protUri">jdbc:oracle:thin:proteomes_prod/pprod@ouzo.ebi.ac.uk:1521:PROT</parameter>
+					<parameter key="taxUri">jdbc:oracle:thin:taxonomy_webserver/moscow@pastis.ebi.ac.uk:1531:IWEB</parameter>
+				</customHandler>
+			</retriever>
+		</retrievers>
+		<processors></processors>
+		<updaters>
+			<updater
+				className="uk.ac.ebi.proteome.mirror.updater.impl.UpdaterImpl">
+				<parameter key="loader">uk.ac.ebi.proteome.util.database.impl.ExternalTableDataLoader</parameter>
+			</updater>
+		</updaters>
+	</dataSource>
+	<dataSource name="EmblTaxonomy" tolerateShrinkage="1.0"
+		versioned="true" tolerateFailure="false">
+		<fields>
+			<field name="id" isIndexed="false" isBitmap="false"
+				length="8" type="string">
+				<attribute>id</attribute>
+			</field>
+			<field name="taxId" isIndexed="false" isBitmap="false"
+				length="15" type="string">
+				<attribute>taxId</attribute>
+			</field>
+			<field name="idAndTax" isIndexed="true" isBitmap="false"
+				length="10" type="composite">
+				<attribute>id</attribute>
+				<attribute>taxId</attribute>
+			</field>
+		</fields>
+		<retrievers>
+			<retriever type="remoteFile" retries="0">
+				<uri>file:///ebi/ftp/pub/databases/embl/cds/cds.dat.gz</uri>
+			</retriever>
+		</retrievers>
+		<processors>
+			<processor className="java.util.zip.GZIPInputStream"></processor>
+			<processor
+				className="uk.ac.ebi.proteome.mirror.processor.impl.EmblTaxonomyFilterInputStream">
+			</processor>
+		</processors>
+		<updaters>
+			<updater
+				className="uk.ac.ebi.proteome.mirror.updater.impl.UpdaterImpl">
+				<parameter key="loader">uk.ac.ebi.proteome.util.database.impl.ExternalTableDataLoader</parameter>
+			</updater>
+		</updaters>
+	</dataSource>
+	<dataSource name="EmblCds" tolerateShrinkage="1.0" versioned="true"
+		tolerateFailure="true">
+		<fields>
+			<field name="id" isIndexed="false" isBitmap="false"
+				length="8" type="string">
+				<attribute>id</attribute>
+			</field>
+			<field name="emblEntryAc" isIndexed="true" isBitmap="false"
+				length="12" type="string">
+				<attribute>emblEntryAc</attribute>
+			</field>
+			<field name="startAt" isIndexed="false" isBitmap="false"
+				length="10" type="string">
+				<attribute>startAt</attribute>
+			</field>
+			<field name="endAt" isIndexed="false" isBitmap="false"
+				length="18" type="string">
+				<attribute>endAt</attribute>
+			</field>
+			<field name="complement" isIndexed="false" isBitmap="false"
+				length="1" type="string">
+				<attribute>complement</attribute>
+			</field>
+			<field name="geneName" isIndexed="false" isBitmap="false"
+				length="40" type="string">
+				<attribute>geneName</attribute>
+			</field>
+		</fields>
+		<retrievers>
+			<retriever type="custom" retries="0">
+				<customHandler
+					className="uk.ac.ebi.proteome.mirror.retriever.impl.EmblCdsRetriever">
+					<parameter key="emblUri">jdbc:oracle:thin:proteomes_prod/pprod@sibyl.ebi.ac.uk:1531:PRDB1</parameter>
+					<parameter key="protUri">jdbc:oracle:thin:proteomes_prod/pprod@ouzo.ebi.ac.uk:1521:PROT</parameter>
+				</customHandler>
+			</retriever>
+		</retrievers>
+		<processors></processors>
+		<updaters>
+			<updater
+				className="uk.ac.ebi.proteome.mirror.updater.impl.UpdaterImpl">
+				<parameter key="loader">uk.ac.ebi.proteome.util.database.impl.ExternalTableDataLoader</parameter>
+			</updater>
+		</updaters>
+	</dataSource>
+	<dataSource name="EntrezGeneXref" tolerateShrinkage="1.0"
+		versioned="true" tolerateFailure="false">
+		<fields>
+			<field name="id" isBitmap="false"
+				length="25" type="string">
+				<attribute>id</attribute>
+			</field>
+			<field name="entrezGeneId" isIndexed="true" isBitmap="false"
+				length="10" type="string">
+				<attribute>entrezGeneId</attribute>
+			</field>
+			<field name="emblDnaId" isIndexed="false" isBitmap="false"
+				length="12" type="string">
+				<attribute>emblDnaId</attribute>
+			</field>
+			<field name="emblRnaId" isIndexed="false" isBitmap="false"
+				length="8" type="string">
+				<attribute>emblRnaId</attribute>
+			</field>
+			<field name="emblProteinId" isIndexed="true"
+				isBitmap="false" length="8" type="string">
+				<attribute>emblProteinId</attribute>
+			</field>
+			<field name="refSeqDnaId" isIndexed="false" isBitmap="false"
+				length="15" type="string">
+				<attribute>refSeqDnaId</attribute>
+			</field>
+			<field name="refSeqRnaId" isIndexed="false" isBitmap="false"
+				length="15" type="string">
+				<attribute>refSeqRnaId</attribute>
+			</field>
+			<field name="refSeqProteinId" isIndexed="true"
+				isBitmap="false" length="15" type="string">
+				<attribute>refSeqProteinId</attribute>
+			</field>
+			<field name="UniProtKbAc" isIndexed="false" isBitmap="false"
+				length="6" type="string">
+				<attribute>UniProtKbAc</attribute>
+			</field>
+		</fields>
+		<retrievers>
+			<retriever type="remoteFile" retries="0">
+				<uri>ftp://ftp.ncbi.nih.gov/gene/DATA/gene2accession.gz</uri>
+			</retriever>
+		</retrievers>
+		<processors>
+			<processor className="java.util.zip.GZIPInputStream"></processor>
+			<processor
+				className="uk.ac.ebi.proteome.mirror.processor.impl.EntrezGeneXrefFilterInputStream">
+			</processor>
+		</processors>
+		<updaters>
+			<updater
+				className="uk.ac.ebi.proteome.mirror.updater.impl.UpdaterImpl">
+				<parameter key="loader">uk.ac.ebi.proteome.util.database.impl.ExternalTableDataLoader</parameter>
+			</updater>
+		</updaters>
+	</dataSource>
+	<dataSource name="RefSeq2Source" tolerateShrinkage="1.0"
+		versioned="true" tolerateFailure="false">
+		<fields>
+			<field name="id" isIndexed="false" isBitmap="false"
+				length="10" type="string">
+				<attribute>id</attribute>
+			</field>
+			<field name="refSeqProteinId" isIndexed="false"
+				isBitmap="false" length="15" type="string">
+				<attribute>refSeqProteinId</attribute>
+			</field>
+			<field name="externalDbId" isIndexed="false"
+				isBitmap="false" length="50" type="string">
+				<attribute>externalDbId</attribute>
+			</field>
+		</fields>
+		<retrievers>
+			<retriever type="custom" retries="0">
+				<customHandler
+					className="uk.ac.ebi.proteome.mirror.retriever.impl.RefseqAccessionToSourceRetriever">
+					<parameter key="uri">ftp://ftp.ncbi.nih.gov/refseq/special_requests</parameter>
+					<parameter key="filterPattern">release\d+\.prot\.accession2source</parameter>
+				</customHandler>
+			</retriever>
+		</retrievers>
+		<processors>
+			<processor
+				className="uk.ac.ebi.proteome.mirror.processor.impl.RefseqAccessionToSourceFilterInputStream">
+			</processor>
+		</processors>
+		<updaters>
+			<updater
+				className="uk.ac.ebi.proteome.mirror.updater.impl.UpdaterImpl">
+				<parameter key="loader">uk.ac.ebi.proteome.util.database.impl.ExternalTableDataLoader</parameter>
+			</updater>
+		</updaters>
+	</dataSource>
+	<dataSource name="UniProtKbIsoSeq" tolerateShrinkage="1.0"
+		versioned="true" tolerateFailure="false">
+		<fields>
+			<field name="id" isIndexed="false" isBitmap="false"
+				length="10" type="string">
+				<attribute>id</attribute>
+			</field>
+			<field name="uniProtKbAc" isIndexed="true" isBitmap="false"
+				length="6" type="string">
+				<attribute>uniProtKbAc</attribute>
+			</field>
+			<field name="length" isIndexed="false" isBitmap="false"
+				length="5" type="string">
+				<attribute>length</attribute>
+			</field>
+			<field name="crc64" isIndexed="true" isBitmap="false"
+				length="16" type="string">
+				<attribute>crc64</attribute>
+			</field>
+			<field name="upi" isIndexed="false" isBitmap="false"
+				length="13" type="string">
+				<attribute>upi</attribute>
+			</field>
+		</fields>
+		<retrievers>
+			<retriever type="sql" retries="0">
+				<uri>jdbc:oracle:thin:proteomes_prod/pprod@grappa.ebi.ac.uk:1531:IPRO</uri>
+				<dataQuery>SELECT x.ac, SUBSTR(x.ac, 1,6), p.len, p.crc64, p.upi FROM uniparc.xref x, uniparc.protein p WHERE x.dbid = 24 AND p.upi = x.upi AND x.deleted = 'N'</dataQuery>
+				<versionQuery>SELECT MAX (id) FROM uniparc.cv_release WHERE dbid = 24</versionQuery>
+			</retriever>
+		</retrievers>
+		<processors></processors>
+		<updaters>
+			<updater
+				className="uk.ac.ebi.proteome.mirror.updater.impl.UpdaterImpl">
+				<parameter key="loader">uk.ac.ebi.proteome.util.database.impl.ExternalTableDataLoader</parameter>
+			</updater>
+		</updaters>
+	</dataSource>
+	<dataSource name="EntrezGene" tolerateShrinkage="1.0"
+		versioned="true" tolerateFailure="false">
+		<fields>
+			<field name="id" isBitmap="false"
+				length="10" type="string">
+				<attribute>id</attribute>
+			</field>
+			<field name="hgncId" isIndexed="true" isBitmap="false"
+				length="6" type="string">
+				<attribute>hgncId</attribute>
+			</field>
+			<field name="symbol" isIndexed="false" isBitmap="false"
+				length="12" type="string">
+				<attribute>symbol</attribute>
+			</field>
+			<field name="interimSymbol" isIndexed="false"
+				isBitmap="false" length="60" type="string">
+				<attribute>interimSymbol</attribute>
+			</field>
+			<field name="name" isIndexed="false" isBitmap="false"
+				length="200" type="string">
+				<attribute>name</attribute>
+			</field>
+			<field name="chromosome" isIndexed="true" isBitmap="true"
+				length="30" type="string">
+				<attribute>chromosome</attribute>
+			</field>
+			<field name="chromosomalLocation" isIndexed="false"
+				isBitmap="false" length="30" type="string">
+				<attribute>chromosomalLocation</attribute>
+			</field>
+			<field name="taxId" isIndexed="true" isBitmap="true"
+				length="6" type="string">
+				<attribute>taxId</attribute>
+			</field>
+			<field name="hprdId" isIndexed="true" isBitmap="false"
+				length="10" type="string">
+				<attribute>hprdId</attribute>
+			</field>
+			<field name="mimId" isIndexed="true" isBitmap="false"
+				length="10" type="string">
+				<attribute>mimId</attribute>
+			</field>
+		</fields>
+		<retrievers>
+			<retriever type="remoteFile" retries="0">
+				<uri>ftp://ftp.ncbi.nih.gov/gene/DATA/gene_info.gz</uri>
+			</retriever>
+		</retrievers>
+		<processors>
+			<processor className="java.util.zip.GZIPInputStream"></processor>
+			<processor
+				className="uk.ac.ebi.proteome.mirror.processor.impl.EntrezGeneFilterInputStream">
+			</processor>
+		</processors>
+		<updaters>
+			<updater
+				className="uk.ac.ebi.proteome.mirror.updater.impl.UpdaterImpl">
+				<parameter key="loader">uk.ac.ebi.proteome.util.database.impl.ExternalTableDataLoader</parameter>
+			</updater>
+		</updaters>
+	</dataSource>
+	<dataSource name="UniProtKb2EmblCds" tolerateShrinkage="1.0"
+		versioned="true" tolerateFailure="false">
+		<fields>
+			<field name="id" isIndexed="false" isBitmap="false"
+				length="10" type="string">
+				<attribute>id</attribute>
+			</field>
+			<field name="uniProtKbAc" isIndexed="true" isBitmap="false"
+				length="6" type="string">
+				<attribute>uniProtKbAc</attribute>
+			</field>
+			<field name="emblProteinId" isIndexed="true"
+				isBitmap="false" length="8" type="string">
+				<attribute>emblProteinId</attribute>
+			</field>
+		</fields>
+		<retrievers>
+			<retriever type="sql" retries="0">
+				<uri>jdbc:oracle:thin:proteomes_prod/pprod@swan.ebi.ac.uk:1531:SPREAD</uri>
+				<dataQuery>SELECT d.accession, substr(dd.secondary_id, 1, 8) FROM dbentry_2_database dd, dbentry d WHERE d.dbentry_id = dd.dbentry_id AND d.merge_status IN ('M', 'N') AND d.entry_type IN (0, 1) AND dd.secondary_id != '-' AND dd.database_id = 'E' AND d.deleted = 'N'</dataQuery>
+				<versionQuery>select max(LAST_ANNOTATION_UPDATE) from dbentry</versionQuery>
+			</retriever>
+		</retrievers>
+		<processors>
+			<processor
+				className="uk.ac.ebi.proteome.mirror.processor.impl.AddPrimaryIdFilterStream">
+			</processor>
+		</processors>
+		<updaters>
+			<updater
+				className="uk.ac.ebi.proteome.mirror.updater.impl.UpdaterImpl">
+				<parameter key="loader">uk.ac.ebi.proteome.util.database.impl.ExternalTableDataLoader</parameter>
+			</updater>
+		</updaters>
+	</dataSource>
+	<dataSource name="UniProtKbSeq" tolerateShrinkage="1.0"
+		versioned="true" tolerateFailure="false">
+		<fields>
+			<field name="id" isIndexed="false" isBitmap="false"
+				length="10" type="string">
+				<attribute>id</attribute>
+			</field>
+			<field name="length" isIndexed="false" isBitmap="false"
+				length="5" type="string">
+				<attribute>length</attribute>
+			</field>
+			<field name="crc64" isIndexed="true" isBitmap="false"
+				length="16" type="string">
+				<attribute>crc64</attribute>
+			</field>
+			<field name="upi" isIndexed="false" isBitmap="false"
+				length="13" type="string">
+				<attribute>upi</attribute>
+			</field>
+		</fields>
+		<retrievers>
+			<retriever type="sql" retries="0">
+				<uri>jdbc:oracle:thin:proteomes_prod/pprod@grappa.ebi.ac.uk:1531:IPRO</uri>
+				<dataQuery>SELECT x.ac, p.len, p.crc64, p.upi FROM uniparc.xref x, uniparc.protein p WHERE x.dbid IN (2, 3) AND p.upi = x.upi AND x.deleted = 'N'</dataQuery>
+				<versionQuery>SELECT MAX (id) FROM uniparc.cv_release WHERE dbid = 24</versionQuery>
+			</retriever>
+		</retrievers>
+		<processors></processors>
+		<updaters>
+			<updater
+				className="uk.ac.ebi.proteome.mirror.updater.impl.UpdaterImpl">
+				<parameter key="loader">uk.ac.ebi.proteome.util.database.impl.ExternalTableDataLoader</parameter>
+			</updater>
+		</updaters>
+	</dataSource>
+	<dataSource name="UniProtKb2Pubs" tolerateShrinkage="1.0"
+		versioned="true" tolerateFailure="false">
+		<fields>
+			<field name="id" isIndexed="false" isBitmap="false"
+				length="10" type="string">
+				<attribute>id</attribute>
+			</field>
+			<field name="uniProtKbAc" isIndexed="true" isBitmap="false"
+				length="10" type="string">
+				<attribute>uniProtKbAc</attribute>
+			</field>
+			<field name="pubMedId" isIndexed="false" isBitmap="false"
+				length="15" type="string">
+				<attribute>pubMedId</attribute>
+			</field>
+		</fields>
+		<retrievers>
+			<retriever type="sql" retries="0">
+				<uri>jdbc:oracle:thin:proteomes_prod/pprod@swan.ebi.ac.uk:1531:SPREAD</uri>
+				<dataQuery>SELECT d.accession, pd.primary_id FROM dbentry_2_publication dd, dbentry d, publication_2_database pd WHERE pd.database_id = 'U' AND dd.publication_id = pd.publication_id AND d.dbentry_id = dd.dbentry_id AND d.merge_status IN ('M', 'N') AND d.entry_type IN (0, 1) AND d.deleted = 'N'</dataQuery>
+				<versionQuery>select max(LAST_ANNOTATION_UPDATE) from dbentry</versionQuery>
+			</retriever>
+		</retrievers>
+		<processors>
+			<processor
+				className="uk.ac.ebi.proteome.mirror.processor.impl.AddPrimaryIdFilterStream">
+			</processor>
+		</processors>
+		<updaters>
+			<updater
+				className="uk.ac.ebi.proteome.mirror.updater.impl.UpdaterImpl">
+				<parameter key="loader">uk.ac.ebi.proteome.util.database.impl.ExternalTableDataLoader</parameter>
+			</updater>
+		</updaters>
+	</dataSource>
+	<dataSource name="UniprotKbEntry" tolerateShrinkage="1.0"
+		versioned="true" tolerateFailure="false">
+		<fields>
+			<field name="id" isIndexed="false" isBitmap="false"
+				length="10" type="string">
+				<attribute>id</attribute>
+			</field>
+			<field name="status" isIndexed="true" isBitmap="true"
+				length="1" type="string">
+				<attribute>status</attribute>
+			</field>
+			<field name="length" isIndexed="false" isBitmap="false"
+				length="5" type="string">
+				<attribute>length</attribute>
+			</field>
+			<field name="crc64" isIndexed="false" isBitmap="false"
+				length="24" type="string">
+				<attribute>crc64</attribute>
+			</field>
+			<field name="taxId" isIndexed="true" isBitmap="false"
+				length="15" type="string">
+				<attribute>taxId</attribute>
+			</field>
+		</fields>
+		<retrievers>
+			<retriever type="sql" retries="0">
+				<uri>jdbc:oracle:thin:proteomes_prod/pprod@swan.ebi.ac.uk:1531:SPREAD</uri>
+				<dataQuery>SELECT d.accession, d.entry_status_id, s.length, s.checksum, d.tax_id FROM dbentry d, sequence s WHERE s.dbentry_id = d.dbentry_id AND d.merge_status IN ('M', 'N') AND d.entry_type IN (0, 1) AND d.deleted = 'N'</dataQuery>
+				<versionQuery>select max(LAST_ANNOTATION_UPDATE) from dbentry</versionQuery>
+			</retriever>
+		</retrievers>
+		<processors></processors>
+		<updaters>
+			<updater
+				className="uk.ac.ebi.proteome.mirror.updater.impl.UpdaterImpl">
+				<parameter key="loader">uk.ac.ebi.proteome.util.database.impl.ExternalTableDataLoader</parameter>
+			</updater>
+		</updaters>
+	</dataSource>
+	<dataSource name="UniProtKbXRef" tolerateShrinkage="1.0"
+		versioned="true" tolerateFailure="false">
+		<fields>
+			<field name="id" isIndexed="false" isBitmap="false"
+				length="10" type="string">
+				<attribute>id</attribute>
+			</field>
+			<field name="uniProtKbAc" isIndexed="false" isBitmap="false"
+				length="6" type="string">
+				<attribute>uniProtKbAc</attribute>
+			</field>
+			<field name="externalDbId" isIndexed="false"
+				isBitmap="false" length="50" type="string">
+				<attribute>externalDbId</attribute>
+			</field>
+			<field name="externalDbName" isIndexed="true"
+				isBitmap="false" length="20" type="string">
+				<attribute>externalDbName</attribute>
+			</field>
+		</fields>
+		<retrievers>
+			<retriever type="sql" retries="0">
+				<uri>jdbc:oracle:thin:proteomes_prod/pprod@swan.ebi.ac.uk:1531:SPREAD</uri>
+				<dataQuery>SELECT d.accession, dd.primary_id, dn.abbreviation FROM database_name dn, dbentry_2_database dd, dbentry d WHERE dn.database_id = dd.database_id AND d.dbentry_id = dd.dbentry_id AND d.merge_status IN('M', 'N') AND d.entry_type IN (0, 1) AND d.deleted = 'N'</dataQuery>
+				<versionQuery>select max(LAST_ANNOTATION_UPDATE) from dbentry</versionQuery>
+			</retriever>
+		</retrievers>
+		<processors>
+			<processor
+				className="uk.ac.ebi.proteome.mirror.processor.impl.AddPrimaryIdFilterStream">
+			</processor>
+		</processors>
+		<updaters>
+			<updater
+				className="uk.ac.ebi.proteome.mirror.updater.impl.UpdaterImpl">
+				<parameter key="loader">uk.ac.ebi.proteome.util.database.impl.ExternalTableDataLoader</parameter>
+			</updater>
+		</updaters>
+	</dataSource>
+	<dataSource name="HGNC" tolerateShrinkage="1.0" versioned="true"
+		tolerateFailure="false">
+		<fields>
+			<field name="id" isBitmap="false"
+				length="6" type="string">
+				<attribute>id</attribute>
+			</field>
+			<field name="symbol" isIndexed="false" isBitmap="false"
+				length="32" type="string">
+				<attribute>symbol</attribute>
+			</field>
+			<field name="name" isIndexed="false" isBitmap="false"
+				length="200" type="string">
+				<attribute>name</attribute>
+			</field>
+			<field name="chromosome" isIndexed="true" isBitmap="false"
+				length="2" type="string">
+				<attribute>chromosome</attribute>
+			</field>
+			<field name="chromosomalLocation" isIndexed="false"
+				isBitmap="false" length="30" type="string">
+				<attribute>chromosomalLocation</attribute>
+			</field>
+			<field name="entrezGeneId" isIndexed="true" isBitmap="false"
+				length="8" type="string">
+				<attribute>entrezGeneId</attribute>
+			</field>
+			<field name="pubmedIds" isIndexed="false" isBitmap="false"
+				length="200" type="string">
+				<attribute>pubmedIds</attribute>
+			</field>
+			<field name="refseqIds" isIndexed="false" isBitmap="false"
+				length="200" type="string">
+				<attribute>refseqIds</attribute>
+			</field>
+			<field name="aliases" isIndexed="false" isBitmap="false"
+				length="600" type="string">
+				<attribute>aliases</attribute>
+			</field>
+			<field name="withdrawnSymbols" isIndexed="false"
+				isBitmap="false" length="240" type="string">
+				<attribute>withdrawnSymbols</attribute>
+			</field>
+			<field name="gdbId" isIndexed="false" isBitmap="false"
+				length="12" type="string">
+				<attribute>gdbId</attribute>
+			</field>
+			<field name="mimId" isIndexed="false" isBitmap="false"
+				length="12" type="string">
+				<attribute>mimId</attribute>
+			</field>
+		</fields>
+		<retrievers>
+			<retriever type="remoteScript" retries="0">
+				<uri>http://www.gene.ucl.ac.uk/cgi-bin/nomenclature/gdlw.pl?title=All+Data;col=gd_hgnc_id;col=gd_app_sym;col=gd_app_name;col=gd_prev_sym;col=gd_aliases;col=gd_pub_chrom_map;col=gd_pub_eg_id;col=gd_pubmed_ids;col=gd_pub_refseq_ids;col=md_gdb_id;col=md_mim_id;status=Approved;status=Approved+Non-Human;status=Entry+Withdrawn;status_opt=3;=on;where=;order_by=gd_app_sym_sort;limit=;format=text;submit=submit;.cgifields=;.cgifields=status;.cgifields=ch</uri>
+			</retriever>
+		</retrievers>
+		<processors>
+			<processor
+				className="uk.ac.ebi.proteome.mirror.processor.impl.HGNCFilterInputStream">
+			</processor>
+		</processors>
+		<updaters>
+			<updater
+				className="uk.ac.ebi.proteome.mirror.updater.impl.UpdaterImpl">
+				<parameter key="loader">uk.ac.ebi.proteome.util.database.impl.ExternalTableDataLoader</parameter>
+			</updater>
+		</updaters>
+	</dataSource>
+	<dataSource name="Embl2UniprotTaxonomy" tolerateShrinkage="1.0"
+		versioned="true" tolerateFailure="false">
+		<fields>
+			<field name="id" isIndexed="false" isBitmap="false"
+				length="10" type="string">
+				<attribute>id</attribute>
+			</field>
+			<field name="uniProtTaxId" isIndexed="true" isBitmap="false"
+				length="15" type="string">
+				<attribute>uniProtTaxId</attribute>
+			</field>
+			<field name="emblTaxId" isIndexed="true" isBitmap="false"
+				length="15" type="string">
+				<attribute>emblTaxId</attribute>
+			</field>
+		</fields>
+		<retrievers>
+			<retriever type="sql" retries="0">
+				<uri>jdbc:oracle:thin:proteomes_prod/pprod@ouzo.ebi.ac.uk:1521:PROT</uri>
+				<dataQuery>SELECT distinct * FROM (SELECT c.embl_taxid, o.swissprot_taxid FROM proteomes.organism o, proteomes.proteome p, proteomes.component c WHERE p.oscode = o.oscode and c.proteome_id = p.proteome_id)</dataQuery>
+				<versionQuery>SELECT MAX(release_id) FROM proteomes.release</versionQuery>
+			</retriever>
+		</retrievers>
+		<processors>
+			<processor
+				className="uk.ac.ebi.proteome.mirror.processor.impl.AddPrimaryIdFilterStream">
+			</processor>
+		</processors>
+		<updaters>
+			<updater
+				className="uk.ac.ebi.proteome.mirror.updater.impl.UpdaterImpl">
+				<parameter key="loader">uk.ac.ebi.proteome.util.database.impl.ExternalTableDataLoader</parameter>
+			</updater>
+		</updaters>
+	</dataSource>
+	
+	
+    <dataSource name="SGDSeq" versioned="true" tolerateFailure="false">
+		<fields>
+			<field name="id" length="10"/>
+			<field name="chromosome" length="15"/>
+			<field name="sequence" length="1000000" type="text"/>
+		</fields>
+		<retrievers>
+			<retriever type="remoteFile" retries="0">
+				<uri>ftp://genome-ftp.stanford.edu/pub/yeast/sequence/genomic_sequence/chromosomes/fasta/*.fsa</uri>
+			</retriever>
+		</retrievers>
+		<processors>
+				<processor
+					className="uk.ac.ebi.proteome.mirror.processor.impl.SGDFastaToRecordFilterInputStream"/>
+		</processors>
+		<updaters>
+			<updater
+				className="uk.ac.ebi.proteome.mirror.updater.impl.UpdaterImpl">
+				<parameter key="loader">uk.ac.ebi.proteome.util.database.impl.SQLLoaderDataLoader</parameter>
+			</updater>
+		</updaters>
+	</dataSource>
+	
+	<dataSource name="RegulonDbGene" tolerateFailure="false" versioned="true">
+		<fields>
+			<field name="id" length="5"/>
+			<field name="geneid" length="12"/>
+			<field name="name" length="60"/>
+			<field name="locus" length="6"/>
+		</fields>
+		<retrievers>
+			<retriever type="remoteFile" retries="3">
+				<uri>http://www.ebi.ac.uk/~sterk/RegulonDB/RegulonDB_gene_tf_genome_review.txt</uri>
+			</retriever>
+		</retrievers>
+		<processors>
+			<processor className="uk.ac.ebi.proteome.mirror.processor.impl.StripRegulonHeaderFilterInputStream" />
+			<processor className="uk.ac.ebi.proteome.mirror.processor.impl.DelimitedFileFilterStream">
+				<parameter key="columns">0,1,5</parameter>
+			</processor>
+			<processor className="uk.ac.ebi.proteome.mirror.processor.impl.AddPrimaryIdFilterStream" />
+		</processors>
+		<updaters>
+			<updater
+				className="uk.ac.ebi.proteome.mirror.updater.impl.UpdaterImpl">
+					<parameter key="loader">uk.ac.ebi.proteome.util.database.impl.ExternalTableDataLoader</parameter>
+			</updater>
+		</updaters>
+	</dataSource>
+	
+	<dataSource name="RegulonDbOperon" tolerateFailure="false" versioned="true">
+		<fields>
+			<field name="id" length="5"/>
+			<field name="operonid" length="12"/>
+			<field name="name" length="60"/>
+			<field name="ostart" length="7" type="int"/>
+			<field name="oend" length="7" type="int"/>
+			<field name="strand" length="7"/>
+			<field name="tuid" length="12"/>
+			<field name="tuname" length="60"/>
+			<field name="tustart" length="7" type="int"/>
+			<field name="tuend" length="7" type="int"/>
+			<field name="tupromoter" length="25"/>
+		</fields>
+		<retrievers>
+			<retriever type="remoteFile" retries="3">
+				<uri>http://www.ebi.ac.uk/~sterk/RegulonDB/RegulonDB_OP_TU_PM_GN_genome_review.txt</uri>
+			</retriever>
+		</retrievers>
+		<processors>
+			<processor className="uk.ac.ebi.proteome.mirror.processor.impl.StripRegulonHeaderFilterInputStream" />
+			<processor className="uk.ac.ebi.proteome.mirror.processor.impl.DelimitedFileFilterStream">
+				<parameter key="columns">0,1,2,3,4,5,6,7,8,10</parameter>
+			</processor>
+			<processor className="uk.ac.ebi.proteome.mirror.processor.impl.AddPrimaryIdFilterStream" />
+		</processors>
+		<updaters>
+			<updater
+				className="uk.ac.ebi.proteome.mirror.updater.impl.UpdaterImpl">
+					<parameter key="loader">uk.ac.ebi.proteome.util.database.impl.ExternalTableDataLoader</parameter>
+			</updater>
+		</updaters>
+	</dataSource>
+	
+</sources>

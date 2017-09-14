@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqllib>
+	<sql name="dropIdTable">
+		DROP TABLE IF EXISTS ena_identifiers
+	</sql>
+	<sql name="createIdTable">
+		CREATE TABLE ena_identifiers (
+			id        INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+			ena_id    VARCHAR(128) NOT NULL,
+			type	  ENUM("gene", "transcript", "translation", "exon", "repeat") NOT NULL,
+			PRIMARY KEY (id),
+			UNIQUE KEY ena_id_type_idx (ena_id,type)
+		);
+	</sql>
+	<sql name="findId">
+		SELECT id FROM ena_identifiers WHERE ena_id=? AND type=?
+	</sql>
+	<sql name="insertId">
+		INSERT IGNORE INTO ena_identifiers(ena_id,type) values(?,?);
+	</sql>
+	<sql name="getInsertId">
+		select LAST_INSERT_ID()
+	</sql>
+</sqllib>

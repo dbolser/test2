@@ -1,0 +1,63 @@
+<sources xmlns="http://www.ebi.ac.uk/integr8/tabledefs" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<dataSource name="CV_TABLE">
+		<fields>
+			<field name="id" type="int" length="10"/>
+			<field name="name" type="string" length="50" constraint="unique" notNull="true"/>
+			<field name="skip_shrinkage_check" type="boolean" notNull="true"/>
+		</fields>
+	</dataSource>
+
+	<dataSource name="CV_SECTION">
+		<fields>
+			<field name="id" type="int" length="10"/>
+			<field name="table_id" type="int" length="10" notNull="true" indexed="true"/>
+			<field name="name" type="string" length="200" notNull="true" indexed="true"/>
+			<field type="composite" constraint="unique">
+				<attribute>table_id</attribute>
+				<attribute>name</attribute>
+			</field>
+			<field name="skip_shrinkage_check" type="boolean" notNull="true"/>
+		</fields>
+	</dataSource>
+
+	<dataSource name="SECTION_ARCHIVE">
+		<fields>
+			<field name="id" type="int" length="10"/>
+			<field name="section_id" type="int" length="10" notNull="true" indexed="true"/>
+			<field name="external_version" type="string" length="200"/>
+			<field name="version_id" type="int" length="10" notNull="true"/>
+			<field name="data_version" type="int" length="10"/>
+			<field name="data_checksum" type="string" length="20"/>
+			<field name="created" type="int" length="10" notNull="true"/>
+			<field name="deleted" type="int" length="10"/>
+			<field name="rowcount" type="int" length="10" notNull="true"/>
+		</fields>
+	</dataSource>
+
+
+	<dataSource name="SECTION_ACCESS_ARCHIVE">
+		<fields>
+			<field name="id" type="int" length="10"/>
+			<field name="section_archive_id" type="int" length="10" notNull="true" indexed="true"/>
+			<field name="process_run_id" type="int" length="10" notNull="true"/>
+			<field name="read_as_deleted" type="int" length="10"/>
+			<field type="composite" constraint="unique">
+				<attribute>section_archive_id</attribute>
+				<attribute>process_run_id</attribute>
+			</field>
+		</fields>
+	</dataSource>
+
+	<dataSource name="ACCESS_LOCK">
+		<fields>
+			<field name="LOCK_ID" type="string" length="40" notNull="true" indexed="true"/> 
+			<field name="UPDATE_PROCESS_OWNER_ID" type="int" length="10"/>
+			<field name="SECTION_ID" type="int" length="10" notNull="true" indexed="true"/>
+			<field name="TYPE" type="string" length="1" notNull="true"/>
+			<field type="composite" constraint="unique">
+				<attribute>LOCK_ID</attribute>
+				<attribute>SECTION_ID</attribute>
+			</field>
+		</fields>
+	</dataSource>
+</sources>

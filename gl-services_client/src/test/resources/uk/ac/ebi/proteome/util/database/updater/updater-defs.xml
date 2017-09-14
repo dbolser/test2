@@ -1,0 +1,72 @@
+<sources xmlns="http://www.ebi.ac.uk/integr8/tabledefs" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <dataSource name="UNSEC">
+  	<fields>
+  		<field name="id" type="int"/>
+  	</fields>
+  </dataSource>
+
+  <dataSource name="SEC" sectioned="true">
+  	<fields>
+  		<field name="id" type="int"/>
+  	</fields>
+  </dataSource>
+
+  <dataSource name="FKTAB" sectioned="true">
+  	<fields>
+  		<field name="id" type="int"/>
+  		<field name="fk_id" type="int">
+  			<foreignKey column="id" table="FKTARGET" respectState="false"/>
+  		</field>
+  	</fields>
+  </dataSource>
+
+  <dataSource name="FKTARGET">
+  	<fields>
+  		<field name="id" type="int"/>
+  		<field name="description" type="string"/>
+  	</fields>
+  </dataSource>
+
+  <dataSource name="ROOT" sectioned="true">
+  	<fields>
+  		<field name="id" type="int"/>
+  		<field name="name" type="string"/>
+  	</fields>
+  </dataSource>
+
+  <dataSource name="NODEONE" sectioned="true">
+  	<fields>
+  		<field name="id" type="int"/>
+  		<field name="name" type="string"/>
+  		<field name="root_id" type="int">
+  			<foreignKey table="root" column="id" respectState="true"/>
+  		</field>
+  	</fields>
+  </dataSource>
+
+  <dataSource name="NODETWO" sectioned="true">
+  	<fields>
+  		<field name="id" type="int"/>
+  		<field name="name" type="string"/>
+  		<field name="root_id" type="int">
+  			<foreignKey table="root" column="id" respectState="true"/>
+  		</field>
+  	</fields>
+  </dataSource>
+
+  <dataSource name="ONE" sectioned="true">
+  	<fields>
+  		<field name="id" type="int"/>
+  		<field type="string" name="val"/>
+  	</fields>
+  </dataSource>
+
+  <dataSource name="TWO" sectioned="true">
+  	<fields>
+  		<field name="id" type="int"/>
+  		<field type="string" name="val"/>
+  	</fields>
+  </dataSource>
+
+</sources>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tasks>
+	<task task="TRNASCAN">
+		<concern concern="EMBL_SEQ">
+			<moduleSpecification name="emblSeqMat"
+				className="uk.ac.ebi.proteome.mirror.sequence.impl.EMBLSequenceFileMaterializer">
+				<properties>
+					<property key="output">FASTA</property>
+				</properties>
+			</moduleSpecification>
+		</concern>
+		<concern concern="SGD_SEQ">
+			<moduleSpecification name="sgdSeqMat"
+				className="uk.ac.ebi.proteome.mirror.sequence.impl.SGDSequenceComponentMaterializer">
+				<properties>
+					<property key="output">FASTA</property>
+				</properties>
+			</moduleSpecification>
+		</concern>
+		<concern concern="TAIR_SEQ">
+			<moduleSpecification name="tairSeqMat"
+				className="uk.ac.ebi.proteome.mirror.sequence.impl.TAIRSequenceFileMaterializer">
+				<properties>
+					<property key="output">FASTA</property>
+				</properties>
+			</moduleSpecification>
+		</concern>
+		<concern concern="identification">
+			<!-- concern here is specific to identifiying new components -->
+			<moduleSpecification concern="identification" name="seqId"
+				className="uk.ac.ebi.proteome.mirror.sequence.SequenceComponentIdentifier">
+				<properties>
+					<property key="sources">EMBL_SEQ,TAIR_SEQ,SGD_SEQ</property>
+				</properties>
+			</moduleSpecification>
+		</concern>
+	</task>
+</tasks>

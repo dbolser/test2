@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+	<class name="uk.ac.ebi.proteome.services.datasource.RetrieverInfo"
+		table="retrievers" lazy="false">
+		<id name="id">
+			<generator class="sequence" />
+		</id>
+		<property name="name" column="name" />
+		<property name="type" />
+		<property name="retries" />
+		<property name="uri"
+			type="uk.ac.ebi.proteome.services.datasource.UriUserType"
+			length="1024" />
+		<property name="dataQuery" length="1024" />
+		<property name="versionQuery" length="1024" />
+		<property name="listHandler"  length="1024" type="uk.ac.ebi.proteome.services.datasource.ListHandlerInfo" />
+		<property name="customHandler"  length="1024" type="uk.ac.ebi.proteome.services.datasource.CustomHandlerInfo" />
+	</class>
+</hibernate-mapping>

@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+	<class name="uk.ac.ebi.proteome.services.datasource.HandlerInfo"
+		table="handlerinfo"  lazy="false">
+		<id name="id">
+			<generator class="sequence" />
+		</id>
+		<discriminator column="handlerInfoType" type="string" />
+		<property name="className" />
+		<map name="parameters" table="parameters" lazy="false">
+			<key column="param_id" not-null="true"/>
+			<index column="param_name" type="string" />
+			<element column="param_value" type="string" />
+		</map>
+
+		<subclass
+			name="uk.ac.ebi.proteome.services.datasource.ListHandlerInfo"
+			discriminator-value="List" />
+		<subclass
+			name="uk.ac.ebi.proteome.services.datasource.UpdaterInfo"
+			discriminator-value="Updater" />
+		<subclass
+			name="uk.ac.ebi.proteome.services.datasource.ProcessorInfo"
+			discriminator-value="Processor" />
+		<subclass
+			name="uk.ac.ebi.proteome.services.datasource.CustomHandlerInfo"
+			discriminator-value="Custom" />
+
+	</class>
+</hibernate-mapping>

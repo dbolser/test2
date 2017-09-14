@@ -1,0 +1,1029 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+	Runtime replacements (we expect table aliases to be constant between statements):
+
+	$xref$		-> 	x.id, x.db_id, x.primary_id, x.secondary_id, x.tertiary_id, x.quaternary_id
+	$loc$ 		->	l.id, l.min, l.max, l.strandn, l.state, gc.is_circular, gc.length
+	$sloc$		->	l.id, sl.id, sl.min, sl.max, sl.strandn, l.state, sl.rank, gc.is_circular, gc.length
+	$sloc-o$	->	order by l.id, sl.rank
+	$locm$		->	l.id, lm.id, lm.type, lm.startat, lm.stopat, lm.seq, lm.aa
+	$gn$			->	n.id, n.genenametype, n.name
+-->
+
+<sqllib>
+    <sql name="GenomeModelMaterializer">
+		SELECT
+		g.id,
+		g.taxid,
+		g.name,
+		g.superregnum,
+		g.scope,
+		g.organism,
+		g.organism_short,
+		g.organism_file,
+		g.organism_sql,
+		g.organism_gr,
+		g.lineage
+		FROM genome g
+		WHERE g.id=?
+    </sql>
+    <sql name="GenomicComponentModelMaterializer">
+    		SELECT
+    		g.id,
+        gc.id,
+        gc.component_ac,
+        gc.type,
+        gc.genetic_code,
+        gc.length,
+        gc.is_circular,
+        gc.description,
+        gc.mol_type,
+        gc.seq_version,
+        gc.seq_date,
+        gc.seq_file
+		FROM
+		genome g
+        join genomic_component gc on (g.id=gc.genome_id)
+		WHERE
+        g.id = ?
+    </sql>
+	<sql name="GenomicComponentSourceModelMaterializer">
+		select
+			gc.id,
+			gcs.source_id,
+			gcs.source_name,
+			gcs.source_type,
+			gcs.source_sectionid,
+			gcs.source_sectionarchiveid,
+			gcs.source_datachecksum
+		from
+ 	  	genome gg,
+			genomic_component gc,
+			genomic_component_source gcs
+		where
+			gg.id =? and gg.id=gc.genome_id
+		and
+			gc.id = gcs.genomic_component_id
+	</sql>
+
+	<!-- PSEUDOGENES -->
+
+	<sql name="PseudogeneModelMaterializer">
+        <!--analysis = ensembl-->
+        <!--biotype = pseudogene-->
+        SELECT
+        gc.id,
+        p.id,
+        p.identifying_id,
+        p.name,
+        p.type
+        FROM
+		genome gg,        genomic_component gc,
+		pseudogene p
+        WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.id = p.genomic_component_id
+	</sql>
+
+	<sql name="PseudogeneNameModelMaterializer">
+		SELECT
+        p.id,
+        $gn$
+        FROM
+		genome gg,        genomic_component gc,
+        pseudogene p,
+		pseudogene_name n
+        WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.id = p.genomic_component_id
+        AND
+        p.id = n.pseudogene_id
+	</sql>
+
+	<sql name="PseudogeneNameXrefModelMaterializer">
+		SELECT
+      /*+ rule */
+      n.id,
+    	$xref$
+    FROM
+		genome gg,      genomic_component gc,
+      pseudogene p,
+      pseudogene_name n,
+			pseudogene_name_xref x
+    WHERE
+			gg.id =? and gg.id=gc.genome_id
+    AND
+      gc.id = p.genomic_component_id
+    AND
+      p.id = n.pseudogene_id
+    AND
+    	n.id = x.pseudogene_name_id
+	</sql>
+
+	<sql name="PseudogeneXrefModelMaterializer">
+		SELECT
+        /*+ rule */
+        p.id,
+        $xref$
+        FROM
+		genome gg,        genomic_component gc,
+        pseudogene p,
+		pseudogene_xref x
+        WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.id = p.genomic_component_id
+        AND
+        p.id = x.pseudogene_id
+	</sql>
+
+	<sql name="PseudogeneLocationModelMaterializer">
+		SELECT
+        /*+ rule */
+        p.id,
+        $loc$
+        FROM
+		genome gg,        genomic_component gc,
+        pseudogene p,
+		pseudogene_location l
+        WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.id = p.genomic_component_id
+        AND
+        p.id = l.pseudogene_id
+	</sql>
+
+	<!-- GENES -->
+	
+	<sql name="GeneDescriptionMaterializer">
+		SELECT g.id, u.des FROM integr8.genome gg, integr8.genomic_component gc, integr8.gene g, integr8_mirror.uniprotkb u 
+		WHERE gg.id = ? AND gc.genome_id=gg.id AND gc.id = g.genomic_component_id AND g.uniprotkbac = u.id
+	</sql>
+	
+	<sql name="GeneModelMaterializer">
+        <!--analysis = ensembl-->
+        <!--biotype = protein_coding-->
+        SELECT
+        gc.id,
+        g.id,
+        g.identifying_id,
+        g.name,
+        g.uniprotkbac,
+        g.description,
+        g.public_id
+        FROM
+		genome gg,        genomic_component gc,
+        gene g
+        WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.id = g.genomic_component_id
+    </sql>
+
+    <sql name="GeneNameModelMaterializer">
+		SELECT
+				/*+ rule */
+        g.id,
+        $gn$
+        FROM
+		genome gg,        genomic_component gc,
+        gene g,
+        gene_name n
+		WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.id = g.genomic_component_id
+        AND
+        g.id = n.gene_id
+	</sql>
+
+	<sql name="GeneNameXrefModelMaterializer">
+		SELECT
+      /*+ rule */
+      n.id,
+    	$xref$
+    FROM
+		genome gg,      genomic_component gc,
+      gene g,
+      gene_name n,
+			gene_name_xref x
+    WHERE
+			gg.id =? and gg.id=gc.genome_id
+    AND
+      gc.id = g.genomic_component_id
+    AND
+      g.id = n.gene_id
+    AND
+    	n.id = x.gene_name_id
+	</sql>
+
+	<sql name="GeneXrefModelMaterializer">
+		SELECT
+        /*+ rule */
+        g.id,
+        $xref$
+        FROM
+		genome gg,        genomic_component gc,
+        gene g,
+        gene_xref x
+        WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.id = g.genomic_component_id
+        AND
+        g.id = x.gene_id
+	</sql>
+
+	<sql name="GeneXrefExtModelMaterializer">
+		SELECT
+        /*+ rule */
+        g.id,
+        $xref$
+        FROM
+		genome gg,        genomic_component gc,
+        gene g,
+        gene_xref_ext x
+        WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.id = g.genomic_component_id
+        AND
+        g.id = x.gene_id
+	</sql>
+
+	<sql name="GeneLocationModelMaterializer">
+		SELECT
+        /*+ rule */
+        g.id,
+        $loc$
+        FROM
+		genome gg,        genomic_component gc,
+        gene g,
+				gene_location l
+        WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.id = g.genomic_component_id
+        AND
+        g.id = l.gene_id
+	</sql>
+
+	<!-- PROTEINS -->
+
+	<sql name="ProteinModelMaterializer">
+		SELECT
+        /*+ rule */
+        g.id,
+        p.id,
+        p.name,
+        p.uniprotkbid,
+        p.codon_start
+        FROM
+		genome gg,        genomic_component
+		gc,
+        gene g,
+        protein p
+        WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.id = g.genomic_component_id
+        AND
+        g.id = p.gene_id
+	</sql>
+
+	<sql name="ProteinXrefModelMaterializer">
+		SELECT
+        /*+ rule */
+        p.id,
+        $xref$
+        FROM
+		genome gg,        genomic_component gc,
+        gene g,
+        protein p,
+        protein_xref x
+        WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.id = g.genomic_component_id
+        AND
+        g.id = p.gene_id
+        AND
+        p.id = x.protein_id
+	</sql>
+
+	<sql name="ProteinXrefExtModelMaterializer">
+		SELECT
+        /*+ rule */
+        p.id,
+        $xref$
+        FROM
+		genome gg,        genomic_component gc,
+        gene g,
+        protein p,
+        protein_xref_ext x
+        WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.id = g.genomic_component_id
+        AND
+        g.id = p.gene_id
+        AND
+        p.id = x.protein_id
+	</sql>
+
+    <sql name="ProteinLocationModelMaterializer">
+		SELECT
+        /*+ rule */
+        p.id,
+        $loc$
+        FROM
+		genome gg,        genomic_component gc,
+        gene g,
+        protein p,
+		protein_location l
+        WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.id = g.genomic_component_id
+        AND
+        g.id = p.gene_id
+        AND
+        p.id = l.protein_id
+	</sql>
+
+	<sql name="ProteinSubLocationModelMaterializer">
+		SELECT
+        /*+ rule */
+        $sloc$
+        FROM
+		genome gg,        genomic_component gc,
+        gene g,
+        protein p,
+				protein_location l,
+        protein_sub_location sl
+        WHERE
+			gg.id =? and gg.id=gc.genome_id
+		AND g.genomic_component_id=gc.id
+        AND
+        g.id = p.gene_id
+        AND
+        p.id = l.protein_id
+        AND
+        l.id = sl.protein_location_id $sloc-o$
+	</sql>
+
+	<sql name="ProteinLocationModModelMaterializer">
+		SELECT
+        /*+ rule */
+        $locm$
+        FROM
+		genome gg,        genomic_component gc,
+        gene g,
+        protein p,
+				protein_location l,
+        protein_location_mod lm
+        WHERE
+			gg.id =? and gg.id=gc.genome_id
+		AND g.genomic_component_id=gc.id
+        AND
+        g.id = p.gene_id
+        AND
+        p.id = l.protein_id
+        AND
+        l.id = lm.protein_location_id
+	</sql>
+
+	<!-- PROTEIN FEATURES -->
+
+    <sql name="ProteinFeatureModelMaterializer">
+		SELECT
+        /*+ rule */
+        p.id,
+        pf.id,
+        pf.feature_type,
+        pf.description,
+        pf.source,
+        pf.startat,
+				pf.endat
+        FROM
+		genome gg,        genomic_component gc,
+        gene g,
+        protein p,
+				protein_feature pf
+        WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        g.genomic_component_id=gc.id AND
+        g.id = p.gene_id
+        AND
+        p.id = pf.protein_id
+	</sql>
+
+	<sql name="ProteinFeatureLocationModelMaterializer">
+		SELECT
+				/*+ rule */
+				pf.id,
+        $loc$
+        FROM
+		genome gg,        genomic_component gc,
+        gene g,
+        protein p,
+        protein_feature pf,
+        feature_location l
+        WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.id = g.genomic_component_id
+        AND
+        g.id = p.gene_id
+        AND
+        p.id = pf.protein_id
+        AND
+				pf.id = l.protein_feature_id
+	</sql>
+
+	<sql name="ProteinFeatureModModelMaterializer">
+		SELECT
+				/*+ rule */
+				$locm$
+        FROM
+		genome gg,        genomic_component gc,
+        gene g,
+        protein p,
+				protein_feature pf,
+        feature_location l,
+        feature_location_mod lm
+				WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.id = g.genomic_component_id
+        AND
+        g.id = p.gene_id
+        AND
+        p.id = pf.protein_id
+        AND
+        pf.id = l.protein_feature_id
+        AND
+        l.id = lm.feature_location_id
+	</sql>
+
+	<sql name="ProteinFeatureSubLocationModelMaterializer">
+		SELECT
+				/*+ rule */
+				$sloc$
+        FROM
+		genome gg,        genomic_component gc,
+        gene g,
+        protein p,
+				protein_feature pf,
+        feature_location l,
+        feature_sub_location sl
+				WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.id = g.genomic_component_id
+        AND
+        g.id = p.gene_id
+        AND
+        p.id = pf.protein_id
+        AND
+        pf.id = l.protein_feature_id
+        AND
+        l.id = sl.feature_location_id
+	</sql>
+
+	<!-- TRANSCRIPTS -->
+
+	<sql name="TranscriptModelMaterializer">
+		SELECT
+        /*+ rule */
+				p.id,
+        t.id,
+        t.name,
+				t.promoter,
+				t.co_transcribed_unit
+				FROM
+		genome gg,        genomic_component gc,
+        gene g,
+				protein p,
+        protein_transcript pt,
+        transcript t
+        WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.id = g.genomic_component_id
+        AND
+        g.id = p.gene_id
+        AND
+        p.id = pt.protein_id
+        AND
+        pt.transcript_id = t.id
+	</sql>
+
+	<sql name="TranscriptXrefModelMaterializer">
+		SELECT
+        /*+ rule */
+				DISTINCT
+				x.transcript_id,
+        $xref$
+        FROM
+		genome gg,        genomic_component gc,
+        gene g,
+        protein p,
+        protein_transcript pt,
+        transcript t,
+				transcript_xref x
+        WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.id = g.genomic_component_id
+        AND
+        g.id = p.gene_id
+        AND
+        p.id = pt.protein_id
+        AND
+				pt.transcript_id = t.id
+        AND
+        t.id = x.transcript_id
+	</sql>
+
+	<!-- Do not add RULE ... it hurts the query! -->
+	<sql name="TranscriptXrefExtModelMaterializer">
+		SELECT
+				DISTINCT
+				x.transcript_id,
+        $xref$
+        FROM
+		genome gg,        genomic_component gc,
+        gene g,
+        protein p,
+        protein_transcript pt,
+        transcript t,
+				transcript_xref_ext x
+        WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.id = g.genomic_component_id
+        AND
+        g.id = p.gene_id
+        AND
+        p.id = pt.protein_id
+        AND
+				pt.transcript_id = t.id
+        AND
+        t.id = x.transcript_id
+	</sql>
+
+	<sql name="TranscriptLocationModelMaterializer">
+		SELECT
+        /*+ rule */
+				DISTINCT
+				l.transcript_id,
+        $loc$
+        FROM
+		genome gg,        genomic_component gc,
+        gene g,
+				protein p,
+        protein_transcript pt,
+        transcript t,
+				transcript_location l
+        WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.id = g.genomic_component_id
+        AND
+        g.id = p.gene_id
+        AND
+        p.id = pt.protein_id
+        AND
+				pt.transcript_id = t.id
+        AND
+        t.id = l.transcript_id
+	</sql>
+
+	<!-- OPERONS -->
+
+	<sql name="OperonModelMaterializer">
+		SELECT
+				/*+rule*/
+				DISTINCT
+				t.id,
+        o.id,
+        o.name
+        FROM
+		genome gg,        genomic_component gc,
+        gene g,
+				protein p,
+        protein_transcript pt,
+        transcript t,
+        operon o
+        WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.id = g.genomic_component_id
+        AND
+        g.id = p.gene_id
+        AND
+        p.id = pt.protein_id
+        AND
+        pt.transcript_id = t.id
+				AND
+        t.operon_id = o.id
+	</sql>
+
+	<sql name="OperonXrefModelMaterializer">
+		SELECT
+				/*+rule*/
+				DISTINCT
+				o.id,
+        $xref$
+        FROM
+		genome gg,        genomic_component gc,
+        gene g,
+        protein p,
+        protein_transcript pt,
+        transcript t,
+        operon o,
+        operon_xref x
+				WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.id = g.genomic_component_id
+        AND
+        g.id = p.gene_id
+        AND
+        p.id = pt.protein_id
+        AND
+        pt.transcript_id = t.id
+				AND
+        t.operon_id = o.id
+        AND
+        o.id = x.operon_id
+	</sql>
+
+	<sql name="OperonLocationModelMaterializer">
+		SELECT
+				/*+rule*/
+				DISTINCT
+				o.id,
+        $loc$
+        FROM
+		genome gg,        genomic_component gc,
+        gene g,
+        protein p,
+				protein_transcript pt,
+        transcript t,
+        operon o,
+        operon_location l
+				WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.id = g.genomic_component_id
+        AND
+        g.id = p.gene_id
+        AND
+        p.id = pt.protein_id
+        AND
+        pt.transcript_id = t.id
+				AND
+        t.operon_id = o.id
+        AND
+        o.id = l.operon_id
+	</sql>
+
+	<!--
+	<sql name="...">
+		SELECT
+        o.swissprot_name,
+        p.proteome_name,
+        p.proteome_taxid,
+        o.lineage,
+        gne.name_value,
+        pp.gr_name,
+        pp.proteome_taxid
+		FROM
+        genomic_component gc,
+        proteomes.component c,
+        proteomes.proteome p,
+        proteomes.organism o,
+        proteomes.gr_name_element gne,
+        proteomes.host2phage h2p,
+        proteomes.proteome pp
+		WHERE
+        gc.component_ac = ?
+		AND
+        c.genome_ac = gc.component_ac
+		AND
+        p.proteome_taxid = c.embl_taxid
+		AND
+        o.oscode = p.oscode
+		AND
+        gne.proteome_id = p.proteome_id
+		AND
+        gne.name_key = c.genome_ac || '_GR'
+		AND
+        h2p.phage_proteome_id (+) = p.proteome_id
+		AND
+        pp.proteome_id (+) = h2p.host_proteome_id
+	    SELECT
+        g2p.gene_id,
+        g2p.public_id,
+        g2p.new_id
+        FROM
+		genomic_component gc,
+        gene g,
+        gene2publicid g2p
+        WHERE
+		gc.component_ac = ?
+        AND
+        gc.id = g.genomic_component_id
+        AND
+        g.id = g2p.gene_id
+	</sql>
+	-->
+
+    <!-- RNA -->
+
+<sql name="EmblNcrnageneModelMaterializer">
+        SELECT
+        gc.id,
+        r.location,
+        r.genenames,
+        r.locustags,
+        r.product_name,
+        r.note,
+        r.gene_type,
+        r.IS_PSEUDO,
+        r.embl_component_id,
+        r.embl_segment_id
+		FROM genome gg
+		JOIN genomic_component gc ON (gc.genome_id=gg.id)
+		JOIN integr8_mirror.embl_ncrna r on (gc.component_ac=r.embl_component_id)
+		WHERE r.GENE_TYPE NOT IN ('rRNA','tRNA','autocatalytically_spliced_intron')
+</sql>
+<sql name="EmblRrnageneModelMaterializer">
+        SELECT
+        gc.id,
+        r.location,
+        r.genenames,
+        r.locustags,
+        r.product_name,
+        r.note,
+        r.gene_type,
+        r.IS_PSEUDO,
+        r.embl_component_id,
+        r.embl_segment_id
+		FROM genome gg
+		JOIN genomic_component gc ON (gc.genome_id=gg.id)
+		JOIN integr8_mirror.embl_ncrna r on (gc.component_ac=r.embl_component_id)
+		WHERE r.GENE_TYPE='rRNA' and gg.id=?
+</sql>
+<sql name="EmblTrnageneModelMaterializer">
+        SELECT
+        gc.id,
+        r.location,
+        r.genenames,
+        r.locustags,
+        r.product_name,
+        r.note,
+        r.gene_type,
+        r.IS_PSEUDO,
+        r.embl_component_id,
+        r.embl_segment_id
+		FROM genome gg
+		JOIN genomic_component gc ON (gc.genome_id=gg.id)
+		JOIN integr8_mirror.embl_ncrna r on (gc.component_ac=r.embl_component_id)
+		WHERE r.GENE_TYPE='tRNA' And gg.id=?
+		
+</sql>
+    <sql name="PredictedNcrnageneModelMaterializer">
+        <!--biotype = biotype column 8 characters long maximum -->
+        <!-- if you don't want the biotype to be constraint by the size,
+        use embl_feature_class column instead -->
+        SELECT
+        gc.id,
+        'ncRNA' analysis,
+        c.embl_feature_class biotype,
+        'N' pseudogene,
+        c.rfam_name name,
+        c.rfam_desc || ' [Source:RFAM-' || g.rfam_release || ';Acc:g.rfam_ac]' description,
+        g.start_loc min,
+        g.end_loc max,
+        decode(g.is_complement, 1, -1, 1) strandn,
+        100 cv_xref_id,
+        g.rfam_ac primaryIdentifier,
+        c.rfam_name secondaryIdentifier,
+        null tertiaryIdentifier,
+        c.rfam_desc || ' [Source:RFAM-' || g.rfam_release || ';Acc:g.rfam_ac]' quarternaryIdentifier,
+        g.rfam_release
+        FROM
+        integr8.genome gg,
+        integr8.genomic_component gc,
+        integr8.ncrna_analysis g,
+        proteomes.rfam_2_embl_classification c
+        WHERE
+ 			gg.id =? and gg.id=gc.genome_id
+       AND
+        gc.component_ac = g.embl_ac
+        AND
+        g.rfam_ac = c.rfam_ac
+        AND
+        c.embl_feature_key NOT IN ('misc_structure','stem_loop','rRNA','tRNA')
+        AND
+        g.rfam_release = (SELECT max (rfam_release) FROM ncrna_analysis)
+        AND
+        c.embl_feature_class != 'autocatalytically_spliced_intron'
+    </sql>
+
+    <sql name="PredictedRrnageneModelMaterializer">
+        SELECT
+        gc.id,
+        'ncRNA' analysis,
+        'rRNA' biotype,
+        'N' pseudogene,
+        g.rrna_class name,
+        g.description || ' [Source:RNAMMER]' description,
+        g.start_loc min,
+        g.end_loc max,
+        decode(g.is_complement, 1, -1, 1) strandn
+        FROM
+        genome gg,
+        genomic_component gc,
+        rrna_analysis g
+        WHERE
+        gg.id=?
+        AND
+        gc.genome_id=gg.id
+        AND
+        gc.component_ac = g.embl_ac
+    </sql>
+
+    <sql name="PredictedTrnageneModelMaterializer">
+        SELECT
+        gc.id,
+        'ncRNA' analysis,
+        decode(g.type, 'Pseudo', 'tRNA_pseudogene', 'tRNA') biotype,
+        decode(g.type, 'Pseudo', 'Y', 'N') pseudogene,
+        'tRNA-' || g.type name,
+        'tRNA-' || g.type || ' for anticodon ' || g.anticodon || ' [Source:TRNASCAN-SE]' description,
+        g.start_loc min,
+        g.end_loc max,
+        decode(g.is_complement, 1, -1, 1) strandn
+        FROM
+        genome gg,
+        genomic_component gc,
+        trna_analysis g
+        WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.component_ac = g.embl_ac
+    </sql>
+
+    <!-- XREF -->
+
+    <!-- no xref for tRNA and rRNA (We could point to RFAm though) -->
+
+    <!-- Repeat analysis Features -->
+
+    <sql name="TrfRepeatRegionModelMaterializer">
+        SELECT
+        gc.id,
+        'trf' AS repeat_name,
+	    'trf' as repeat_class,
+	    'Tandem repeats' as repeat_type,
+	    'TRF' AS analysis,
+	    start_loc,
+	    end_loc,
+	    1 as repeat_start,
+	    end_loc - start_loc + 1 as repeat_end,
+	    0 as strand,
+	    score,
+	    repeat_unit_consensus
+        FROM
+        genome gg,
+        genomic_component gc,
+        trf_analysis a
+        WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.component_ac = a.embl_ac
+  </sql>
+
+  <sql name="DustRepeatRegionModelMaterializer">
+        SELECT
+        gc.id,
+        'dust' AS repeat_name,
+	    'dust' as repeat_class,
+	    'Low complexity region' as repeat_type,
+	    'Dust' AS analysis,
+	    start_loc,
+	    end_loc,
+	    1 as repeat_start,
+	    end_loc - start_loc + 1 as repeat_end,
+	    0 as strand,
+        0 as score,
+        'N' as repeat_unit_consensus
+        FROM
+        genome gg,
+        genomic_component gc,
+        dust_analysis a
+        WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.component_ac = a.embl_ac
+   </sql>
+
+   <sql name="RepeatMaskerRepeatRegionModelMaterializer">
+        SELECT
+        gc.id,
+        a.repeatname AS repeat_name,
+	    a.repeatclass as repeat_class,
+	    a.repeattype as repeat_type,
+	    'RepeatMask' AS analysis,
+	    a.start_loc,
+	    a.end_loc,
+	    a.position_in_repeat_start as repeat_start,
+	    a.position_in_repeat_end as repeat_end,
+	    decode(a.is_complement, 1, 0, 1) as strand,
+	    a.score,
+	    'N' as repeat_unit_consensus
+        FROM
+        genome gg,
+        genomic_component gc,
+        repeatmasker_analysis a
+        WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.component_ac = a.embl_ac
+   </sql>
+
+   <!-- SimpleFeatures -->
+
+   <!-- The AlienHunter predictions query -->
+
+   <sql name="AlienHunterModelMaterializer">
+        SELECT
+        gc.id,
+	    'Genomic island' as display_label,
+	    'Alien_hunter' AS analysis,
+	    a.start_loc,
+	    a.end_loc,
+	    0 as strand,
+        a.score
+        FROM
+        genome gg,
+        genomic_component gc,
+        alien_hunter_analysis a
+        WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.component_ac = a.embl_ac
+   </sql>
+
+   <!-- The Eponine predictions query -->
+
+   <sql name="EponineModelMaterializer">
+        SELECT
+        gc.id,
+	    '' as display_label,
+	    'Eponine' AS analysis,
+	    a.start_loc,
+	    a.end_loc,
+	    decode(a.is_complement, 1, 0, 1) as strand,
+        a.score
+        FROM
+        genome gg,
+        genomic_component gc,
+        tss_analysis a
+        WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.component_ac = a.embl_ac
+   </sql>
+
+   <!-- The CPG predictions query -->
+
+   <sql name="CpGModelMaterializer">
+        SELECT
+        gc.id,
+	    'oe = ' || a.oe as display_label,
+	    'CpG' AS analysis,
+	    a.start_loc,
+	    a.end_loc,
+	    0 as strand,
+        a.score
+        FROM
+        genome gg,
+        genomic_component gc,
+        cpg_analysis a
+        WHERE
+			gg.id =? and gg.id=gc.genome_id
+        AND
+        gc.component_ac = a.embl_ac
+   </sql>
+
+</sqllib>

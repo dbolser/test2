@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sources>
+	<dataSource name="one">
+		<fields>
+			<field length="10" name="id" />
+		</fields>
+		<retrievers>
+			<retriever type="remoteFile">
+				<uri>ftp://bogus</uri>
+			</retriever>
+		</retrievers>
+		<processors>
+			<processor className="java.util.zip.GZIPInputStream"></processor>
+		</processors>
+		<updaters>
+			<updater className="uk.ac.ebi.proteome.mirror.updater.impl.RenamingUpdater"><parameter key="loader">uk.ac.ebi.proteome.mirror.updater.impl.MultipleExternalTableDataLoader</parameter></updater>
+		</updaters>
+	</dataSource>
+	
+	<dataSource name="two" sectioned="true">
+		<fields>
+			<field length="10" name="name"/>
+		</fields>
+	</dataSource>
+	
+	<dataSource name="three" sectioned="true">
+		<fields>
+			<field length="10" name="id"/>
+			<field name="tmp" notNull="true"/>
+		</fields>
+	</dataSource>
+</sources>

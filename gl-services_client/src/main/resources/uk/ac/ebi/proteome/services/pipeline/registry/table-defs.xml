@@ -1,0 +1,84 @@
+<!-- table definitions for job registry -->
+<sources xmlns="http://www.ebi.ac.uk/integr8/tabledefs" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<dataSource name="JOBS">
+		<fields>
+			<field name="id" type="int" length="10" />
+			<field name="parentid" type="int" length="10" />
+			<field name="type" type="int" length="1" />
+			<field name="subject" type="string" length="32"
+				notNull="true" indexed="true"/>
+			<field name="activity" type="string" length="32"
+				notNull="true" indexed="true"/>
+			<field name="status" type="int" length="3" />
+			<field name="hasNewData" type="int" length="1" />
+			<field name="hasError" type="int" length="1" />
+			<field name="input" type="binary" length="-1" />
+			<field name="result" type="binary" length="-1" />
+			<field name="parameters" type="binary" length="-1" />
+			<field name="output" type="text" length="-1" />
+			<field name="error" type="text" length="-1" />
+			<field name="started" type="date" length="-1" />
+			<field name="ended" type="date" length="-1" />
+			<field name="owner" type="int" length="10" indexed="true"/>
+		</fields>
+	</dataSource>
+
+	<dataSource name="PROCESS_STATUS">
+		<fields>
+			<field name="id" type="int" length="3" />
+			<field name="name" type="string" length="64"
+				constraint="unique" notNull="true" />
+		</fields>
+	</dataSource>
+
+	<dataSource name="JOB_STATUS">
+		<fields>
+			<field name="id" type="int" length="3" />
+			<field name="name" type="string" length="32"
+				constraint="unique" notNull="true" />
+		</fields>
+	</dataSource>
+
+	<dataSource name="UPDATE_PROCESS_OWNER">
+		<fields>
+			<field name="id" type="int" length="10" />
+			<field name="parentid" type="int" length="10" />
+			<field name="name" type="string" length="32"
+				constraint="unique" notNull="true" />
+			<field name="description" type="string" length="255" />
+		</fields>
+	</dataSource>
+
+	<dataSource name="PROCESS_OWNER">
+		<fields>
+			<field name="id" type="int" length="10" />
+			<field name="name" type="string" length="32"
+				constraint="unique" notNull="true" />
+			<field name="description" type="string" length="255" />
+			<field name="contact" type="string" length="128" />
+		</fields>
+	</dataSource>
+
+	<dataSource name="PROCESS">
+		<fields>
+			<field name="id" type="int" length="10" />
+			<field name="ownerid" type="int" length="10" indexed="true"/>
+			<field name="run" type="int" length="10" />
+			<field name="status" type="int" length="1" />
+			<field name="started" type="date" length="-1" />
+			<field name="ended" type="date" length="-1" />
+		</fields>
+	</dataSource>
+
+	<dataSource name="UPDATE_PROCESS">
+		<fields>
+			<field name="id" type="int" length="10" />
+			<field name="ownerid" type="int" length="10" indexed="true"/>
+			<field name="run" type="int" length="10" />
+			<field name="status" type="int" length="1" />
+			<field name="started" type="date" length="-1" />
+			<field name="ended" type="date" length="-1" />
+		</fields>
+	</dataSource>
+
+</sources>

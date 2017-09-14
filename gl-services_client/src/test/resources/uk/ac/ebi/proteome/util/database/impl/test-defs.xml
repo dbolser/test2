@@ -1,0 +1,15 @@
+<sources>
+	<dataSource name="SYNCTEST">
+		<fields>
+			<field name="id" type="int"/>
+			<field name="okay" type="int" indexed="true" bitmap="true"/>
+			<field name="aname" type="string"/>
+			<field name="forname" type="string" length="30"/>
+			<field name="surname" type="string" length="30"/>
+			<field type="composite" indexed="true">
+				<attribute>forname</attribute>
+				<attribute>surname</attribute>
+			</field>
+		</fields>
+	</dataSource>
+</sources>

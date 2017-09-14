@@ -1,0 +1,24 @@
+<servicesConfig>
+	<serviceUrl>http://ant16.ebi.ac.uk:18180/services</serviceUrl>
+	<serviceDbUri>jdbc:oracle:thin:INTEGR8/INTEGR8_PROT@ouzo.ebi.ac.uk:1521:PROT</serviceDbUri>
+	<mirrorDbUri>jdbc:oracle:thin:integr8_mirror/textme@ouzo.ebi.ac.uk:1521:PROT</mirrorDbUri>
+	<sbftpCommand>/homes/integr8/services/bin/extDirFile.sh {0} {1} {2}</sbftpCommand>
+	<mirrorDbDirectoryURI>sbftp:ouzo:</mirrorDbDirectoryURI>
+	<mirrorDbTablespace>INTEGR8_MIRROR_TAB</mirrorDbTablespace>
+	<mirrorDbIndexspace>INTEGR8_MIRROR_IND</mirrorDbIndexspace>
+	<mirrorDbDirectory>INTEGR8</mirrorDbDirectory>
+	<dataDirectory>./tmp</dataDirectory>
+	<emailAddress>dstaines@ebi.ac.uk</emailAddress>
+	<sourceFile>./etc/sources.xml</sourceFile>
+	<logFile>./tmp/mirror.log</logFile>
+	<apiSrcLocation>./src</apiSrcLocation>
+	<maxJobs>50</maxJobs>
+	<maxDbConnections>10</maxDbConnections>
+	<maxRemoteConnections>10</maxRemoteConnections>
+	<maxDbConnectionsTotal>25</maxDbConnectionsTotal>
+	<maxRemoteConnectionsTotal>25</maxRemoteConnectionsTotal>
+	<dbIdleTime>120000</dbIdleTime>
+	<maxStatementsTotal>20</maxStatementsTotal>
+	<defaultGrantRole>PROTEOMES_SELECT</defaultGrantRole>
+	<sqlLoaderCommand>./bin/runSqlLoader.sh {0} {1} {2}</sqlLoaderCommand>
+</servicesConfig>

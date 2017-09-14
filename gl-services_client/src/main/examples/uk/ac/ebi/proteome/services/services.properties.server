@@ -1,0 +1,11 @@
+configFile=./etc/services_config.xml
+submissionCommand=bsub -q production
+statusCommand=bjobs
+killCommand=bkill
+executionCommand=~/mirror_dist/bin/runRunner.sh
+processName=mirrorPipeline
+registryImpl=uk.ac.ebi.proteome.services.pipeline.registry.DatabaseJobRegistry
+executorImpl=uk.ac.ebi.proteome.services.pipeline.executor.LSFPipelineExecutor
+versionServiceImpl=uk.ac.ebi.proteome.services.version.impl.LocalVersionService
+sqlServiceImpl=uk.ac.ebi.proteome.services.sql.impl.LocalSqlService
+configFactory=uk.ac.ebi.proteome.services.config.impl.DefaultingXmlServiceConfigFactory

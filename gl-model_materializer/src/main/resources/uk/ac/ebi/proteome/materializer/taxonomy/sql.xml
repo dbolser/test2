@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<sqllib>
+
+	<sql name="LineageMaterializer">
+		select n.tax_id, l.name_list
+		from taxonomy.public_node n, taxonomy.public_lineage l
+		where n.tax_id =?
+		and n.parent_id = l.parent_id
+	</sql>
+
+</sqllib>

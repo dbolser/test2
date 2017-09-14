@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sources xmlns="http://www.ebi.ac.uk/integr8/tabledefs" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<dataSource name="CV_FEATURE_TYPE" sectioned="false">
+		<fields>
+			<field type="int" name="id" length="2"/>
+			<field type="string" name="name" length="24"/>
+			<field type="string" name="uniprot_name" length="24"/>
+			<field type="string" name="embl_name" length="24"/>
+		</fields>
+	</dataSource>
+</sources>

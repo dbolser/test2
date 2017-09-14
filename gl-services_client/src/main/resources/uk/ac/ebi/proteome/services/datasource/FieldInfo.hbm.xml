@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+	<class name="uk.ac.ebi.proteome.services.datasource.FieldInfo"
+		table="fields" lazy="false">
+		<id name="id">
+			<generator class="sequence" />
+		</id>
+		<property name="name" column="name" />
+		<property name="dataType" />
+		<property name="length" />
+		<property name="indexed" />
+		<property name="bitmap" />
+		<property name="constraint"/>
+		<property name="notNull"/>
+
+		<list name="attributes" table="attributes" lazy="false" cascade="save-update,all-delete-orphan">
+			<key column="attr_id" not-null="true"/>
+			<index column="attr_idx" />
+			<element column="attr_type" type="string" />
+		</list>
+
+		<list name="foreignKeys" lazy="false" cascade="save-update,all-delete-orphan">
+			<key column="field_id" not-null="true"/>
+			<list-index column="foreignkey_idx"/>
+			<one-to-many class="uk.ac.ebi.proteome.services.datasource.ForeignKey"/>
+		</list>
+	</class>
+</hibernate-mapping>

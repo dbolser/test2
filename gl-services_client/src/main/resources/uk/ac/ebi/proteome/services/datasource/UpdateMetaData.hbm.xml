@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+	<class name="uk.ac.ebi.proteome.services.datasource.UpdateMetaData"
+		table="updatemetadata" lazy="false">
+		<id name="name" column="name" />
+		<property name="tolerateFailure" />
+		<list name="retrievers" lazy="false" cascade="save-update,all-delete-orphan">
+			<key column="updatemetadata_id" />
+			<list-index column="retriever_idx" />
+			<one-to-many
+				class="uk.ac.ebi.proteome.services.datasource.RetrieverInfo" />
+		</list>
+		<list name="processors" lazy="false" cascade="save-update,all-delete-orphan" where="handlerInfoType='Processor'">
+			<key column="updatemetadata_id" />
+			<list-index column="processor_idx" />
+			<one-to-many
+				class="uk.ac.ebi.proteome.services.datasource.ProcessorInfo" />
+		</list>
+		<list name="updaters" lazy="false" cascade="save-update,all-delete-orphan" where="handlerInfoType='Updater'">
+			<key column="updatemetadata_id" />
+			<list-index column="updater_idx" />
+			<one-to-many
+				class="uk.ac.ebi.proteome.services.datasource.UpdaterInfo" />
+		</list>
+	</class>
+</hibernate-mapping>

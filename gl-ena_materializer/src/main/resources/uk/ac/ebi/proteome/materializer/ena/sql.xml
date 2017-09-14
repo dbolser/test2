@@ -1,0 +1,443 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<sqllib>
+	<sql name="getGenomes">
+		select PROTEOME_ID,
+		c.EMBL_TAXID,
+		e.genome_name,
+		p.superregnum_name,
+		p.scope,
+		o.lineage,
+		c.component_id,
+		genome_ac,
+		c.component_name,
+		e.topology,
+		e.seq_length,
+		e.seq_version,
+		c.component_type,
+		NVL(e.TRANSLATION_TABLE,-1)
+		from proteomes.proteome p
+		join proteomes.component c using (proteome_id)
+		join
+		proteomes.embl_genome e using (genome_ac)
+		left join
+		proteomes.organism o
+		using (oscode)
+	</sql>
+	<sql name="pidClause">
+		where proteome_id=?
+	</sql>
+	<sql name="expandType5Component">
+		select e.PRIMARYACC#, s.version, s.seqlen, des.text,
+		gc.descr as category, g.descr as description, g.chromosome
+		from dbentry
+		e
+		join bioseq s on (s.seqid=e.bioseqid)
+		join description des on
+		(des.dbentryid= e.dbentryid)
+		left join genome_seq g on
+		(g.PRIMARYACC#=e.PRIMARYACC#)
+		left join CV_GENOME_CATEGORY gc on
+		(g.category=gc.code)
+		where
+		e.statusid = 4
+		AND e.PRIMARYACC# like ?
+	</sql>
+	<sql name="expandType8Component">
+		SELECT distinct dbe2.primaryacc#
+		embl_ac,s2.version,s2.seqlen, des.text,
+		gc.descr as category, g.descr
+		as description, g.chromosome FROM
+		dbentry dbe join bioseq s on
+		(dbe.bioseqid=s.seqid) JOIN scaffold a on
+		(a.contig_acc=s.sequence_acc) join bioseq s2 on
+		(s2.sequence_acc=a.scaffold_acc) JOIN dbentry dbe2 on (s2.seqid =
+		dbe2.bioseqid) join description des on (des.dbentryid= dbe2.dbentryid)
+		left join genome_seq g on (g.PRIMARYACC#=dbe2.PRIMARYACC#) left join
+		CV_GENOME_CATEGORY gc on (g.category=gc.code) WHERE dbe.statusid = 4
+		and dbe2.statusid = 4 AND dbe.primaryacc# like ?
+	</sql>
+
+	<sql name="pidToUpi">
+		SELECT distinct(x.UPI) FROM UNIPARC.XREF x WHERE x.DBID
+		IN
+		(1,8,58,59) AND x.AC=? AND version=? and x.deleted='N'
+	</sql>
+
+
+	<!-- used by EnaGenomeProcessor via UpiInterProGenomeProcessor -->
+
+	<sql name="pidToUniProtBatch">
+		select protein_id,accession,entry_type from dbentry d,
+		embl_protein_id p where d.dbentry_id = p.dbentry_id and d.entry_type
+		in
+		(0,1) AND merge_status != 'R' AND deleted='N' 
+		AND first_public is not null AND protein_id in ({0})
+	</sql>
+
+	<sql name="pidToUniProtGOBatch">
+		select protein_id pid,accession acc,entry_type type,
+		primary_id as term,regexp_replace(note,':.*','') as evidence
+		from
+		dbentry d, dbentry_2_database dd, embl_protein_id p
+		where d.dbentry_id
+		= p.dbentry_id and d.dbentry_id = p.dbentry_id and
+		d.dbentry_id =
+		dd.dbentry_id
+		and d.entry_type in (0,1)
+		AND d.merge_status != 'R' AND d.deleted='N' 
+		AND d.first_public is not null  and dd.database_id='GO' and
+		protein_id in ({0})
+	</sql>
+
+	<sql name="upiToIproArrayIprel">
+	
+with mainq as (
+select distinct * from (
+  SELECT em.method_ac, i2d.dbcode, em.entry_ac, m.upi,               
+e.short_name, e.name,             m.seq_start,                m.seq_end
+    FROM iprscan.mv_iprscan m
+        JOIN interpro.entry2method em
+           ON (m.method_ac = em.method_ac)
+        JOIN interpro.entry e
+           ON (e.entry_ac = em.entry_ac AND e.checked = 'Y')
+        JOIN interpro.iprscan2dbcode i2d
+           ON (i2d.iprscan_sig_lib_rel_id = m.analysis_id)))
+SELECT DISTINCT q.upi,                q.entry_ac, q.short_name, 
+q.name,                db.dbshort, q.method_ac,
+                          me.name, q.seq_start,                
+q.seq_end, go.go_id,                go.source
+   FROM mainq q
+        JOIN interpro.method me
+           ON (me.method_ac = q.method_ac)
+        JOIN interpro.cv_database db
+           ON (db.dbcode = q.dbcode)
+        LEFT JOIN interpro.interpro2go go
+           ON (q.entry_ac = go.entry_ac)
+           where exists (select 1 from TABLE (?) t 
+where q.upi = t.COLUMN_VALUE)
+	
+	
+	</sql>
+
+	<sql name="upiToIproIprel">
+		select
+		distinct
+		m.upi,
+		em.entry_ac,
+		e.short_name,
+		e.name,
+		db.dbshort,
+		em.method_ac,
+		me.name,
+		m.seq_start,
+		m.seq_end,
+		go.go_id,
+		go.source
+		FROM
+		iprscan.mv_iprscan m
+		join interpro.entry2method em on
+		(m.method_ac=em.method_ac)
+		join interpro.method me on
+		(me.method_ac=m.method_ac)
+		join interpro.entry e on
+		(e.entry_ac=em.entry_ac and e.checked = 'Y')
+		join interpro.iprscan2dbcode i2d on
+		(i2d.iprscan_sig_lib_rel_id=m.analysis_id)
+		join
+		interpro.cv_database db on
+		(db.dbcode=i2d.dbcode)
+		left join
+		interpro.interpro2go go on
+		(em.entry_ac= go.entry_ac)
+		where m.upi=?
+	</sql>
+
+	<sql name="upiToIpro">
+		select
+		distinct
+		em.entry_ac,
+		e.short_name,
+		e.name,
+		db.dbshort,
+		em.method_ac,
+		m.pos_from,
+		m.pos_to,
+		go.go_id,
+		go.source
+		FROM
+		interpro.match m
+		join interpro.entry2method em on
+		(m.method_ac=em.method_ac)
+		join interpro.entry e on (e.entry_ac=
+		em.entry_ac)
+		join uniparc.xref ux on (ux.ac=m.protein_ac)
+		join
+		interpro.cv_database db on (db.dbcode=m.dbcode)
+		left join
+		interpro.interpro2go go on (em.entry_ac= go.entry_ac)
+		WHERE
+		ux.deleted
+		='N'
+		AND ux.upi=?
+	</sql>
+
+	<sql name="upiToIproBatch">
+		select
+		distinct
+		ux.upi,
+		em.entry_ac,
+		e.short_name,
+		e.name,
+		db.dbshort,
+		em.method_ac,
+		me.name,
+		m.pos_from,
+		m.pos_to,
+		go.go_id,
+		go.source
+		FROM
+		interpro.match m
+		join interpro.entry2method em on
+		(m.method_ac=em.method_ac)
+		join
+		interpro.method me on
+		(me.method_ac=m.method_ac)
+		join interpro.entry e
+		on (e.entry_ac=
+		em.entry_ac)
+		join uniparc.xref ux on
+		(ux.ac=m.protein_ac)
+		join
+		interpro.cv_database db on
+		(db.dbcode=m.dbcode)
+		left join
+		interpro.interpro2go go on (em.entry_ac=
+		go.entry_ac)
+		WHERE
+		ux.deleted =
+		'N'
+		AND ux.upi in ({0})
+	</sql>
+
+
+
+
+	<sql name="upiToIproArray">
+		select
+		distinct
+		ux.upi,
+		em.entry_ac,
+		e.short_name,
+		e.name,
+		db.dbshort,
+		em.method_ac,
+		me.name,
+		m.pos_from,
+		m.pos_to,
+		go.go_id,
+		go.source
+		FROM uniparc.xref ux
+		join interpro.match m on
+		(ux.ac=m.protein_ac)
+		join interpro.entry2method em on
+		(m.method_ac=em.method_ac)
+		join interpro.method me on
+		(me.method_ac=m.method_ac)
+		join interpro.entry e on (e.entry_ac=
+		em.entry_ac)
+		join
+		interpro.cv_database db on (db.dbcode=m.dbcode)
+		left
+		join
+		interpro.interpro2go go on (em.entry_ac= go.entry_ac)
+		WHERE exists
+		(select 1 from table(?) t where ux.upi=t.column_value)
+		and ux.deleted =
+		'N'
+	</sql>
+
+	<sql name="uniProtToIproArray">
+		select
+		distinct
+		m.protein_ac,
+		em.entry_ac,
+		e.short_name,
+		e.name,
+		db.dbshort,
+		em.method_ac,
+		me.name,
+		m.pos_from,
+		m.pos_to,
+		go.go_id,
+		go.source
+		FROM
+		table(?) t
+		join
+		interpro.match m on
+		(t.column_value=m.protein_ac)
+		join
+		interpro.entry2method em on
+		(m.method_ac=em.method_ac)
+		join
+		interpro.method me on
+		(me.method_ac=m.method_ac)
+		join interpro.entry e
+		on (e.entry_ac=
+		em.entry_ac)
+		join
+		interpro.cv_database db on
+		(db.dbcode=m.dbcode)
+		left
+		join
+		interpro.interpro2go go on (em.entry_ac=
+		go.entry_ac)
+	</sql>
+
+	<sql name="upiToIproArrayOld">
+		select
+		distinct
+		ux.upi,
+		em.entry_ac,
+		e.short_name,
+		e.name,
+		db.dbshort,
+		em.method_ac,
+		me.name,
+		m.pos_from,
+		m.pos_to,
+		go.go_id,
+		go.source
+		FROM
+		table(?) t
+		join
+		uniparc.xref ux on (ux.upi=t.column_value)
+		join interpro.match m on
+		(ux.ac=m.protein_ac)
+		join interpro.entry2method
+		em on
+		(m.method_ac=em.method_ac)
+		join interpro.method me on
+		(me.method_ac=m.method_ac)
+		join interpro.entry e on (e.entry_ac=
+		em.entry_ac)
+		join
+		interpro.cv_database db on (db.dbcode=m.dbcode)
+		left
+		join
+		interpro.interpro2go go on (em.entry_ac= go.entry_ac)
+		WHERE
+		ux.deleted = 'N'
+	</sql>
+
+	<sql name="stdXrefQuery">
+		select x.protein_acc, d.xref, x.xref_primary_acc,
+		x.xref_secondary_acc
+		from dbentry e
+		join xref x on (x.acc=e.primaryacc#)
+		join cv_xref d using (xrefid)
+		where e.primaryacc#=?
+	</sql>
+
+	<sql name="conXrefQuery">
+		select x.protein_acc, d.xref,
+		x.xref_primary_acc,x.xref_secondary_acc
+		from scaffold cs
+		join bioseq seg
+		on (sequence_acc=contig_acc)
+		join xref x on (x.acc=seg.seq_accid)
+		join
+		cv_xref d using (xrefid)
+		where cs.scaffold_acc=?
+	</sql>
+
+	<sql name="conConXrefQuery">
+		select x.protein_acc, xrefid,
+		xref_primary_acc,xref_secondary_acc from
+		scaffold cs join scaffold css
+		on (css.scaffold_acc=cs.contig_acc) join
+		bioseq seg on
+		(seg.sequence_acc=css.contig_acc) join xref x on
+		(x.acc=seg.seq_accid)
+		join cv_xref d using (xrefid) where
+		cs.scaffold_acc=?
+	</sql>
+
+	<sql name="uniProtDescription">
+		SELECT d.accession, d.name,
+		REPLACE(NVL(sc1.text,sc3.text),'^') as
+		description
+		FROM SPTR.dbentry d
+		LEFT OUTER JOIN
+		SPTR.dbentry_2_description dd ON (dd.dbentry_id =
+		d.dbentry_id AND
+		dd.description_type_id=1) LEFT OUTER JOIN
+		SPTR.description_category
+		dc1 ON
+		(dd.dbentry_2_description_id=dc1.dbentry_2_description_id AND
+		dc1.category_type_id =1) LEFT OUTER JOIN SPTR.description_subcategory
+		sc1 ON (dc1.category_id = sc1.category_id AND
+		sc1.subcategory_type_id=1) LEFT OUTER JOIN SPTR.description_category
+		dc3 ON (dd.dbentry_2_description_id=dc3.dbentry_2_description_id AND
+		dc3.category_type_id =3) LEFT OUTER JOIN SPTR.description_subcategory
+		sc3 ON (dc3.category_id = sc3.category_id AND
+		sc3.subcategory_type_id=1) WHERE d.accession = ?
+	</sql>
+	<sql name="uniProtXrefs">
+		select d.accession,dd.database_id, dd.primary_id,
+		dd.secondary_id, dd.note,
+		dd.quaternary_id
+		from dbentry d,
+		dbentry_2_database dd where d.dbentry_id = dd.dbentry_id
+		and
+		d.accession=?
+	</sql>
+
+	<sql name="uniProtDescriptionBatch">
+		SELECT d.accession, d.name,
+		replace(dd1.descr, '^') as description, s.version
+		FROM
+		SPTR.dbentry d
+		JOIN sequence s ON (s.dbentry_id=d.dbentry_id)
+      left outer join sptr.dbentry_2_desc dd1
+        on (dd1.dbentry_id = d.dbentry_id) 
+      left outer join cv_desc cd1
+        on (dd1.desc_id = cd1.desc_id)
+WHERE d.accession in ({0})
+ and (   cd1.desc_id is null
+            or ( cd1.section_type = 'Main'
+             and cd1.catg_type in ('RecName', 'SubName')
+             and cd1.subcatg_type = 'Full')
+       )
+	</sql>
+	<sql name="uniProtXrefsBatch">
+		select d.accession,db.abbreviation, dd.primary_id,
+		dd.secondary_id, dd.note,
+		dd.quaternary_id
+		from dbentry d,
+		dbentry_2_database dd, database_name db where d.dbentry_id =
+		dd.dbentry_id
+		and dd.database_id=db.database_id
+		and d.accession in ({0})
+		and db.abbreviation in ({1})
+	</sql>
+	<sql name="uniProtECBatch">
+		select accession, replace(dd.descr, '^') as description 
+		from dbentry d
+		join dbentry_2_desc dd on (dd.dbentry_id=d.dbentry_id) 
+        join cv_desc cd1 on (dd.desc_id = cd1.desc_id)
+		where 
+		accession in ({0})
+		 and cd1.section_type = 'Main'
+             and cd1.catg_type in ('RecName', 'SubName')
+             and cd1.subcatg_type = 'EC'
+	</sql>
+	<sql name="interPro2Pathway">
+		select p.ENTRY_AC,p.AC,d.DBNAME
+		from
+		INTERPRO.ENTRY2PATHWAY p
+		JOIN INTERPRO.CV_DATABASE d USING
+		(DBCODE)
+		join table(?) t on (p.entry_ac=t.column_value)
+	</sql>
+</sqllib>

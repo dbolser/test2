@@ -1,0 +1,27 @@
+<sources>
+	<dataSource name="TestTableUpdate" tolerateShrinkage="1.0" sectioned="false" tolerateFailure="false">
+		<fields>
+			<field name="id" isIndexed="false" isBitmap="false"
+				length="10" type="string">
+				<attribute>id</attribute>
+			</field>
+			<field name="data" isIndexed="true" isBitmap="false"
+				length="10" type="string">
+				<attribute>data</attribute>
+			</field>
+		</fields>
+	</dataSource>
+	
+	<dataSource name="TestTableUpdateSec" tolerateShrinkage="1.0" sectioned="true" tolerateFailure="false">
+		<fields>
+			<field name="id" isIndexed="false" isBitmap="false"
+				length="10" type="string">
+				<attribute>id</attribute>
+			</field>
+			<field name="data" isIndexed="true" isBitmap="false"
+				length="10" type="string">
+				<attribute>data</attribute>
+			</field>
+		</fields>
+	</dataSource>
+</sources>

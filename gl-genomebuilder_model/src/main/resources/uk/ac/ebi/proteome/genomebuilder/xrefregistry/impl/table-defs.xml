@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sources xmlns="http://www.ebi.ac.uk/integr8/tabledefs"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+	<dataSource name="cv_xref" sectioned="false">
+		<fields>
+			<field type="int" name="id" length="3" nullable="false" indexed="true" />
+			<field type="string" name="db_name" length="60"
+				nullable="false" indexed="true" />
+			<field type="string" name="type" length="60"
+				nullable="true" />
+			<field type="string" name="qualifier" length="60"
+				nullable="true" />
+			<field type="string" name="display_name" length="60"
+				nullable="true" />
+			<field type="string" name="uniprotkb_name" length="60"
+				nullable="true" indexed="true" />
+			<field type="string" name="ensembl_name" length="60"
+				nullable="true" indexed="true" />
+		</fields>
+	</dataSource>
+
+</sources>

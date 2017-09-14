@@ -1,0 +1,38 @@
+<databaseReferenceTypes>
+	<databaseReferenceType>
+		<id>1</id>
+		<dbName>EMBL</dbName>
+		<type>TRANSCRIPT</type>
+		<qualifier>CDS</qualifier>
+		<displayName>EMBL (CDS)</displayName>
+		<uniprotKbName>EMBL</uniprotKbName>
+		<ensemblName>EMBL</ensemblName>
+	</databaseReferenceType>
+	<databaseReferenceType>
+		<id>2</id>
+		<dbName>EMBL</dbName>
+		<type>COMPONENT</type>
+		<qualifier>COMPONENT</qualifier>
+		<displayName>EMBL (COMPONENT)</displayName>
+		<uniprotKbName>EMBL</uniprotKbName>
+		<ensemblName>EMBL</ensemblName>
+	</databaseReferenceType>
+	<databaseReferenceType>
+		<id>3</id>
+		<dbName>ENTREZ</dbName>
+		<type>GENE</type>
+		<qualifier>GENE</qualifier>
+		<displayName>ENTREZGENE</displayName>
+		<uniprotKbName>ENTREZGENE</uniprotKbName>
+		<ensemblName>EntrezGene</ensemblName>
+	</databaseReferenceType>
+	<databaseReferenceType>
+		<id>4</id>
+		<dbName>UniProtKB</dbName>
+		<type>PROTEIN</type>
+		<qualifier>Swiss-Prot</qualifier>
+		<displayName>UniProtKB/Swiss-Prot</displayName>
+		<uniprotKbName>UniProtKB/Swiss-Prot</uniprotKbName>
+		<ensemblName>Uniprot/SWISSPROT</ensemblName>
+	</databaseReferenceType>
+</databaseReferenceTypes>

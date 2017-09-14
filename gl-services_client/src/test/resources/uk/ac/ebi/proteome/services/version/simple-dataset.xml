@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+  
+  <CV_TABLE ID="1" NAME="EmblCds" SKIP_SHRINKAGE_CHECK="0"/>
+  <CV_TABLE ID="2" NAME="UniProt" SKIP_SHRINKAGE_CHECK="0"/>
+  <CV_TABLE ID="3" NAME="Builder" SKIP_SHRINKAGE_CHECK="0"/>
+  
+  <CV_SECTION />
+  
+  <SECTION_ARCHIVE />
+
+  <SECTION_ACCESS_ARCHIVE />  
+    
+  <PROCESS_OWNER ID="1" NAME="mirrorPipeline" DESCRIPTION="Mirror pipeline process owner" CONTACT="dstaines@ebi.ac.uk"/>
+  <PROCESS_OWNER ID="2" NAME="testing" DESCRIPTION="A test owner" CONTACT="integr8@ebi.ac.uk"/>
+
+  <UPDATE_PROCESS_OWNER ID="1" PARENTID="1" NAME="mirrorPipeline" DESCRIPTION="Mirror pipeline update process owner"/>
+  <UPDATE_PROCESS_OWNER ID="2" PARENTID="3" NAME="Builder" DESCRIPTION="trnascan"/>
+
+  <PROCESS ID="1" OWNERID="1" STATUS="1" STARTED="2007-03-13"/>
+  <PROCESS ID="2" OWNERID="1" RUN="1" STATUS="5" STARTED="2007-03-14" />
+
+  <UPDATE_PROCESS />
+
+  <PROCESS_STATUS ID="0" NAME="waiting"/>
+  <PROCESS_STATUS ID="1" NAME="running"/>
+  <PROCESS_STATUS ID="2" NAME="complete"/>
+  <PROCESS_STATUS ID="3" NAME="failed"/>
+  <PROCESS_STATUS ID="4" NAME="complete with new data"/>
+  <PROCESS_STATUS ID="5" NAME="complete with errors"/>
+  <PROCESS_STATUS ID="6" NAME="complete with new data and errors"/>
+  <PROCESS_STATUS ID="7" NAME="complete but no new data"/>
+
+  <JOB_STATUS ID="0" NAME="unknown"/>
+  <JOB_STATUS ID="1" NAME="waiting"/>
+  <JOB_STATUS ID="2" NAME="submitted"/>
+  <JOB_STATUS ID="3" NAME="running"/>
+  <JOB_STATUS ID="4" NAME="finished"/>
+  <JOB_STATUS ID="5" NAME="complete"/>
+  <JOB_STATUS ID="6" NAME="failed"/>
+  <JOB_STATUS ID="101" NAME="has new data"/>
+  <JOB_STATUS ID="102" NAME="has error"/>  
+  
+  <JOBS/>
+
+</dataset>

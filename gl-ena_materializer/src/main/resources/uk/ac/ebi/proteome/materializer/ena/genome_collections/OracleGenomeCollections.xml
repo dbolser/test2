@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<sqllib>
+	<sql name="getSetForTaxId">
+		select distinct set_chain from gc_assembly_set
+		where
+		tax_id=?
+	</sql>
+	<sql name="getSetForName">
+		select distinct set_chain from gc_assembly_set
+		where
+		scientific_name like ?
+	</sql>
+	<sql name="getSetForAccession">
+	</sql>
+	<sql name="getGenomeForId">
+	SELECT gs.set_chain,
+ 	 gs.set_version,
+  	 gs.scientific_name,
+  	 gs.common_name,
+	 gs.tax_id,
+	 gs.name,
+     gp.project_title,
+     gp.strain
+    FROM gc_assembly_set gs,
+     (SELECT set_chain,
+      MAX(set_version) AS set_version
+      FROM gc_assembly_set gsv
+      WHERE set_chain=?
+      GROUP BY set_chain
+     ) gc,
+     gc_assembly_set_project gsp,
+     gc_project gp
+     WHERE gs.set_chain =gc.set_chain
+     AND gs.set_version = gc.set_version
+     AND gs.set_acc     =gsp.set_acc
+     AND gp.project_acc =gsp.project_acc
+	</sql>
+	<sql name="getRepliconComponentsForGenome">
+		select gr.replicon_acc
+		from gc_assembly_set gas
+		join
+		gc_replicon gr on (gr.set_acc=gas.set_acc)
+		where gr.replicon_acc is not
+		null and gas.set_chain=? and gas.set_version=?
+		order by
+		gr.replicon_order
+	</sql>
+	<sql name="getUnplacedComponentsForGenome">
+		select gr.acc
+		from gc_assembly_set gas
+		join
+		gc_unplaced gr
+		on (gr.set_acc=gas.set_acc)
+		where gas.set_chain=? and gas.set_version=?
+	</sql>
+	<sql name="getUnlocalisedComponentsForGenome">
+		select gr.acc
+		from gc_assembly_set gas
+		join
+		gc_unlocalised
+		gr on (gr.set_acc=gas.set_acc)
+		where gas.set_chain=? and
+		gas.set_version=?
+	</sql>
+	<sql name="getWgsPrefixForGenome">
+		select wgs.prefix||lpad(wgs.version,2,0)||'%'
+		from
+		gc_assembly_set gas
+		join gc_wgs_set wgs on (wgs.set_acc=gas.set_acc)
+		where gas.set_chain=? and
+		gas.set_version=?
+	</sql>
+	<sql name="getWgsComponentsForPrefix">
+		select dbe.primaryacc#||'.'||bs.version
+		from
+		dbentry@ENAPRO.ENA_READER dbe
+		join bioseq@ENAPRO.ENA_READER bs on (bioseqid=seqid)
+		where dbe.primaryacc# like ? AND dbe.statusid=4 and dbe.entry_type!=8
+	</sql>
+	<sql name="getWgsComponentsForGenome">
+		select dbe.primaryacc#||'.'|bs.version
+		from
+		gc_assembly_set gas
+		join gc_wgs_set wgs on (wgs.set_acc=gas.set_acc)
+		join dbentry@ENAPRO.ENA_READER dbe on (dbe.primaryacc# like
+		wgs.prefix||lpad(wgs.version,2,0)||'%')
+		join bioseq@ENAPRO.ENA_READER bs on (bioseqid=seqid)
+		where gas.set_chain=? and
+		gas.set_version=? and dbe.statusid=4 and dbe.entry_type!=8
+	</sql>
+		<sql name="getFeatureCountForComponent">
+<![CDATA[
+		select nvl(sum(cnt),0) cnt from FEATURE_STATS@ENAPRO.ENA_READER
+		join cv_fkey@ENAPRO.ENA_READER using (fkeyid)
+		where acc=? and fkey='CDS'
+		]]>
+	</sql>	<sql name="getFeatureCountForComponentGC">
+<![CDATA[
+		select nvl(sum(ss.cds_cnt+ss.contig_1_cds_cnt+ss.contig_2_cds_cnt),0) cnt
+		from gc_wh_sequence_stats ss 
+		where ss.acc=?
+		]]>
+	</sql>
+</sqllib>

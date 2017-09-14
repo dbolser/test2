@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<sqllib>
+
+	<sql name="insertCvFeatureType">
+		INSERT INTO CV_FEATURE_TYPE(id,name,uniprot_name,embl_name) VALUES(?,?,?,?)
+	</sql>
+
+</sqllib>

@@ -1,0 +1,19 @@
+apply plugin: 'java'
+ 
+repositories {
+    mavenCentral()
+    maven {
+	    url "http://www.ebi.ac.uk/intact/maven/nexus/content/repositories/ebi-repo/"
+	}
+	mavenLocal()
+}
+ 
+dependencies {
+	compile project(':gl-genomebuilder_model')
+	compile project(':gl-services_client')
+	compile group: 'xom', name: 'xom', version: '1.2.5'
+	compile group: 'commons-logging', name: 'commons-logging', version: '1.2'
+	compile group: 'org.biojava', name: 'biojava', version: '1.5'
+	compile group: 'oracle.sql', name: 'ojdbc', version:'11.2.0.1.0'
+    testCompile 'junit:junit:4.11'
+}

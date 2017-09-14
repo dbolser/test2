@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+	<class name="uk.ac.ebi.proteome.services.datasource.DataSource"
+		table="datasources" lazy="false">
+		<id name="name" column="name" />
+		<property name="tolerateShrinkage" />
+		<property name="sectioned" />
+		<list name="fields" lazy="false" cascade="save-update,all-delete-orphan">
+			<key column="datasource_id" not-null="true"/>
+			<list-index column="field_idx" />
+			<one-to-many
+				class="uk.ac.ebi.proteome.services.datasource.FieldInfo" />
+		</list>
+	</class>
+</hibernate-mapping>

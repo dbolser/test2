@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+	<bean id="resolverBean"
+		class="uk.ac.ebi.proteome.resolver.Resolver">
+		<constructor-arg ref="xmlModuleSpecificationResolver" />
+	</bean>
+	<bean id="xmlModuleSpecificationResolver"
+		class="uk.ac.ebi.proteome.resolver.impl.XMLModuleSpecificationResolver"
+		factory-method="createInstance" />
+</beans>

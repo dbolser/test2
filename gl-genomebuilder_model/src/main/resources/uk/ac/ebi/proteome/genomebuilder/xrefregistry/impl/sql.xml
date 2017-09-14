@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<sqllib>
+
+	<sql name="getAllDatabaseReferenceTypes">
+		SELECT
+		id, db_name, type, qualifier, display_name, uniprotkb_name, ensembl_name
+		FROM cv_xref
+	</sql>
+
+	<sql name="getDatabaseReferenceTypesByName">
+		SELECT
+		id, db_name, type, qualifier, display_name, uniprotkb_name, ensembl_name
+		FROM cv_xref WHERE db_name=?
+	</sql>
+
+	<sql name="getDatabaseReferenceTypesByNameAndQualifier">
+		SELECT
+		id, db_name, type, qualifier, display_name, uniprotkb_name, ensembl_name
+		FROM cv_xref WHERE db_name=? AND qualifier=?
+	</sql>
+
+	<sql name="DatabaseReferenceType">
+		insert into cv_xref
+		(id, db_name, type, qualifier, display_name, uniprotkb_name, ensembl_name)
+		values (?,?,?,?,?,?,?)
+	</sql>
+
+	<sql name="deleteDatabaseReferenceType">
+		delete from cv_xref where id=?
+	</sql>
+
+
+</sqllib>
