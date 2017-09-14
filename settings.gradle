@@ -1,0 +1,6 @@
+include 'gl-genomebuilder_model'
+include 'gl-json_dumper'
+include 'gl-model_materializer'
+include 'gl-persistence'
+include 'gl-resolver'
+include 'gl-services_client'
