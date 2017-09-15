@@ -29,6 +29,8 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import uk.ac.ebi.proteome.genomebuilder.model.AnnotatedGene;
 import uk.ac.ebi.proteome.genomebuilder.model.DatabaseReference;
 import uk.ac.ebi.proteome.genomebuilder.model.EntityLocation;

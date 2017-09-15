@@ -78,7 +78,7 @@ public interface GenomicComponent extends Integr8ModelComponent, CrossReferenced
 	/**
 	 * @return stable ID for component
 	 */
-	public long getId();
+	public String getId();
 
 	/**
 	 * @return genomic sequence for component

@@ -32,9 +32,8 @@ import java.io.Serializable;
  */
 public interface Integr8ModelComponent extends Serializable {
 
-	/**
-	 * @return short string providing an identifier for the component
-	 */
-	public abstract String getIdString();
-
+    /**
+     * @return short string providing an identifier for the component
+     */
+    public abstract String getIdString();
 }

@@ -27,6 +27,8 @@ import java.util.Set;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import uk.ac.ebi.proteome.genomebuilder.model.DatabaseReference;
 import uk.ac.ebi.proteome.genomebuilder.model.EntityLocation;
 import uk.ac.ebi.proteome.genomebuilder.model.Protein;
@@ -42,166 +44,180 @@ import uk.ac.ebi.proteome.util.collections.CollectionUtils;
  */
 public class ProteinImpl implements Protein {
 
-	private static final long serialVersionUID = 1504915877931035757L;
-	private Set<DatabaseReference> databaseReferences;
-	private Set<ProteinFeature> proteinFeatures;
-	private EntityLocation location;
-	private String name;
-	private Set<Transcript> transcripts;
-	private String uniprotKbId;
-	private int codonStart = 1;
-	private boolean pseudo = false;
-	
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see uk.ac.ebi.proteome.genomebuilder.model.CrossReferenced#addDatabaseReference(uk.ac.ebi.proteome.genomebuilder.model.DatabaseReference)
-	 */
-	public void addDatabaseReference(DatabaseReference reference) {
-		getDatabaseReferences().add(reference);
-	}
+    private static final long serialVersionUID = 1504915877931035757L;
+    private Set<DatabaseReference> databaseReferences;
+    private Set<ProteinFeature> proteinFeatures;
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see uk.ac.ebi.proteome.genomebuilder.model.CrossReferenced#getDatabaseReferences()
-	 */
-	public Set<DatabaseReference> getDatabaseReferences() {
-		if (this.databaseReferences == null) {
-			this.databaseReferences = CollectionUtils.createHashSet();
-		}
-		return this.databaseReferences;
-	}
+    private EntityLocation location;
+    private String name;
+    private Set<Transcript> transcripts;
+    private String uniprotKbId;
+    private int codonStart = 1;
+    private boolean pseudo = false;
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see uk.ac.ebi.proteome.genomebuilder.model.Protein#getProteinFeatures()
-	 */
-	public Set<ProteinFeature> getProteinFeatures() {
-		if (this.proteinFeatures == null) {
-			this.proteinFeatures = CollectionUtils.createHashSet();
-		}
-		return this.proteinFeatures;
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see uk.ac.ebi.proteome.genomebuilder.model.CrossReferenced#
+     * addDatabaseReference(uk.ac.ebi.proteome.genomebuilder.model.
+     * DatabaseReference)
+     */
+    public void addDatabaseReference(DatabaseReference reference) {
+        getDatabaseReferences().add(reference);
+    }
 
-	public EntityLocation getLocation() {
-		return this.location;
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see uk.ac.ebi.proteome.genomebuilder.model.CrossReferenced#
+     * getDatabaseReferences()
+     */
+    public Set<DatabaseReference> getDatabaseReferences() {
+        if (this.databaseReferences == null) {
+            this.databaseReferences = CollectionUtils.createHashSet();
+        }
+        return this.databaseReferences;
+    }
 
-	public String getName() {
-		return this.name;
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see uk.ac.ebi.proteome.genomebuilder.model.Protein#getProteinFeatures()
+     */
+    public Set<ProteinFeature> getProteinFeatures() {
+        if (this.proteinFeatures == null) {
+            this.proteinFeatures = CollectionUtils.createHashSet();
+        }
+        return this.proteinFeatures;
+    }
 
-	public String getUniprotKbId() {
-		return this.uniprotKbId;
-	}
+    public EntityLocation getLocation() {
+        return this.location;
+    }
 
-	public void setDatabaseReferences(Set<DatabaseReference> databaseReferences) {
-		this.databaseReferences = databaseReferences;
-	}
+    public String getName() {
+        return this.name;
+    }
 
-	public void setLocation(EntityLocation location) {
-		this.location = location;
-	}
+    public String getUniprotKbId() {
+        return this.uniprotKbId;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setDatabaseReferences(Set<DatabaseReference> databaseReferences) {
+        this.databaseReferences = databaseReferences;
+    }
 
-	public void setUniprotKbId(String uniprotKbId) {
-		this.uniprotKbId = uniprotKbId;
-	}
+    public void setLocation(EntityLocation location) {
+        this.location = location;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see uk.ac.ebi.proteome.genomebuilder.model.Integr8ModelComponent#getIdString()
-	 */
-	public String getIdString() {
-		return getUniprotKbId() + ":[" + getName() + "]";
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public String toString() {
-		return ReflectionToStringBuilder.toString(this,
-				ToStringStyle.MULTI_LINE_STYLE);
-	}
+    public void setUniprotKbId(String uniprotKbId) {
+        this.uniprotKbId = uniprotKbId;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see uk.ac.ebi.proteome.genomebuilder.model.Protein#addProteinFeature(uk.ac.ebi.proteome.genomebuilder.model.ProteinFeature)
-	 */
-	public void addProteinFeature(ProteinFeature feature) {
-		getProteinFeatures().add(feature);
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * uk.ac.ebi.proteome.genomebuilder.model.Integr8ModelComponent#getIdString(
+     * )
+     */
+    public String getIdString() {
+        return getUniprotKbId() + ":[" + getName() + "]";
+    }
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see uk.ac.ebi.proteome.genomebuilder.model.Protein#addTranscript(uk.ac.ebi.proteome.genomebuilder.model.Transcript)
-	 */
-	public void addTranscript(Transcript transcript) {
-		getTranscripts().add(transcript);
-	}
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this, ToStringStyle.MULTI_LINE_STYLE);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see uk.ac.ebi.proteome.genomebuilder.model.Protein#getTranscripts()
-	 */
-	public Set<Transcript> getTranscripts() {
-		if (transcripts == null)
-			transcripts = CollectionUtils.createHashSet();
-		return transcripts;
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * uk.ac.ebi.proteome.genomebuilder.model.Protein#addProteinFeature(uk.ac.
+     * ebi.proteome.genomebuilder.model.ProteinFeature)
+     */
+    public void addProteinFeature(ProteinFeature feature) {
+        getProteinFeatures().add(feature);
+    }
 
-	private String identifyingId;
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * uk.ac.ebi.proteome.genomebuilder.model.Protein#addTranscript(uk.ac.ebi.
+     * proteome.genomebuilder.model.Transcript)
+     */
+    public void addTranscript(Transcript transcript) {
+        getTranscripts().add(transcript);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see uk.ac.ebi.proteome.genomebuilder.model.Identifiable#getIdentifyingId()
-	 */
-	public String getIdentifyingId() {
-		return identifyingId;
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see uk.ac.ebi.proteome.genomebuilder.model.Protein#getTranscripts()
+     */
+    public Set<Transcript> getTranscripts() {
+        if (transcripts == null)
+            transcripts = CollectionUtils.createHashSet();
+        return transcripts;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see uk.ac.ebi.proteome.genomebuilder.model.Identifiable#setIdentifyingId(java.lang.String)
-	 */
-	public void setIdentifyingId(String identifyingId) {
-		this.identifyingId = identifyingId;
-	}
+    private String identifyingId;
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see uk.ac.ebi.proteome.genomebuilder.model.Protein#getCodonStart()
-	 */
-	public int getCodonStart() {
-		return codonStart;
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * uk.ac.ebi.proteome.genomebuilder.model.Identifiable#getIdentifyingId()
+     */
+    public String getIdentifyingId() {
+        return identifyingId;
+    }
 
-	/**
-	 * @param codonStart
-	 *            phase in which to translate from
-	 */
-	public void setCodonStart(int codonStart) {
-		this.codonStart = codonStart;
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * uk.ac.ebi.proteome.genomebuilder.model.Identifiable#setIdentifyingId(java
+     * .lang.String)
+     */
+    public void setIdentifyingId(String identifyingId) {
+        this.identifyingId = identifyingId;
+    }
 
-	/* (non-Javadoc)
-	 * @see uk.ac.ebi.proteome.genomebuilder.model.Protein#isPseudo()
-	 */
-	public boolean isPseudo() {
-		return pseudo;
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see uk.ac.ebi.proteome.genomebuilder.model.Protein#getCodonStart()
+     */
+    public int getCodonStart() {
+        return codonStart;
+    }
 
-	public void setPseudo(boolean pseudo) {
-		this.pseudo = pseudo;
-	}
+    /**
+     * @param codonStart
+     *            phase in which to translate from
+     */
+    public void setCodonStart(int codonStart) {
+        this.codonStart = codonStart;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see uk.ac.ebi.proteome.genomebuilder.model.Protein#isPseudo()
+     */
+    public boolean isPseudo() {
+        return pseudo;
+    }
+
+    public void setPseudo(boolean pseudo) {
+        this.pseudo = pseudo;
+    }
 
 }

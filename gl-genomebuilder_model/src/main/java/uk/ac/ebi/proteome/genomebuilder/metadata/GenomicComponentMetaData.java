@@ -29,6 +29,8 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import uk.ac.ebi.proteome.genomebuilder.metadata.impl.DefaultGenomicComponentDescriptionHandler;
 import uk.ac.ebi.proteome.genomebuilder.metadata.impl.GenomicComponentSpecificationImpl;
 import uk.ac.ebi.proteome.genomebuilder.model.GenomeInfo;
@@ -98,6 +100,7 @@ public class GenomicComponentMetaData extends EntityMetaData implements
 		this.spec.setGenomeInfo(genome);
 	}
 
+    @JsonIgnore
 	private GenomicComponentDescriptionHandler descriptionHandler = new DefaultGenomicComponentDescriptionHandler();
 	private final GenomicComponentSpecification spec;
 	private String version;

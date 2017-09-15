@@ -10,5 +10,7 @@ repositories {
 dependencies {
 	compile project(':gl-services_client')
 	compile group: 'org.biojava', name: 'biojava', version: '1.5'
+	compile 'com.fasterxml.jackson.core:jackson-core:2.7.2'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.7.2'
     testCompile 'junit:junit:4.11'
 }

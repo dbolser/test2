@@ -29,6 +29,8 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import uk.ac.ebi.proteome.genomebuilder.model.*;
 import uk.ac.ebi.proteome.util.reflection.ObjectRenderer;
 
@@ -60,6 +62,7 @@ public class RnaTranscriptImpl extends AbstractModelComponent implements RnaTran
 
 	private Long publicId;
 
+	@JsonIgnore
 	private Rnagene gene;
 
 	public RnaTranscriptImpl() {

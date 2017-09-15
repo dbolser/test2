@@ -25,6 +25,8 @@ package uk.ac.ebi.proteome.genomebuilder.metadata;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import uk.ac.ebi.proteome.genomebuilder.model.GenomeInfo;
 import uk.ac.ebi.proteome.util.collections.CollectionUtils;
 
@@ -34,9 +36,11 @@ import uk.ac.ebi.proteome.util.collections.CollectionUtils;
  * @author dstaines
  * 
  */
+@JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class GenomeMetaData extends EntityMetaData implements GenomeInfo {
 
     private static final long serialVersionUID = 1L;
+
     private GenomeInfo info;
 
     private List<GenomicComponentMetaData> componentMetaData;

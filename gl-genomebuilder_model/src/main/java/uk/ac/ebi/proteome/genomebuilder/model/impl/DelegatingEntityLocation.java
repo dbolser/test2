@@ -48,7 +48,6 @@ import org.biojavax.ontology.ComparableTerm;
 import uk.ac.ebi.proteome.genomebuilder.model.EntityLocation;
 import uk.ac.ebi.proteome.genomebuilder.model.EntityLocationException;
 import uk.ac.ebi.proteome.genomebuilder.model.EntityLocationInsertion;
-import uk.ac.ebi.proteome.genomebuilder.model.EntityLocation.MappingState;
 import uk.ac.ebi.proteome.util.biojava.LocationUtils;
 import uk.ac.ebi.proteome.util.collections.CollectionUtils;
 
@@ -61,290 +60,293 @@ import uk.ac.ebi.proteome.util.collections.CollectionUtils;
  */
 public class DelegatingEntityLocation implements EntityLocation {
 
-	public static Location getLocation(Location location) {
-		if (location != null
-				&& DelegatingEntityLocation.class.isAssignableFrom(location
-						.getClass())) {
-			return ((DelegatingEntityLocation) location).location;
-		} else {
-			return location;
-		}
-	}
+    private static final long serialVersionUID = 5326897202357684785L;
 
-	private static final long serialVersionUID = 5326897202357684785L;
-	protected MappingState state = MappingState.ANNOTATED;
-	protected transient RichLocation location;
-	private List<EntityLocationException> exceptions;
-	private List<EntityLocationInsertion> insertions;
+    public static Location getLocation(Location location) {
+        if (location != null && DelegatingEntityLocation.class.isAssignableFrom(location.getClass())) {
+            return ((DelegatingEntityLocation) location).location;
+        } else {
+            return location;
+        }
+    }
 
-	public DelegatingEntityLocation(RichLocation location) {
-		this.location = location;
-	}
+    private List<EntityLocationException> exceptions;
+    private List<EntityLocationInsertion> insertions;
+    protected transient RichLocation location;
+    protected MappingState state = MappingState.ANNOTATED;
 
-	public DelegatingEntityLocation(RichLocation location, MappingState state) {
-		this.location = location;
-		this.state = state;
-	}
+    public DelegatingEntityLocation(EntityLocation target, RichLocation loc) {
+        this.location = loc;
+        setState(target.getState());
+        getExceptions().addAll(target.getExceptions());
+        getInsertions().addAll(target.getInsertions());
+    }
 
-	public DelegatingEntityLocation(EntityLocation target, RichLocation loc) {
-		this.location = loc;
-		setState(target.getState());
-		getExceptions().addAll(target.getExceptions());
-		getInsertions().addAll(target.getInsertions());
-	}
+    public DelegatingEntityLocation(RichLocation location) {
+        this.location = location;
+    }
 
-	public MappingState getState() {
-		return state;
-	}
+    public DelegatingEntityLocation(RichLocation location, MappingState state) {
+        this.location = location;
+        this.state = state;
+    }
 
-	public void setState(MappingState state) {
-		this.state = state;
-	}
+    public void addChangeListener(ChangeListener arg0) {
+        location.addChangeListener(arg0);
+    }
 
-	public void addChangeListener(ChangeListener arg0, ChangeType arg1) {
-		location.addChangeListener(arg0, arg1);
-	}
+    public void addChangeListener(ChangeListener arg0, ChangeType arg1) {
+        location.addChangeListener(arg0, arg1);
+    }
 
-	public void addChangeListener(ChangeListener arg0) {
-		location.addChangeListener(arg0);
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * uk.ac.ebi.proteome.genomebuilder.model.EntityLocation#addException(uk.ac.
+     * ebi.proteome.genomebuilder.model.EntityLocationException)
+     */
+    public void addException(EntityLocationException exception) {
+        getExceptions().add(exception);
+    }
 
-	public Iterator blockIterator() {
-		return location.blockIterator();
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * uk.ac.ebi.proteome.genomebuilder.model.EntityLocation#addInsertion(uk.ac.
+     * ebi.proteome.genomebuilder.model.EntityLocationInsertion)
+     */
+    public void addInsertion(EntityLocationInsertion insertion) {
+        getInsertions().add(insertion);
+    }
 
-	public int compareTo(Object o) {
-		return location.compareTo(o);
-	}
+    public Iterator blockIterator() {
+        return location.blockIterator();
+    }
 
-	public boolean contains(int arg0) {
-		return location.contains(arg0);
-	}
+    public int compareTo(Object o) {
+        return location.compareTo(o);
+    }
 
-	public boolean contains(Location arg0) {
-		return location.contains(getLocation(arg0));
-	}
+    public boolean contains(int arg0) {
+        return location.contains(arg0);
+    }
 
-	public boolean equals(Object arg0) {
-		return location.equals(arg0);
-	}
+    public boolean contains(Location arg0) {
+        return location.contains(getLocation(arg0));
+    }
 
-	public Annotation getAnnotation() {
-		return location.getAnnotation();
-	}
+    public boolean equals(Object arg0) {
+        return location.equals(arg0);
+    }
 
-	public int getCircularLength() {
-		return location.getCircularLength();
-	}
+    public Annotation getAnnotation() {
+        return location.getAnnotation();
+    }
 
-	public CrossRef getCrossRef() {
-		return location.getCrossRef();
-	}
+    public int getCircularLength() {
+        return location.getCircularLength();
+    }
 
-	public Location getDecorator(Class arg0) {
-		return location.getDecorator(arg0);
-	}
+    public CrossRef getCrossRef() {
+        return location.getCrossRef();
+    }
 
-	public RichFeature getFeature() {
-		return location.getFeature();
-	}
+    public Location getDecorator(Class arg0) {
+        return location.getDecorator(arg0);
+    }
 
-	public int getMax() {
-		return location.getMax();
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * uk.ac.ebi.proteome.genomebuilder.model.EntityLocation#getExceptions()
+     */
+    public List<EntityLocationException> getExceptions() {
+        if (exceptions == null) {
+            exceptions = CollectionUtils.createArrayList();
+        }
+        return exceptions;
+    }
 
-	public Position getMaxPosition() {
-		return location.getMaxPosition();
-	}
+    public RichFeature getFeature() {
+        return location.getFeature();
+    }
 
-	public int getMin() {
-		return location.getMin();
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * uk.ac.ebi.proteome.genomebuilder.model.Integr8ModelComponent#getIdString(
+     * )
+     */
+    public String getIdString() {
+        return toString();
+    }
 
-	public Position getMinPosition() {
-		return location.getMinPosition();
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * uk.ac.ebi.proteome.genomebuilder.model.EntityLocation#getInsertions()
+     */
+    public List<EntityLocationInsertion> getInsertions() {
+        if (insertions == null) {
+            insertions = CollectionUtils.createArrayList();
+        }
+        return insertions;
+    }
 
-	public Set getNoteSet() {
-		return location.getNoteSet();
-	}
+    public int getMax() {
+        return location.getMax();
+    }
 
-	public int getRank() {
-		return location.getRank();
-	}
+    public Position getMaxPosition() {
+        return location.getMaxPosition();
+    }
 
-	public Strand getStrand() {
-		return location.getStrand();
-	}
+    public int getMin() {
+        return location.getMin();
+    }
 
-	public ComparableTerm getTerm() {
-		return location.getTerm();
-	}
+    public Position getMinPosition() {
+        return location.getMinPosition();
+    }
 
-	public Location intersection(Location arg0) {
-		return location.intersection(arg0);
-	}
+    public Set getNoteSet() {
+        return location.getNoteSet();
+    }
 
-	public boolean isContiguous() {
-		return location.isContiguous();
-	}
+    public int getRank() {
+        return location.getRank();
+    }
 
-	public boolean isUnchanging(ChangeType arg0) {
-		return location.isUnchanging(arg0);
-	}
+    public MappingState getState() {
+        return state;
+    }
 
-	public Location newInstance(Location arg0) {
-		return location.newInstance(getLocation(arg0));
-	}
+    public Strand getStrand() {
+        return location.getStrand();
+    }
 
-	public boolean overlaps(Location arg0) {
-		return location.overlaps(getLocation(arg0));
-	}
+    public ComparableTerm getTerm() {
+        return location.getTerm();
+    }
 
-	public void removeChangeListener(ChangeListener arg0, ChangeType arg1) {
-		location.removeChangeListener(arg0, arg1);
-	}
+    public Location intersection(Location arg0) {
+        return location.intersection(arg0);
+    }
 
-	public void removeChangeListener(ChangeListener arg0) {
-		location.removeChangeListener(arg0);
-	}
+    public boolean isContiguous() {
+        return location.isContiguous();
+    }
 
-	public void setCircularLength(int arg0) throws ChangeVetoException {
-		location.setCircularLength(arg0);
-	}
+    public boolean isUnchanging(ChangeType arg0) {
+        return location.isUnchanging(arg0);
+    }
 
-	public void setCrossRefResolver(CrossReferenceResolver arg0) {
-		location.setCrossRefResolver(arg0);
-	}
+    public Location newInstance(Location arg0) {
+        return location.newInstance(getLocation(arg0));
+    }
 
-	public void setFeature(RichFeature arg0) throws ChangeVetoException {
-		location.setFeature(arg0);
-	}
+    public boolean overlaps(Location arg0) {
+        return location.overlaps(getLocation(arg0));
+    }
 
-	public void setNoteSet(Set arg0) throws ChangeVetoException {
-		location.setNoteSet(arg0);
-	}
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        // in.defaultReadObject();
+        int nLocs = (Integer) in.readObject();
+        List<RichLocation> locs = CollectionUtils.createArrayList(nLocs);
+        for (int i = 0; i < nLocs; i++) {
+            String locStr = (String) in.readObject();
+            RichLocation loc = LocationUtils.parseEmblLocation(locStr);
+            int circular = (Integer) in.readObject();
+            loc.setCircularLength(circular);
+            Set notes = (Set) in.readObject();
+            loc.setNoteSet(notes);
+        }
+        location = LocationUtils.construct(locs);
+    }
 
-	public void setPositionResolver(PositionResolver arg0) {
-		location.setPositionResolver(arg0);
-	}
+    public void removeChangeListener(ChangeListener arg0) {
+        location.removeChangeListener(arg0);
+    }
 
-	public void setRank(int arg0) throws ChangeVetoException {
-		location.setRank(arg0);
-	}
+    public void removeChangeListener(ChangeListener arg0, ChangeType arg1) {
+        location.removeChangeListener(arg0, arg1);
+    }
 
-	public void setTerm(ComparableTerm arg0) throws ChangeVetoException {
-		location.setTerm(arg0);
-	}
+    public void setCircularLength(int arg0) throws ChangeVetoException {
+        location.setCircularLength(arg0);
+    }
 
-	public void sort() {
-		location.sort();
-	}
+    public void setCrossRefResolver(CrossReferenceResolver arg0) {
+        location.setCrossRefResolver(arg0);
+    }
 
-	public SymbolList symbols(SymbolList arg0) {
-		return location.symbols(arg0);
-	}
+    public void setFeature(RichFeature arg0) throws ChangeVetoException {
+        location.setFeature(arg0);
+    }
 
-	public Location translate(int arg0) {
-		return location.translate(arg0);
-	}
+    public void setNoteSet(Set arg0) throws ChangeVetoException {
+        location.setNoteSet(arg0);
+    }
 
-	public Location union(Location arg0) {
-		return location.union(getLocation(arg0));
-	}
+    public void setPositionResolver(PositionResolver arg0) {
+        location.setPositionResolver(arg0);
+    }
 
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append(LocationUtils.locationToEmblFormat(location));
-		sb.append('(');
-		sb.append(state);
-		sb.append(')');
-		sb.append(",insertions=["
-				+ StringUtils.join(getInsertions().iterator(), ',') + ']');
-		sb.append(",exceptions=["
-				+ StringUtils.join(getExceptions().iterator(), ',') + ']');
-		return sb.toString();
-	}
+    public void setRank(int arg0) throws ChangeVetoException {
+        location.setRank(arg0);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see uk.ac.ebi.proteome.genomebuilder.model.Integr8ModelComponent#getIdString()
-	 */
-	public String getIdString() {
-		return toString();
-	}
+    public void setState(MappingState state) {
+        this.state = state;
+    }
 
-	private void readObject(ObjectInputStream in) throws IOException,
-			ClassNotFoundException {
-		// in.defaultReadObject();
-		int nLocs = (Integer) in.readObject();
-		List<RichLocation> locs = CollectionUtils.createArrayList(nLocs);
-		for (int i = 0; i < nLocs; i++) {
-			String locStr = (String) in.readObject();
-			RichLocation loc = LocationUtils.parseEmblLocation(locStr);
-			int circular = (Integer) in.readObject();
-			loc.setCircularLength(circular);
-			Set notes = (Set) in.readObject();
-			loc.setNoteSet(notes);
-		}
-		location = LocationUtils.construct(locs);
-	}
+    public void setTerm(ComparableTerm arg0) throws ChangeVetoException {
+        location.setTerm(arg0);
+    }
 
-	private void writeObject(ObjectOutputStream out) throws IOException {
-		List<RichLocation> locs = CollectionUtils.createArrayList();
-		for (Iterator<RichLocation> locI = location.blockIterator(); locI
-				.hasNext();) {
-			locs.add(locI.next());
-		}
-		out.writeObject(locs.size());
-		for (RichLocation loc : locs) {
-			out.writeObject(LocationUtils.locationToEmblFormat(loc));
-			out.writeObject(loc.getCircularLength());
-			out.writeObject(loc.getNoteSet());
-		}
-	}
+    public void sort() {
+        location.sort();
+    }
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see uk.ac.ebi.proteome.genomebuilder.model.EntityLocation#addException(uk.ac.ebi.proteome.genomebuilder.model.EntityLocationException)
-	 */
-	public void addException(EntityLocationException exception) {
-		getExceptions().add(exception);
-	}
+    public SymbolList symbols(SymbolList arg0) {
+        return location.symbols(arg0);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see uk.ac.ebi.proteome.genomebuilder.model.EntityLocation#addInsertion(uk.ac.ebi.proteome.genomebuilder.model.EntityLocationInsertion)
-	 */
-	public void addInsertion(EntityLocationInsertion insertion) {
-		getInsertions().add(insertion);
-	}
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(LocationUtils.locationToEmblFormat(location));
+        sb.append('(');
+        sb.append(state);
+        sb.append(')');
+        sb.append(",insertions=[" + StringUtils.join(getInsertions().iterator(), ',') + ']');
+        sb.append(",exceptions=[" + StringUtils.join(getExceptions().iterator(), ',') + ']');
+        return sb.toString();
+    }
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see uk.ac.ebi.proteome.genomebuilder.model.EntityLocation#getExceptions()
-	 */
-	public List<EntityLocationException> getExceptions() {
-		if (exceptions == null) {
-			exceptions = CollectionUtils.createArrayList();
-		}
-		return exceptions;
-	}
+    public Location translate(int arg0) {
+        return location.translate(arg0);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see uk.ac.ebi.proteome.genomebuilder.model.EntityLocation#getInsertions()
-	 */
-	public List<EntityLocationInsertion> getInsertions() {
-		if (insertions == null) {
-			insertions = CollectionUtils.createArrayList();
-		}
-		return insertions;
-	}
+    public Location union(Location arg0) {
+        return location.union(getLocation(arg0));
+    }
+
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        List<RichLocation> locs = CollectionUtils.createArrayList();
+        for (Iterator<RichLocation> locI = location.blockIterator(); locI.hasNext();) {
+            locs.add(locI.next());
+        }
+        out.writeObject(locs.size());
+        for (RichLocation loc : locs) {
+            out.writeObject(LocationUtils.locationToEmblFormat(loc));
+            out.writeObject(loc.getCircularLength());
+            out.writeObject(loc.getNoteSet());
+        }
+    }
 
 }

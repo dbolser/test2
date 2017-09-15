@@ -34,7 +34,7 @@ import uk.ac.ebi.proteome.genomebuilder.model.Integr8ModelComponent;
 public abstract class AbstractModelComponent implements Integr8ModelComponent {
 
 	@Override
-	public String toString() {
+	public String toString() {	    
 		return ReflectionToStringBuilder.toString(this);
 	}
 

@@ -25,6 +25,8 @@ package uk.ac.ebi.proteome.genomebuilder.model.impl;
 import java.util.List;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import uk.ac.ebi.proteome.genomebuilder.metadata.GenomicComponentMetaData;
 import uk.ac.ebi.proteome.genomebuilder.model.AssemblyElement;
 import uk.ac.ebi.proteome.genomebuilder.model.DatabaseReference;
@@ -47,8 +49,9 @@ import uk.ac.ebi.proteome.util.reflection.ObjectRenderer;
  */
 public class GenomicComponentImpl implements GenomicComponent {
 
-	protected long id;
+	protected String id;
 
+	@JsonIgnore
 	protected Genome genome;
 
 	protected String accession;
@@ -61,7 +64,7 @@ public class GenomicComponentImpl implements GenomicComponent {
 
 	private Set<Rnagene> rnagenes;
 
-	private Set<SimpleFeature> features;
+    private Set<SimpleFeature> features;
 
 	private Set<RepeatRegion> repeats;
 
@@ -141,7 +144,9 @@ public class GenomicComponentImpl implements GenomicComponent {
 	}
 
 	private static final long serialVersionUID = -3148372101581815598L;
-	private Set<Gene> genes = null;
+
+    private Set<Gene> genes = null;
+
 	private Set<Pseudogene> pgenes = null;
 
 	private boolean topLevel = false;
@@ -220,11 +225,11 @@ public class GenomicComponentImpl implements GenomicComponent {
 		getGenes().add(gene);
 	}
 
-	public long getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(long id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 
