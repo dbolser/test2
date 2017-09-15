@@ -93,7 +93,7 @@ public class AcOnlyEnaGenomeMaterializer extends EnaGenomeMaterializer {
 			gg.addGenomicComponent(gc);
 			gc.getMetaData().setGenomeInfo(fgc.getMetaData().getGenomeInfo());
 			((GenomicComponentImpl) gc).setGenome(gg);
-			((GenomicComponentImpl) gc).setId(++id);
+			((GenomicComponentImpl) gc).setId(gc.getAccession());
 			genomeMetaData.getComponentMetaData().add(gc.getMetaData());
 			if(gg.getCreationDate()==null || gc.getMetaData().getCreationDate().before(gg.getCreationDate())) {
 				gg.setCreationDate(gc.getMetaData().getCreationDate());
@@ -113,7 +113,7 @@ public class AcOnlyEnaGenomeMaterializer extends EnaGenomeMaterializer {
 		processGenome(gg);
 		id = 0;
 		for (GenomicComponent gc : g.getGenomicComponents()) {
-			((GenomicComponentImpl) gc).setId(++id);
+			((GenomicComponentImpl) gc).setId(gc.getAccession());
 		}
 		return gg;
 	}

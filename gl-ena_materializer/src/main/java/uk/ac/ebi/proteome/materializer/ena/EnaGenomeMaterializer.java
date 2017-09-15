@@ -147,16 +147,17 @@ public class EnaGenomeMaterializer {
                     success = true;
                     addComponent(g, md, c);
                 } catch (Throwable e) {
-                    if (retry_count++ > 3) {
-                        throw new EnaParsingException(e.getMessage(), e, md);
-                    } else {
-                        getLog().warn("Parsing entry " + md.getAccession() + " failed, retrying...");
-                        try {
-                            Thread.sleep(10000);
-                        } catch (InterruptedException e1) {
-                            // swallow interruption as we don't care
-                        }
-                    }
+                    throw e;
+//                    if (retry_count++ > 3) {
+//                        throw new EnaParsingException(e.getMessage(), e, md);
+//                    } else {
+//                        getLog().warn("Parsing entry " + md.getAccession() + " failed, retrying...");
+//                        try {
+//                            Thread.sleep(10000);
+//                        } catch (InterruptedException e1) {
+//                            // swallow interruption as we don't care
+//                        }
+//                    }
                 }
             }
         }
@@ -182,6 +183,7 @@ public class EnaGenomeMaterializer {
     protected void addComponent(Genome g, GenomicComponentMetaData md, GenomicComponentImpl c) {
         md.setCreationDate(c.getMetaData().getCreationDate());
         md.setUpdateDate(c.getMetaData().getUpdateDate());
+        md.setDescription(c.getMetaData().getDescription());
         // compare translation tables
         if (md.getGeneticCode() == GenomicComponentMetaData.NULL_GENETIC_CODE) {
             // no parsed version found
@@ -192,12 +194,6 @@ public class EnaGenomeMaterializer {
                 // use the annotated version
                 md.setGeneticCode(c.getMetaData().getGeneticCode());
             }
-        } else if (c.getMetaData().getGeneticCode() == GenomicComponentMetaData.NULL_GENETIC_CODE) {
-            // keep parsed version
-        } else if (c.getMetaData().getGeneticCode() != md.getGeneticCode()) {
-            // alert mismatch
-            throw new EnaParsingException("Mismatch between metadata genetic code " + md.getGeneticCode()
-                    + " and parsed genetic code " + c.getMetaData().getGeneticCode());
         }
         if (g.getCreationDate() == null || md.getCreationDate().before(g.getCreationDate())) {
             g.setCreationDate(md.getCreationDate());
@@ -206,7 +202,7 @@ public class EnaGenomeMaterializer {
             g.setUpdateDate(md.getUpdateDate());
         }
         c.setMetaData(md);
-        c.setId(Long.valueOf(md.getIdentifier()));
+        c.setId(md.getIdentifier());
         c.setGenome(g);
         md.setComponentType(null);
         md.parseComponentDescription();
