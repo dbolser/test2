@@ -24,6 +24,8 @@ package uk.ac.ebi.proteome.genomebuilder.model;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import uk.ac.ebi.proteome.util.EqualsHelper;
 import uk.ac.ebi.proteome.util.HashcodeHelper;
 
@@ -41,12 +43,17 @@ public class DatabaseReferenceType implements Integr8ModelComponent {
 	}
 
 	private static final long serialVersionUID = -1357389131425349261L;
+	@JsonIgnore
 	String dbName;
+    @JsonIgnore
 	String displayName;
 	int id;
+    @JsonIgnore
 	String qualifier;
+    @JsonIgnore
 	String uniprotKbName;
 	String ensemblName;
+    @JsonIgnore
 	TypeEnum type;
 
 	public DatabaseReferenceType() {

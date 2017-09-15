@@ -24,6 +24,8 @@ package uk.ac.ebi.proteome.genomebuilder.model;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * Base interface that all components must implemenent
  *
@@ -35,5 +37,6 @@ public interface Integr8ModelComponent extends Serializable {
     /**
      * @return short string providing an identifier for the component
      */
+    @JsonIgnore
     public abstract String getIdString();
 }
