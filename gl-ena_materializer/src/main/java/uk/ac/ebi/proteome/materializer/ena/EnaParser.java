@@ -26,10 +26,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 
-import uk.ac.ebi.proteome.genomebuilder.metadata.GenomeMetaData;
-import uk.ac.ebi.proteome.genomebuilder.model.GenomicComponent;
-import uk.ac.ebi.proteome.genomebuilder.model.impl.GenomicComponentImpl;
-
 /**
  * Interface for parsing an ENA record into a generic object
  * 
