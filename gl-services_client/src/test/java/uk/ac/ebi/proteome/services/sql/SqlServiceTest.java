@@ -31,7 +31,6 @@ import org.apache.commons.lang.ArrayUtils;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
-import uk.ac.ebi.proteome.services.ServiceContext;
 import uk.ac.ebi.proteome.services.sql.impl.LocalSqlService;
 
 /**
@@ -40,72 +39,72 @@ import uk.ac.ebi.proteome.services.sql.impl.LocalSqlService;
  */
 public class SqlServiceTest extends TestCase {
 
-	private String uri;
+    private String uri;
 
-	private String query;
+    private String query;
 
-	private int rowN;
+    private int rowN;
 
-	private int colN;
+    private int colN;
 
-	public SqlServiceTest(String testName, String uri, String query, int rowN,
-			int colN) {
-		super(testName);
-		this.uri = uri;
-		this.query = query;
-		this.rowN = rowN;
-		this.colN = colN;
-	}
+    public SqlServiceTest(String testName, String uri, String query, int rowN, int colN) {
+        super(testName);
+        this.uri = uri;
+        this.query = query;
+        this.rowN = rowN;
+        this.colN = colN;
+    }
 
-	private void testQuery(Connection con) throws SQLException {
-		Statement st = con.createStatement();
-		Assert.assertNotNull(st);
-		Assert.assertTrue(st.execute(query));
-		ResultSet rs = st.getResultSet();
-		Assert.assertNotNull(rs);
-		Assert.assertFalse(rs.getMetaData().getColumnCount() != colN);
-		int i = 0;
-		while (rs.next()) {
-			i++;
-		}
-		Assert.assertEquals(i, rowN);
-	}
+    private void testQuery(Connection con) throws SQLException {
+        Statement st = con.createStatement();
+        Assert.assertNotNull(st);
+        Assert.assertTrue(st.execute(query));
+        ResultSet rs = st.getResultSet();
+        Assert.assertNotNull(rs);
+        Assert.assertFalse(rs.getMetaData().getColumnCount() != colN);
+        int i = 0;
+        while (rs.next()) {
+            i++;
+        }
+        Assert.assertEquals(i, rowN);
+    }
 
-	private void testQuery(SqlService srv) throws SqlServiceException {
-		Object[][] r = srv.executeSql(uri, query, ArrayUtils.EMPTY_OBJECT_ARRAY);
-		Assert.assertNotNull(r);
-		Assert.assertFalse(r.length == 0 && r.length == rowN);
-		Assert.assertEquals(r[0].length, colN);
-	}
+    private void testQuery(SqlService srv) throws SqlServiceException {
+        Object[][] r = srv.executeSql(uri, query, ArrayUtils.EMPTY_OBJECT_ARRAY);
+        Assert.assertNotNull(r);
+        Assert.assertFalse(r.length == 0 && r.length == rowN);
+        Assert.assertEquals(r[0].length, colN);
+    }
 
-	public void testLocalConnection() throws Exception {
-		LocalSqlService srv = new LocalSqlService(ServiceContext.getInstance());
-		Assert.assertNotNull(srv);
-		DatabaseConnection con = srv.openDatabaseConnection(uri);
-		Assert.assertNotNull(con);
-		testQuery(con);
-		srv.releaseConnection(con);
-	}
+    public void testLocalConnection() throws Exception {
+        LocalSqlService srv = new LocalSqlService();
+        Assert.assertNotNull(srv);
+        DatabaseConnection con = srv.openDatabaseConnection(uri);
+        Assert.assertNotNull(con);
+        testQuery(con);
+        srv.releaseConnection(con);
+    }
 
-	public void testWSClientConnection() throws Exception {
-		LocalSqlService srv = new LocalSqlService(ServiceContext.getInstance());
-		Assert.assertNotNull(srv);
-		DatabaseConnection con = srv.openDatabaseConnection(uri);
-		Assert.assertNotNull(con);
-		testQuery(con);
-		srv.releaseConnection(con);
-	}
+    public void testWSClientConnection() throws Exception {
+        LocalSqlService srv = new LocalSqlService();
+        Assert.assertNotNull(srv);
+        DatabaseConnection con = srv.openDatabaseConnection(uri);
+        Assert.assertNotNull(con);
+        testQuery(con);
+        srv.releaseConnection(con);
+    }
 
-	public void testLocalQuery() throws Exception {
-		SqlService srv = new LocalSqlService(ServiceContext.getInstance());
-		Assert.assertNotNull(srv);
-		testQuery(srv);
-	}
+    public void testLocalQuery() throws Exception {
+        SqlService srv = new LocalSqlService();
+        Assert.assertNotNull(srv);
+        testQuery(srv);
+    }
 
-	public void testWSClientQuery() throws Exception {
-//		SqlService srv = new WSClientSqlService(ServiceContext.getInstance());
-//		Assert.assertNotNull(srv);
-//		testQuery(srv);
-	}
+    public void testWSClientQuery() throws Exception {
+        // SqlService srv = new
+        // WSClientSqlService(ServiceContext.getInstance());
+        // Assert.assertNotNull(srv);
+        // testQuery(srv);
+    }
 
 }

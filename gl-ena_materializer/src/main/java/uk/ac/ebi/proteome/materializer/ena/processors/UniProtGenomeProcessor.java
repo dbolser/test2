@@ -34,8 +34,8 @@ import uk.ac.ebi.proteome.genomebuilder.model.Protein;
 import uk.ac.ebi.proteome.genomebuilder.model.impl.DatabaseReferenceImpl;
 import uk.ac.ebi.proteome.genomebuilder.xrefregistry.DatabaseReferenceTypeRegistry;
 import uk.ac.ebi.proteome.materializer.ena.EnaGenomeConfig;
-import uk.ac.ebi.proteome.services.ServiceContext;
 import uk.ac.ebi.proteome.services.sql.ROResultSet;
+import uk.ac.ebi.proteome.services.sql.SqlService;
 import uk.ac.ebi.proteome.util.collections.CollectionUtils;
 import uk.ac.ebi.proteome.util.sql.RowMapper;
 import uk.ac.ebi.proteome.util.sql.SqlLib;
@@ -72,9 +72,8 @@ public class UniProtGenomeProcessor implements GenomeProcessor {
         }
     }
 
-    public UniProtGenomeProcessor(EnaGenomeConfig config, ServiceContext context,
-            DatabaseReferenceTypeRegistry registry) {
-        this(new SqlServiceTemplateImpl(config.getUniProtUri()),
+    public UniProtGenomeProcessor(EnaGenomeConfig config, SqlService srv, DatabaseReferenceTypeRegistry registry) {
+        this(new SqlServiceTemplateImpl(config.getUniProtUri(), srv),
                 registry.getTypeForQualifiedName("UniProtKB", "Swiss-Prot"),
                 registry.getTypeForQualifiedName("UniProtKB", "TrEMBL"));
     }

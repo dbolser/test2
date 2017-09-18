@@ -37,8 +37,8 @@ import uk.ac.ebi.proteome.genomebuilder.model.Transcript;
 import uk.ac.ebi.proteome.genomebuilder.model.impl.DatabaseReferenceImpl;
 import uk.ac.ebi.proteome.genomebuilder.xrefregistry.DatabaseReferenceTypeRegistry;
 import uk.ac.ebi.proteome.materializer.ena.EnaGenomeConfig;
-import uk.ac.ebi.proteome.services.ServiceContext;
 import uk.ac.ebi.proteome.services.sql.ROResultSet;
+import uk.ac.ebi.proteome.services.sql.SqlService;
 import uk.ac.ebi.proteome.util.InputOutputUtils;
 import uk.ac.ebi.proteome.util.collections.CollectionUtils;
 import uk.ac.ebi.proteome.util.sql.RowMapper;
@@ -97,9 +97,8 @@ public class UniProtXrefGenomeProcessor implements GenomeProcessor {
         return type;
     }
 
-    public UniProtXrefGenomeProcessor(EnaGenomeConfig config, ServiceContext context,
-            DatabaseReferenceTypeRegistry registry) {
-        this(new SqlServiceTemplateImpl(config.getUniProtUri()), registry);
+    public UniProtXrefGenomeProcessor(EnaGenomeConfig config, SqlService srv, DatabaseReferenceTypeRegistry registry) {
+        this(new SqlServiceTemplateImpl(config.getUniProtUri(), srv), registry);
     }
 
     protected Log getLog() {

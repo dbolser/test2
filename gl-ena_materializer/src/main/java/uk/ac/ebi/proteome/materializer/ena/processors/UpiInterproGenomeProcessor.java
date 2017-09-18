@@ -18,7 +18,7 @@ package uk.ac.ebi.proteome.materializer.ena.processors;
 
 import uk.ac.ebi.proteome.genomebuilder.xrefregistry.DatabaseReferenceTypeRegistry;
 import uk.ac.ebi.proteome.materializer.ena.EnaGenomeConfig;
-import uk.ac.ebi.proteome.services.ServiceContext;
+import uk.ac.ebi.proteome.services.sql.SqlService;
 import uk.ac.ebi.proteome.util.sql.SqlServiceTemplateImpl;
 
 /**
@@ -27,15 +27,12 @@ import uk.ac.ebi.proteome.util.sql.SqlServiceTemplateImpl;
  * @author dstaines
  *
  */
-public class UpiInterproGenomeProcessor extends
-		CollectionInterproGenomeProcessor {
+public class UpiInterproGenomeProcessor extends CollectionInterproGenomeProcessor {
 
-	public UpiInterproGenomeProcessor(EnaGenomeConfig config,
-			ServiceContext context, DatabaseReferenceTypeRegistry registry) {
-		super(new SqlServiceTemplateImpl(config.getInterproUri()), registry
-				.getTypeForName("InterPro"), registry.getTypeForName("GO"),
-				SQLLIB.getQuery("upiToIproArrayIprel"), registry
-						.getTypeForName("UniParc"));
-	}
+    public UpiInterproGenomeProcessor(EnaGenomeConfig config, SqlService srv, DatabaseReferenceTypeRegistry registry) {
+        super(new SqlServiceTemplateImpl(config.getInterproUri(), srv), registry.getTypeForName("InterPro"),
+                registry.getTypeForName("GO"), SQLLIB.getQuery("upiToIproArrayIprel"),
+                registry.getTypeForName("UniParc"));
+    }
 
 }

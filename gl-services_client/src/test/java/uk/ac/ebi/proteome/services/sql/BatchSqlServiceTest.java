@@ -20,7 +20,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import junit.framework.TestCase;
-import uk.ac.ebi.proteome.services.ServiceContext;
 import uk.ac.ebi.proteome.services.sql.impl.LocalSqlService;
 import uk.ac.ebi.proteome.util.sql.BatchDmlHolder;
 import uk.ac.ebi.proteome.util.sql.SqlServiceTemplate;
@@ -35,49 +34,49 @@ import uk.ac.ebi.proteome.util.sql.SqlServiceTemplateImpl;
  */
 public class BatchSqlServiceTest extends TestCase {
 
-	private Log log = LogFactory.getLog(this.getClass());
+    private Log log = LogFactory.getLog(this.getClass());
 
-  private static final String HSQLDB_DRIVER_NAME = "org.hsqldb.jdbcDriver";
-  private static final String HSQLDB_URI = "jdbc:hsqldb:mem:sa@batch_test";
-  private SqlServiceTemplate template = null;
+    private static final String HSQLDB_DRIVER_NAME = "org.hsqldb.jdbcDriver";
+    private static final String HSQLDB_URI = "jdbc:hsqldb:mem:sa@batch_test";
+    private SqlServiceTemplate template = null;
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-    template = new SqlServiceTemplateImpl(HSQLDB_URI, getSqlService());
-    Class.forName(HSQLDB_DRIVER_NAME);
-    template.executeSqlNonCached("create table person (ID INTEGER, NAME VARCHAR(20))");
-  }
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        template = new SqlServiceTemplateImpl(HSQLDB_URI, getSqlService());
+        Class.forName(HSQLDB_DRIVER_NAME);
+        template.executeSqlNonCached("create table person (ID INTEGER, NAME VARCHAR(20))");
+    }
 
-  @Override
-  protected void tearDown() throws Exception {
-  	template.executeSqlNonCached("drop table person");
-    super.tearDown();
-  }
+    @Override
+    protected void tearDown() throws Exception {
+        template.executeSqlNonCached("drop table person");
+        super.tearDown();
+    }
 
-  protected SqlService getSqlService() throws SqlServiceException {
-  	return new LocalSqlService(ServiceContext.getInstance());
-  }
+    protected SqlService getSqlService() throws SqlServiceException {
+        return new LocalSqlService();
+    }
 
-  public void testBatchLoading() {
-  	try {
-  		BatchDmlHolder holder = new BatchDmlHolder(10);
-  		int expected = 112;
-  		for(int i=0; i<expected; i++) {
-  			holder.addParams(new Object[]{i, "Name "+i});
-  		}
-  		String statement = "insert into person values (?,?)";
-  		int[] affectedRows = template.executeBatchDml(statement, holder);
-  		int totalAffectedRows = 0;
-  		for(int affected: affectedRows) totalAffectedRows += affected;
-  		assertEquals("Affected rows do not equal each other", expected, totalAffectedRows);
+    public void testBatchLoading() {
+        try {
+            BatchDmlHolder holder = new BatchDmlHolder(10);
+            int expected = 112;
+            for (int i = 0; i < expected; i++) {
+                holder.addParams(new Object[] { i, "Name " + i });
+            }
+            String statement = "insert into person values (?,?)";
+            int[] affectedRows = template.executeBatchDml(statement, holder);
+            int totalAffectedRows = 0;
+            for (int affected : affectedRows)
+                totalAffectedRows += affected;
+            assertEquals("Affected rows do not equal each other", expected, totalAffectedRows);
 
-  		int actual = template.queryForDefaultObject("select count(*) from person", Integer.class);
-  		assertEquals("Rows inserted into person not as expected", expected, actual);
-  	}
-  	catch(SqlServiceUncheckedException e) {
-  		log.fatal("Exception detected", e);
-  		fail("Did not expected exception");
-  	}
-  }
+            int actual = template.queryForDefaultObject("select count(*) from person", Integer.class);
+            assertEquals("Rows inserted into person not as expected", expected, actual);
+        } catch (SqlServiceUncheckedException e) {
+            log.fatal("Exception detected", e);
+            fail("Did not expected exception");
+        }
+    }
 }

@@ -33,7 +33,7 @@ import uk.ac.ebi.proteome.genomebuilder.model.impl.DatabaseReferenceImpl;
 import uk.ac.ebi.proteome.genomebuilder.xrefregistry.DatabaseReferenceTypeRegistry;
 import uk.ac.ebi.proteome.materializer.ena.EnaGenomeConfig;
 import uk.ac.ebi.proteome.materializer.ena.impl.MaterializationUncheckedException;
-import uk.ac.ebi.proteome.services.ServiceContext;
+import uk.ac.ebi.proteome.services.sql.SqlService;
 import uk.ac.ebi.proteome.util.sql.SqlLib;
 import uk.ac.ebi.proteome.util.sql.SqlServiceTemplate;
 import uk.ac.ebi.proteome.util.sql.SqlServiceTemplateImpl;
@@ -63,8 +63,8 @@ public class UpiGenomeProcessor implements GenomeProcessor {
         this.sqlLib = new SqlLib("/uk/ac/ebi/proteome/materializer/ena/sql.xml");
     }
 
-    public UpiGenomeProcessor(EnaGenomeConfig config, ServiceContext context, DatabaseReferenceTypeRegistry registry) {
-        this(config, new SqlServiceTemplateImpl(config.getUniparcUri(), context), registry.getTypeForName("UniParc"),
+    public UpiGenomeProcessor(EnaGenomeConfig config, SqlService srv, DatabaseReferenceTypeRegistry registry) {
+        this(config, new SqlServiceTemplateImpl(config.getUniparcUri(), srv), registry.getTypeForName("UniParc"),
                 registry.getTypeForQualifiedName("EMBL", "PROTEIN"));
     }
 

@@ -35,10 +35,6 @@ public class ConfigException extends ServiceUncheckedException {
 		super(message);
 	}
 
-	public ConfigException(Throwable cause) {
-		super(cause);
-	}
-
 	public ConfigException(String message, Throwable cause) {
 		super(message, cause);
 	}

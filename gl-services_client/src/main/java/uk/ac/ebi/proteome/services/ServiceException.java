@@ -82,16 +82,6 @@ public abstract class ServiceException extends Exception {
 		this.severity = severity;
 	}
 
-	public ServiceException(String message, ServiceException cause) {
-		super(message, cause);
-		this.severity = cause.getSeverity();
-	}
-	
-	public ServiceException(ServiceException cause) {
-		super(cause);
-		this.severity = cause.getSeverity();
-	}
-
 	/**
 	 * Severity of exception
 	 * 

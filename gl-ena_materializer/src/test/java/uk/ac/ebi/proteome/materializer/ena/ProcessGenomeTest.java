@@ -41,7 +41,8 @@ import uk.ac.ebi.proteome.materializer.ena.impl.XmlEnaComponentParser;
 import uk.ac.ebi.proteome.materializer.ena.processors.GenomeProcessor;
 import uk.ac.ebi.proteome.materializer.ena.processors.UpiGenomeProcessor;
 import uk.ac.ebi.proteome.materializer.ena.processors.UpiInterproGenomeProcessor;
-import uk.ac.ebi.proteome.services.ServiceContext;
+import uk.ac.ebi.proteome.services.sql.SqlService;
+import uk.ac.ebi.proteome.services.sql.impl.LocalSqlService;
 import uk.ac.ebi.proteome.util.InputOutputUtils;
 
 /**
@@ -78,10 +79,9 @@ public class ProcessGenomeTest {
     @Test
     public void testIproProcessor() throws Exception {
 
-        final GenomeProcessor p = new UpiGenomeProcessor(EnaGenomeConfig.getConfig(), ServiceContext.getInstance(),
-                reg);
-        final GenomeProcessor p2 = new UpiInterproGenomeProcessor(EnaGenomeConfig.getConfig(),
-                ServiceContext.getInstance(), reg);
+        SqlService srv = new LocalSqlService();
+        final GenomeProcessor p = new UpiGenomeProcessor(EnaGenomeConfig.getConfig(), srv, reg);
+        final GenomeProcessor p2 = new UpiInterproGenomeProcessor(EnaGenomeConfig.getConfig(), srv, reg);
         // Genome g = getGenome("AP001918");
         // p.processGenome(g);
         // p2.processGenome(g);

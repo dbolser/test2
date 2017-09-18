@@ -27,7 +27,6 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import uk.ac.ebi.proteome.services.ServiceContext;
 import uk.ac.ebi.proteome.services.sql.ROResultSet;
 import uk.ac.ebi.proteome.services.sql.SqlService;
 import uk.ac.ebi.proteome.services.sql.SqlServiceException;
@@ -35,18 +34,13 @@ import uk.ac.ebi.proteome.services.sql.SqlServiceUncheckedException;
 import uk.ac.ebi.proteome.util.sql.defaultmappers.DefaultObjectRowMapper;
 
 /**
- * The default implementation of {@link SqlServiceTemplate} which provides
- * all the basic functionality that should be expected from a class
- * which implements this class. Some details of implementation:
+ * The default implementation of {@link SqlServiceTemplate} which provides all
+ * the basic functionality that should be expected from a class which implements
+ * this class. Some details of implementation:
  *
  * <ol>
  * <li>The template is hardcoded to one URI as provided to it at construction.
  * This is done as a simplification of using the template</li>
- * <li>If a SqlService is not given to the template it will use the one
- * found in {@link ServiceContext#getSqlService()}</li>
- * <li>Rather than giving it a {@link SqlService} instance you can give the
- * template an instance of {@link ServiceContext} and the constructor will
- * set the values accordingly</li>
  * </ol>
  *
  * @author ayates
@@ -55,363 +49,337 @@ import uk.ac.ebi.proteome.util.sql.defaultmappers.DefaultObjectRowMapper;
  */
 public class SqlServiceTemplateImpl implements SqlServiceTemplate {
 
-	private SqlService sqlService = null;
-	private final String uri;
-	private final Log log;
+    private final SqlService sqlService;
+    private final String uri;
+    private Log log = LogFactory.getLog(this.getClass());
 
-	public SqlServiceTemplateImpl(String uri) {
-		this.uri = uri;
-		this.log = LogFactory.getLog(this.getClass());
-	}
+    public SqlServiceTemplateImpl(String uri, SqlService sqlService) {
+        this.uri = uri;
+        this.sqlService = sqlService;
+    }
 
-	public SqlServiceTemplateImpl(String uri, SqlService sqlService) {
-		this(uri);
-		setSqlService(sqlService);
-	}
+    /**
+     * Provides access to the private logger for this class
+     */
+    protected Log getLog() {
+        return log;
+    }
 
-	public SqlServiceTemplateImpl(String uri, ServiceContext context) {
-		this(uri, context.getSqlService());
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public String getUri() {
+        return uri;
+    }
 
-	public SqlService getSqlService() {
-		if(sqlService == null) {
-			useSqlServiceFromContext();
-		}
-		return sqlService;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public ROResultSet executeSql(String sql, Object... args) throws SqlServiceUncheckedException {
+        try {
+            return getSqlService().getSqlResult(getUri(), sql, args);
+        } catch (SqlServiceException e) {
+            throw createUncheckedException(sql, args, e);
+        }
+    }
 
-	public void setSqlService(SqlService sqlService) {
-		this.sqlService = sqlService;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public ROResultSet executeSqlNonCached(String sql) throws SqlServiceUncheckedException {
+        try {
+            return getSqlService().getSqlResult(getUri(), sql, false);
+        } catch (SqlServiceException e) {
+            throw createUncheckedException(sql, ArrayUtils.EMPTY_OBJECT_ARRAY, e);
+        }
+    }
 
-	/**
-	 * Provides access to the private logger for this class
-	 */
-	protected Log getLog() {
-		return log;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public Object[][] executeSqlNonCachedWithObjectReturn(String sql) throws SqlServiceUncheckedException {
+        try {
+            return getSqlService().executeSql(getUri(), sql);
+        } catch (SqlServiceException e) {
+            throw createUncheckedException(sql, ArrayUtils.EMPTY_OBJECT_ARRAY, e);
+        }
+    }
 
-	/**
-	 * Use this method to explicitly set the SqlService this class uses to
-	 * the current live service from {@link ServiceContext#getSqlService()}
-	 */
-	private void useSqlServiceFromContext() {
-		getLog().debug("Using SQL Service as found from ServiceContextNew");
-		SqlService sqlService = ServiceContext.getInstance().getSqlService();
-		setSqlService(sqlService);
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public Object[][] executeSqlWithObjectReturn(String sql, Object... args) throws SqlServiceUncheckedException {
+        try {
+            return getSqlService().executeSql(getUri(), sql, args);
+        } catch (SqlServiceException e) {
+            throw createUncheckedException(sql, ArrayUtils.EMPTY_OBJECT_ARRAY, e);
+        }
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public String getUri() {
-		return uri;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public ROResultSet executeCall(String sql, Object[] args, int... outputTypes) throws SqlServiceUncheckedException {
+        try {
+            return getSqlService().getCallResult(getUri(), sql, args, outputTypes);
+        } catch (SqlServiceException e) {
+            throw createUncheckedException(sql, args, e);
+        }
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public ROResultSet executeSql(String sql, Object... args) throws SqlServiceUncheckedException {
-		try {
-			return getSqlService().getSqlResult(getUri(), sql, args);
-		}
-		catch (SqlServiceException e) {
-			throw createUncheckedException(sql, args, e);
-		}
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public Object[][] executeCallWithObjectArrayOutput(String sql, Object[] args, int... outputTypes)
+            throws SqlServiceUncheckedException {
+        try {
+            return getSqlService().executeCall(getUri(), sql, args, outputTypes);
+        } catch (SqlServiceException e) {
+            throw createUncheckedException(sql, args, e);
+        }
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public ROResultSet executeSqlNonCached(String sql) throws SqlServiceUncheckedException {
-		try {
-			return getSqlService().getSqlResult(getUri(), sql, false);
-		}
-		catch (SqlServiceException e) {
-			throw createUncheckedException(sql, ArrayUtils.EMPTY_OBJECT_ARRAY, e);
-		}
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public int[] executeTransactionalDml(TransactionalDmlHolder holder) throws SqlServiceUncheckedException {
+        try {
+            return getSqlService().executeTransactionalDml(getUri(), holder.getStatementsArray(),
+                    holder.getParametersArray());
+        } catch (SqlServiceException e) {
+            throw createUncheckedException(holder, e);
+        }
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public Object[][] executeSqlNonCachedWithObjectReturn(String sql) throws SqlServiceUncheckedException {
-		try {
-			return getSqlService().executeSql(getUri(), sql);
-		}
-		catch(SqlServiceException e) {
-			throw createUncheckedException(sql, ArrayUtils.EMPTY_OBJECT_ARRAY, e);
-		}
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public int[] executeNonCachedTransactionalDml(TransactionalDmlHolder holder) throws SqlServiceUncheckedException {
+        try {
+            return getSqlService().executeTransactionalDml(getUri(), holder.getStatementsArray(),
+                    holder.getParametersArray(), false);
+        } catch (SqlServiceException e) {
+            throw createUncheckedException(holder, e);
+        }
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public Object[][] executeSqlWithObjectReturn(String sql, Object... args) throws SqlServiceUncheckedException {
-		try {
-			return getSqlService().executeSql(getUri(), sql, args);
-		}
-		catch(SqlServiceException e) {
-			throw createUncheckedException(sql, ArrayUtils.EMPTY_OBJECT_ARRAY, e);
-		}
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public <T> List<T> mapROResultSetToList(ROResultSet resultSet, RowMapper<T> mapper, final int rowLimit, String sql,
+            Object[] args) throws SqlServiceUncheckedException {
+        List<T> output = new ArrayList<T>();
+        int position = 0;
+        boolean inspectRowCount = (rowLimit > 0);
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public ROResultSet executeCall(String sql, Object[] args, int... outputTypes) throws SqlServiceUncheckedException {
-		try {
-			return getSqlService().getCallResult(getUri(), sql, args, outputTypes);
-		}
-		catch (SqlServiceException e) {
-			throw createUncheckedException(sql, args, e);
-		}
-	}
+        try {
+            while (resultSet.next()) {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public Object[][] executeCallWithObjectArrayOutput(String sql, Object[] args, int... outputTypes) throws SqlServiceUncheckedException {
-		try {
-			return getSqlService().executeCall(getUri(), sql, args, outputTypes);
-		}
-		catch (SqlServiceException e) {
-			throw createUncheckedException(sql, args, e);
-		}
-	}
+                if (inspectRowCount && position > rowLimit) {
+                    String expected = Integer.toString(rowLimit);
+                    String actual = Integer.toString(position);
+                    String exceptionMessage = MessageFormat.format(
+                            "Too many rows returned. " + "Expected {0} but actual row count was {1}",
+                            new Object[] { expected, actual });
+                    String message = formatExceptionMessage(exceptionMessage, sql, args);
+                    throw new SqlServiceUncheckedException(message);
+                }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public int[] executeTransactionalDml(TransactionalDmlHolder holder) throws SqlServiceUncheckedException {
-		try {
-			return getSqlService().executeTransactionalDml(getUri(), holder.getStatementsArray(), holder.getParametersArray());
-		}
-		catch (SqlServiceException e) {
-			throw createUncheckedException(holder, e);
-		}
-	}
+                output.add(mapper.mapRow(resultSet, position));
+                position++;
+            }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public int[] executeNonCachedTransactionalDml(TransactionalDmlHolder holder) throws SqlServiceUncheckedException {
-		try {
-			return getSqlService().executeTransactionalDml(getUri(), holder.getStatementsArray(), holder.getParametersArray(), false);
-		}
-		catch (SqlServiceException e) {
-			throw createUncheckedException(holder, e);
-		}
-	}
+            if (inspectRowCount && position == 0) {
+                String message = formatExceptionMessage("Did not find any rows", sql, args);
+                throw new SqlServiceUncheckedException(message);
+            }
+        } catch (SQLException e) {
+            String message = formatExceptionMessage("Encountered problem whilst mapping ROResultSet to Object List",
+                    sql, args);
+            throw new SqlServiceUncheckedException(message, e);
+        }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public <T> List<T> mapROResultSetToList(ROResultSet resultSet, RowMapper<T> mapper, final int rowLimit, String sql, Object[] args) throws SqlServiceUncheckedException {
-		List<T> output = new ArrayList<T>();
-		int position = 0;
-		boolean inspectRowCount = (rowLimit > 0);
+        return output;
+    }
 
-		try {
-			while(resultSet.next()) {
+    /**
+     * {@inheritDoc}
+     */
+    public <T> T mapROResultSetToSingleObject(ROResultSet resultSet, RowMapper<T> mapper, String sql, Object[] args)
+            throws SqlServiceUncheckedException {
+        List<T> results = mapROResultSetToList(resultSet, mapper, 1, sql, args);
+        return results.get(0);
+    }
 
-				if(inspectRowCount && position > rowLimit) {
-					String expected = Integer.toString(rowLimit);
-					String actual = Integer.toString(position);
-					String exceptionMessage = MessageFormat.format("Too many rows returned. " +
-							"Expected {0} but actual row count was {1}",
-							new Object[]{expected, actual});
-					String message = formatExceptionMessage(exceptionMessage, sql, args);
-					throw new SqlServiceUncheckedException(message);
-				}
+    /**
+     * {@inheritDoc}
+     */
+    public <T> T queryForObject(String sql, RowMapper<T> mapper, Object... args) throws SqlServiceUncheckedException {
+        ROResultSet resultSet = null;
+        try {
+            resultSet = executeSql(sql, args);
+            T output = mapROResultSetToSingleObject(resultSet, mapper, sql, args);
+            return output;
+        } finally {
+            DbUtils.closeDbObject(resultSet);
+        }
+    }
 
-				output.add(mapper.mapRow(resultSet, position));
-				position++;
-			}
+    /**
+     * {@inheritDoc}
+     */
+    public <T> List<T> queryForList(String sql, RowMapper<T> mapper, Object... args)
+            throws SqlServiceUncheckedException {
+        ROResultSet resultSet = null;
+        try {
+            resultSet = executeSql(sql, args);
+            List<T> output = mapROResultSetToList(resultSet, mapper, -1, sql, args);
+            return output;
+        } finally {
+            DbUtils.closeDbObject(resultSet);
+        }
+    }
 
-			if(inspectRowCount && position == 0) {
-				String message = formatExceptionMessage("Did not find any rows", sql, args);
-				throw new SqlServiceUncheckedException(message);
-			}
-		}
-		catch(SQLException e) {
-			String message = formatExceptionMessage("Encountered problem whilst mapping ROResultSet to Object List", sql, args);
-			throw new SqlServiceUncheckedException(message, e);
-		}
+    /**
+     * {@inheritDoc}
+     */
+    public <T> T queryForDefaultObject(String sql, Class<T> expected, Object... args)
+            throws SqlServiceUncheckedException {
+        DefaultObjectRowMapper<T> mapper = new DefaultObjectRowMapper<T>(expected, 1);
+        return queryForObject(sql, mapper, args);
+    }
 
-		return output;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public <T> List<T> queryForDefaultObjectList(String sql, Class<T> expected, Object... args)
+            throws SqlServiceUncheckedException {
+        DefaultObjectRowMapper<T> mapper = new DefaultObjectRowMapper<T>(expected, 1);
+        return queryForList(sql, mapper, args);
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public <T> T mapROResultSetToSingleObject(ROResultSet resultSet, RowMapper<T> mapper,  String sql, Object[] args) throws SqlServiceUncheckedException {
-		List<T> results = mapROResultSetToList(resultSet, mapper, 1, sql, args);
-		return results.get(0);
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public <K, T> Map<K, T> queryForMap(String sql, MapRowMapper<K, T> mapRowMapper, Object... args)
+            throws SqlServiceUncheckedException {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public <T> T queryForObject(String sql, RowMapper<T> mapper, Object... args) throws SqlServiceUncheckedException {
-		ROResultSet resultSet = null;
-		try {
-			resultSet = executeSql(sql, args);
-			T output = mapROResultSetToSingleObject(resultSet, mapper, sql, args);
-			return output;
-		}
-		finally {
-			DbUtils.closeDbObject(resultSet);
-		}
-	}
+        Map<K, T> targetMap = mapRowMapper.getMap();
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public <T> List<T> queryForList(String sql, RowMapper<T> mapper, Object... args) throws SqlServiceUncheckedException {
-		ROResultSet resultSet = null;
-		try {
-			resultSet = executeSql(sql, args);
-			List<T> output = mapROResultSetToList(resultSet, mapper, -1, sql, args);
-			return output;
-		}
-		finally {
-			DbUtils.closeDbObject(resultSet);
-		}
-	}
+        ROResultSet resultSet = null;
+        try {
+            resultSet = executeSql(sql, args);
+            int position = -1;
+            while (resultSet.next()) {
+                position++;
+                K key = mapRowMapper.getKey(resultSet);
+                if (targetMap.containsKey(key)) {
+                    T currentValue = targetMap.get(key);
+                    mapRowMapper.existingObject(currentValue, resultSet, position);
+                } else {
+                    T newValue = mapRowMapper.mapRow(resultSet, position);
+                    targetMap.put(key, newValue);
+                }
+            }
+        } catch (SQLException e) {
+            throw new SqlServiceUncheckedException("Cannot map from result set into Map", e);
+        } finally {
+            DbUtils.closeDbObject(resultSet);
+        }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public <T> T queryForDefaultObject(String sql, Class<T> expected, Object... args) throws SqlServiceUncheckedException {
-		DefaultObjectRowMapper<T> mapper = new DefaultObjectRowMapper<T>(expected, 1);
-		return queryForObject(sql, mapper, args);
-	}
+        return targetMap;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public <T> List<T> queryForDefaultObjectList(String sql, Class<T> expected, Object... args) throws SqlServiceUncheckedException {
-		DefaultObjectRowMapper<T> mapper = new DefaultObjectRowMapper<T>(expected, 1);
-		return queryForList(sql, mapper, args);
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public int[] executeBatchDml(String sql, BatchDmlHolder holder) throws SqlServiceUncheckedException {
+        int[] affectedRows = ArrayUtils.EMPTY_INT_ARRAY;
+        try {
+            affectedRows = getSqlService().executeBatchDml(getUri(), sql, holder.getAllParams(), holder.getBatchSize());
+        } catch (SqlServiceException e) {
+            throw createUncheckedException(sql, holder, e);
+        }
+        return affectedRows;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public <K,T> Map<K,T> queryForMap(String sql, MapRowMapper<K,T> mapRowMapper, Object... args) throws SqlServiceUncheckedException {
+    // ----- EXCEPTION HANDLING
 
-		Map<K,T> targetMap = mapRowMapper.getMap();
+    /**
+     * Used to generically raise unchecked exceptions from sql service
+     * exceptions
+     */
+    private SqlServiceUncheckedException createUncheckedException(String sql, Object[] params, SqlServiceException e) {
+        String message = formatExceptionMessage("Could not run statement because of SqlServiceException", sql, params);
+        return new SqlServiceUncheckedException(message, e);
+    }
 
-		ROResultSet resultSet = null;
-		try {
-			resultSet = executeSql(sql, args);
-			int position = -1;
-			while(resultSet.next()) {
-				position++;
-				K key = mapRowMapper.getKey(resultSet);
-				if(targetMap.containsKey(key)) {
-					T currentValue = targetMap.get(key);
-					mapRowMapper.existingObject(currentValue, resultSet, position);
-				}
-				else {
-					T newValue = mapRowMapper.mapRow(resultSet, position);
-					targetMap.put(key, newValue);
-				}
-			}
-		}
-		catch(SQLException e) {
-			throw new SqlServiceUncheckedException("Cannot map from result set into Map", e);
-		}
-		finally {
-			DbUtils.closeDbObject(resultSet);
-		}
+    /**
+     * Used to generically raise unchecked exceptions from sql service
+     * exceptions
+     */
+    private SqlServiceUncheckedException createUncheckedException(TransactionalDmlHolder holder,
+            SqlServiceException e) {
+        String message = formatExceptionMessage("Could not run statement because of SqlServiceException", holder);
+        return new SqlServiceUncheckedException(message, e);
+    }
 
-		return targetMap;
-	}
+    /**
+     * Used to generically raise unchecked exceptions from sql service
+     * exceptions
+     */
+    private SqlServiceUncheckedException createUncheckedException(String sql, BatchDmlHolder holder,
+            SqlServiceException e) {
+        String message = formatExceptionMessage("Could not run statement because of SqlServiceException", sql, holder);
+        return new SqlServiceUncheckedException(message, e);
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public int[] executeBatchDml(String sql, BatchDmlHolder holder) throws SqlServiceUncheckedException {
-		int[] affectedRows = ArrayUtils.EMPTY_INT_ARRAY;
-		try {
-			affectedRows = getSqlService().executeBatchDml(getUri(), sql,
-					holder.getAllParams(), holder.getBatchSize());
-		}
-		catch(SqlServiceException e) {
-			throw createUncheckedException(sql, holder, e);
-		}
-		return affectedRows;
-	}
+    /**
+     * Not the best at formatting but attempts to provide a certain level of
+     * introspection on the holder object
+     */
+    private String formatExceptionMessage(String exceptionMessage, TransactionalDmlHolder holder) {
+        String sql = Arrays.toString(holder.getStatementsArray());
+        return formatExceptionMessage(exceptionMessage, sql, holder.getParametersArray());
+    }
 
-	//----- EXCEPTION HANDLING
+    private String formatExceptionMessage(String exceptionMessage, String sql, BatchDmlHolder holder) {
+        return formatExceptionMessage(exceptionMessage, sql, holder.getAllParams());
+    }
 
-	/**
-	 * Used to generically raise unchecked exceptions from sql service exceptions
-	 */
-	private SqlServiceUncheckedException createUncheckedException(String sql, Object[] params, SqlServiceException e) {
-		String message = formatExceptionMessage("Could not run statement because of SqlServiceException", sql, params);
-		return new SqlServiceUncheckedException(message, e);
-	}
+    private int twoDTraceLimit = 3;
 
-	/**
-	 * Used to generically raise unchecked exceptions from sql service exceptions
-	 */
-	private SqlServiceUncheckedException createUncheckedException(TransactionalDmlHolder holder, SqlServiceException e) {
-		String message = formatExceptionMessage("Could not run statement because of SqlServiceException", holder);
-		return new SqlServiceUncheckedException(message, e);
-	}
+    private String formatExceptionMessage(String exceptionMessage, String sql, Object[][] params) {
+        List<Object> listArgs = new ArrayList<Object>();
 
-	/**
-	 * Used to generically raise unchecked exceptions from sql service exceptions
-	 */
-	private SqlServiceUncheckedException createUncheckedException(String sql, BatchDmlHolder holder, SqlServiceException e) {
-		String message = formatExceptionMessage("Could not run statement because of SqlServiceException", sql, holder);
-		return new SqlServiceUncheckedException(message, e);
-	}
+        int loop = (params.length > twoDTraceLimit) ? twoDTraceLimit : params.length;
 
-	/**
-	 * Not the best at formatting but attempts to provide a certain level
-	 * of introspection on the holder object
-	 */
-	private String formatExceptionMessage(String exceptionMessage, TransactionalDmlHolder holder) {
-		String sql = Arrays.toString(holder.getStatementsArray());
-		return formatExceptionMessage(exceptionMessage, sql, holder.getParametersArray());
-	}
+        for (int i = 0; i < loop; i++) {
+            Object[] arg = params[i];
+            listArgs.add(Arrays.toString(arg));
+        }
 
-	private String formatExceptionMessage(String exceptionMessage, String sql, BatchDmlHolder holder) {
-		return formatExceptionMessage(exceptionMessage, sql, holder.getAllParams());
-	}
+        if (params.length > twoDTraceLimit) {
+            listArgs.add("More params lines than can show (" + params.length + ") ...");
+        }
 
-	private int twoDTraceLimit = 3;
+        Object[] args = listArgs.toArray(new Object[0]);
+        return formatExceptionMessage(exceptionMessage, sql, args);
+    }
 
-	private String formatExceptionMessage(String exceptionMessage, String sql, Object[][] params) {
-		List<Object> listArgs = new ArrayList<Object>();
+    /**
+     * Used to generate the exception messages used through this class
+     */
+    private String formatExceptionMessage(String exceptionMessage, String sql, Object[] args) {
+        String template = "{0} URI => {1} SQL => {2} PARAMS => {3}";
+        String paramsString = (ArrayUtils.isEmpty(args)) ? "NONE" : Arrays.toString(args);
+        Object[] templateArgs = new Object[] { exceptionMessage, getUri(), sql, paramsString };
+        String message = MessageFormat.format(template, templateArgs);
+        return message;
+    }
 
-		int loop = (params.length > twoDTraceLimit) ? twoDTraceLimit : params.length;
-
-		for(int i =0; i<loop; i++) {
-			Object[] arg = params[i];
-			listArgs.add(Arrays.toString(arg));
-		}
-
-		if(params.length > twoDTraceLimit) {
-			listArgs.add("More params lines than can show ("+params.length+") ...");
-		}
-
-		Object[] args = listArgs.toArray(new Object[0]);
-		return formatExceptionMessage(exceptionMessage, sql, args);
-	}
-
-	/**
-	 * Used to generate the exception messages used through this class
-	 */
-	private String formatExceptionMessage(String exceptionMessage, String sql, Object[] args) {
-		String template = "{0} URI => {1} SQL => {2} PARAMS => {3}";
-		String paramsString = (ArrayUtils.isEmpty(args)) ? "NONE" : Arrays.toString(args);
-		Object[] templateArgs = new Object[]{exceptionMessage, getUri(), sql, paramsString};
-		String message = MessageFormat.format(template, templateArgs);
-		return message;
-	}
+    @Override
+    public SqlService getSqlService() {
+        return this.sqlService;
+    }
 }

@@ -18,19 +18,17 @@ package uk.ac.ebi.proteome.materializer.ena.processors;
 
 import uk.ac.ebi.proteome.genomebuilder.xrefregistry.DatabaseReferenceTypeRegistry;
 import uk.ac.ebi.proteome.materializer.ena.EnaGenomeConfig;
-import uk.ac.ebi.proteome.services.ServiceContext;
+import uk.ac.ebi.proteome.services.sql.SqlService;
 import uk.ac.ebi.proteome.util.sql.SqlServiceTemplateImpl;
 
-public class UniProtInterproGenomeProcessor extends
-		CollectionInterproGenomeProcessor {
+public class UniProtInterproGenomeProcessor extends CollectionInterproGenomeProcessor {
 
-	public UniProtInterproGenomeProcessor(EnaGenomeConfig config,
-			ServiceContext context, DatabaseReferenceTypeRegistry registry) {
-		super(new SqlServiceTemplateImpl(config.getInterproUri()), registry
-				.getTypeForName("InterPro"), registry.getTypeForName("GO"),
-				SQLLIB.getQuery("uniProtToIproArray"), registry
-						.getTypeForQualifiedName("UniProtKB", "Swiss-Prot"),
-				registry.getTypeForQualifiedName("UniProtKB", "TrEMBL"));
-	}
+    public UniProtInterproGenomeProcessor(EnaGenomeConfig config, SqlService srv,
+            DatabaseReferenceTypeRegistry registry) {
+        super(new SqlServiceTemplateImpl(config.getInterproUri(), srv), registry.getTypeForName("InterPro"),
+                registry.getTypeForName("GO"), SQLLIB.getQuery("uniProtToIproArray"),
+                registry.getTypeForQualifiedName("UniProtKB", "Swiss-Prot"),
+                registry.getTypeForQualifiedName("UniProtKB", "TrEMBL"));
+    }
 
 }

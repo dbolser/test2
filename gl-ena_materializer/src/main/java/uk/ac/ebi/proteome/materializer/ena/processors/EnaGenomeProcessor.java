@@ -22,7 +22,7 @@ import uk.ac.ebi.proteome.genomebuilder.xrefregistry.DatabaseReferenceTypeRegist
 import uk.ac.ebi.proteome.genomebuilder.xrefregistry.impl.XmlDatabaseReferenceTypeRegistry;
 import uk.ac.ebi.proteome.materializer.ena.EnaGenomeConfig;
 import uk.ac.ebi.proteome.materializer.ena.executor.SimpleExecutor;
-import uk.ac.ebi.proteome.services.ServiceContext;
+import uk.ac.ebi.proteome.services.sql.SqlService;
 
 /**
  * Delegating processor which will decorate a genome with UPI xrefs and then
@@ -33,39 +33,31 @@ import uk.ac.ebi.proteome.services.ServiceContext;
  */
 public class EnaGenomeProcessor extends DelegatingGenomeProcessor {
 
-	public EnaGenomeProcessor(EnaGenomeConfig config, ServiceContext context) {
-		this(config, context, new XmlDatabaseReferenceTypeRegistry(),
-				new SimpleExecutor());
-	}
+    public EnaGenomeProcessor(EnaGenomeConfig config, SqlService srv) {
+        this(config, srv, new XmlDatabaseReferenceTypeRegistry(), new SimpleExecutor());
+    }
 
-	public EnaGenomeProcessor(EnaGenomeConfig config, ServiceContext context,
-			Executor executor) {
-		this(config, context, new XmlDatabaseReferenceTypeRegistry(), executor);
-	}
+    public EnaGenomeProcessor(EnaGenomeConfig config, SqlService srv, Executor executor) {
+        this(config, srv, new XmlDatabaseReferenceTypeRegistry(), executor);
+    }
 
-	public EnaGenomeProcessor(EnaGenomeConfig config, ServiceContext context,
-			DatabaseReferenceTypeRegistry registry, Executor executor) {
-		super(
-				new ComponentSortingProcessor(config),
-				new ConXrefProcessor(config, context, registry),
-				new PubMedCentralProcessor(registry),
-				new LocationOverlapProcessor(config, registry),
-				new LocusTagMergeProcessor(config, registry),
-				new AltTranslationProcessor(config, registry),
-				new UpiGenomeProcessor(config, context, registry),
-				new UniProtGenomeProcessor(config, context, registry),
-				new UniProtDescriptionGenomeProcessor(config, context, registry),
-				new UniProtXrefGenomeProcessor(config, context, registry),
-				new UniProtECGenomeProcessor(config, context, registry),
-				new UpiInterproGenomeProcessor(config, context, registry),
-				new InterproPathwayGenomeProcessor(config, context, registry),
-				new AssemblyContigProcessor(config, registry, executor),
-				new RfamProcessor(config, context, registry));
+    public EnaGenomeProcessor(EnaGenomeConfig config, SqlService srv, DatabaseReferenceTypeRegistry registry,
+            Executor executor) {
+        super(new ComponentSortingProcessor(config), new ConXrefProcessor(config, srv, registry),
+                new PubMedCentralProcessor(registry), new LocationOverlapProcessor(config, registry),
+                new LocusTagMergeProcessor(config, registry), new AltTranslationProcessor(config, registry),
+                new UpiGenomeProcessor(config, srv, registry),
+                new UniProtDescriptionGenomeProcessor(config, srv, registry),
+                new UniProtXrefGenomeProcessor(config, srv, registry),
+                new UniProtECGenomeProcessor(config, srv, registry),
+                new UpiInterproGenomeProcessor(config, srv, registry),
+                new InterproPathwayGenomeProcessor(config, srv, registry),
+                new AssemblyContigProcessor(config, registry, executor), new RfamProcessor(config, srv, registry));
 
-		if (config.isUseAccessionsForNames()) {
-			addProcessor(new ComponentAccessionNamingProcessor());
-		}
+        if (config.isUseAccessionsForNames()) {
+            addProcessor(new ComponentAccessionNamingProcessor());
+        }
 
-	}
+    }
 
 }

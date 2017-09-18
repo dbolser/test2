@@ -39,7 +39,8 @@ import uk.ac.ebi.proteome.materializer.ena.impl.MaterializationUncheckedExceptio
 import uk.ac.ebi.proteome.materializer.ena.impl.XmlEnaComponentParser;
 import uk.ac.ebi.proteome.materializer.ena.processors.GenomeProcessor;
 import uk.ac.ebi.proteome.materializer.ena.processors.LocationIdEnaGenomeProcessor;
-import uk.ac.ebi.proteome.services.ServiceContext;
+import uk.ac.ebi.proteome.services.sql.SqlService;
+import uk.ac.ebi.proteome.services.sql.impl.LocalSqlService;
 import uk.ac.ebi.proteome.util.collections.CollectionUtils;
 import uk.ac.ebi.proteome.util.templating.TemplateBuilder;
 
@@ -75,12 +76,12 @@ public class EnaGenomeMaterializer {
     private final GenomeProcessor processor;
 
     public EnaGenomeMaterializer(EnaGenomeConfig config) {
-        this(config, ServiceContext.getInstance());
+        this(config, new LocalSqlService(),new SimpleExecutor());
     }
 
-    public EnaGenomeMaterializer(EnaGenomeConfig config, ServiceContext context) {
-        this(config, new XmlEnaComponentParser(new SimpleExecutor(), new XmlDatabaseReferenceTypeRegistry()),
-                new LocationIdEnaGenomeProcessor(config, context));
+    public EnaGenomeMaterializer(EnaGenomeConfig config, SqlService srv, Executor executor) {
+        this(config, new XmlEnaComponentParser(executor, new XmlDatabaseReferenceTypeRegistry()),
+                new LocationIdEnaGenomeProcessor(config, srv));
     }
 
     public EnaGenomeMaterializer(EnaGenomeConfig config, GenomeProcessor processor) {
@@ -148,16 +149,17 @@ public class EnaGenomeMaterializer {
                     addComponent(g, md, c);
                 } catch (Throwable e) {
                     throw e;
-//                    if (retry_count++ > 3) {
-//                        throw new EnaParsingException(e.getMessage(), e, md);
-//                    } else {
-//                        getLog().warn("Parsing entry " + md.getAccession() + " failed, retrying...");
-//                        try {
-//                            Thread.sleep(10000);
-//                        } catch (InterruptedException e1) {
-//                            // swallow interruption as we don't care
-//                        }
-//                    }
+                    // if (retry_count++ > 3) {
+                    // throw new EnaParsingException(e.getMessage(), e, md);
+                    // } else {
+                    // getLog().warn("Parsing entry " + md.getAccession() + "
+                    // failed, retrying...");
+                    // try {
+                    // Thread.sleep(10000);
+                    // } catch (InterruptedException e1) {
+                    // // swallow interruption as we don't care
+                    // }
+                    // }
                 }
             }
         }

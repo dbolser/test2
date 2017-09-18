@@ -18,7 +18,7 @@ package uk.ac.ebi.proteome.materializer.ena.identifiers.impl;
 
 import uk.ac.ebi.proteome.materializer.ena.EnaGenomeConfig;
 import uk.ac.ebi.proteome.materializer.ena.identifiers.EnaIdentifierMapper;
-import uk.ac.ebi.proteome.services.ServiceContext;
+import uk.ac.ebi.proteome.services.sql.SqlService;
 import uk.ac.ebi.proteome.util.sql.SqlLib;
 import uk.ac.ebi.proteome.util.sql.SqlServiceTemplate;
 import uk.ac.ebi.proteome.util.sql.SqlServiceTemplateImpl;
@@ -26,8 +26,8 @@ import uk.ac.ebi.proteome.util.sql.TransactionalDmlHolder;
 
 public class DatabaseBackedEnaIdentifierMapper implements EnaIdentifierMapper {
 
-    public DatabaseBackedEnaIdentifierMapper(EnaGenomeConfig config, ServiceContext context) {
-        this(new SqlServiceTemplateImpl(config.getIdUri(), context));
+    public DatabaseBackedEnaIdentifierMapper(EnaGenomeConfig config, SqlService srv) {
+        this(new SqlServiceTemplateImpl(config.getIdUri(), srv));
     }
 
     private final SqlServiceTemplate srv;

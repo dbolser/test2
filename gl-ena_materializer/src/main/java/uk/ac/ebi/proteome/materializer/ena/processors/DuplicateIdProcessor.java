@@ -32,9 +32,7 @@ import uk.ac.ebi.proteome.genomebuilder.model.Pseudogene;
 import uk.ac.ebi.proteome.genomebuilder.model.RnaTranscript;
 import uk.ac.ebi.proteome.genomebuilder.model.Rnagene;
 import uk.ac.ebi.proteome.genomebuilder.model.Transcript;
-import uk.ac.ebi.proteome.genomebuilder.xrefregistry.DatabaseReferenceTypeRegistry;
 import uk.ac.ebi.proteome.materializer.ena.EnaGenomeConfig;
-import uk.ac.ebi.proteome.services.ServiceContext;
 import uk.ac.ebi.proteome.util.collections.CollectionUtils;
 
 /**
@@ -46,65 +44,59 @@ import uk.ac.ebi.proteome.util.collections.CollectionUtils;
  */
 public abstract class DuplicateIdProcessor implements GenomeProcessor {
 
-	private Log log;
+    private Log log;
 
-	protected Log getLog() {
-		if (log == null)
-			log = LogFactory.getLog(this.getClass());
-		return log;
-	}
+    protected Log getLog() {
+        if (log == null)
+            log = LogFactory.getLog(this.getClass());
+        return log;
+    }
 
-	protected final EnaGenomeConfig config;
+    protected final EnaGenomeConfig config;
 
-	public DuplicateIdProcessor(DatabaseReferenceTypeRegistry registry,
-			EnaGenomeConfig config, ServiceContext context) {
-		this.config = config;
-	}
+    public DuplicateIdProcessor(EnaGenomeConfig config) {
+        this.config = config;
+    }
 
-	protected void add(Map<String, Set<Identifiable>> map,
-			Class<? extends Identifiable> clazz, Identifiable i) {
-		if (!StringUtils.isEmpty(i.getIdentifyingId())) {
-			String key = clazz.getSimpleName() + "_"
-					+ i.getIdentifyingId().toLowerCase();
-			Set<Identifiable> ids = map.get(key);
-			if (ids == null) {
-				ids = CollectionUtils.createHashSet();
-				map.put(key, ids);
-			}
-			ids.add(i);
-		}
-	}
+    protected void add(Map<String, Set<Identifiable>> map, Class<? extends Identifiable> clazz, Identifiable i) {
+        if (!StringUtils.isEmpty(i.getIdentifyingId())) {
+            String key = clazz.getSimpleName() + "_" + i.getIdentifyingId().toLowerCase();
+            Set<Identifiable> ids = map.get(key);
+            if (ids == null) {
+                ids = CollectionUtils.createHashSet();
+                map.put(key, ids);
+            }
+            ids.add(i);
+        }
+    }
 
-	public void processGenome(Genome genome) {
-		Map<String, Set<Identifiable>> dups = new CollectionUtils()
-				.createHashMap();
-		for (GenomicComponent gc : genome.getGenomicComponents()) {
-			for (Gene g : gc.getGenes()) {
-				add(dups, Gene.class, g);
-				for (Protein p : g.getProteins()) {
-					add(dups, Protein.class, p);
-					for (Transcript t : p.getTranscripts()) {
-						add(dups, Transcript.class, t);
-					}
-				}
-			}
-			for (Pseudogene g : gc.getPseudogenes()) {
-				add(dups, Gene.class, g);
-			}
-			for (Rnagene g : gc.getRnagenes()) {
-				add(dups, Gene.class, g);
-				for (RnaTranscript t : g.getTranscripts()) {
-					add(dups, RnaTranscript.class, t);
-				}
-			}
-		}
-		int nDups = handleDuplicates(genome, dups);
-		getLog().info(
-				"Processed " + nDups + " duplicates from genome "
-						+ genome.getName() + " (ID " + genome.getId() + ")");
-	}
+    public void processGenome(Genome genome) {
+        Map<String, Set<Identifiable>> dups = new CollectionUtils().createHashMap();
+        for (GenomicComponent gc : genome.getGenomicComponents()) {
+            for (Gene g : gc.getGenes()) {
+                add(dups, Gene.class, g);
+                for (Protein p : g.getProteins()) {
+                    add(dups, Protein.class, p);
+                    for (Transcript t : p.getTranscripts()) {
+                        add(dups, Transcript.class, t);
+                    }
+                }
+            }
+            for (Pseudogene g : gc.getPseudogenes()) {
+                add(dups, Gene.class, g);
+            }
+            for (Rnagene g : gc.getRnagenes()) {
+                add(dups, Gene.class, g);
+                for (RnaTranscript t : g.getTranscripts()) {
+                    add(dups, RnaTranscript.class, t);
+                }
+            }
+        }
+        int nDups = handleDuplicates(genome, dups);
+        getLog().info(
+                "Processed " + nDups + " duplicates from genome " + genome.getName() + " (ID " + genome.getId() + ")");
+    }
 
-	protected abstract int handleDuplicates(Genome genome,
-			Map<String, Set<Identifiable>> dups);
+    protected abstract int handleDuplicates(Genome genome, Map<String, Set<Identifiable>> dups);
 
 }

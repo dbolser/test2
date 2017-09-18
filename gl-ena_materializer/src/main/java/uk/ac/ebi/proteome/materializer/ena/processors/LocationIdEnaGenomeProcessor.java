@@ -20,19 +20,18 @@ import uk.ac.ebi.proteome.genomebuilder.xrefregistry.DatabaseReferenceTypeRegist
 import uk.ac.ebi.proteome.genomebuilder.xrefregistry.impl.XmlDatabaseReferenceTypeRegistry;
 import uk.ac.ebi.proteome.materializer.ena.EnaGenomeConfig;
 import uk.ac.ebi.proteome.materializer.ena.executor.SimpleExecutor;
-import uk.ac.ebi.proteome.services.ServiceContext;
+import uk.ac.ebi.proteome.services.sql.SqlService;
 
 public class LocationIdEnaGenomeProcessor extends EnaGenomeProcessor {
 
-	public LocationIdEnaGenomeProcessor(EnaGenomeConfig config,
-			ServiceContext context) {
-		this(config, context, new XmlDatabaseReferenceTypeRegistry());
-	}
+    public LocationIdEnaGenomeProcessor(EnaGenomeConfig config, SqlService srv) {
+        this(config, srv, new XmlDatabaseReferenceTypeRegistry());
+    }
 
-	public LocationIdEnaGenomeProcessor(EnaGenomeConfig config,
-			ServiceContext context, DatabaseReferenceTypeRegistry registry) {
-		super(config, context, registry, new SimpleExecutor());
-		this.addProcessor(new LocationIdProcessor(registry));
-	}
-	
+    public LocationIdEnaGenomeProcessor(EnaGenomeConfig config, SqlService srv,
+            DatabaseReferenceTypeRegistry registry) {
+        super(config, srv, registry, new SimpleExecutor());
+        this.addProcessor(new LocationIdProcessor(registry));
+    }
+
 }

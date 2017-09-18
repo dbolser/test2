@@ -38,10 +38,6 @@ public class SqlServiceUncheckedException extends ServiceUncheckedException {
 		super(message);
 	}
 
-	public SqlServiceUncheckedException(Throwable cause) {
-		super(cause);
-	}
-
 	public SqlServiceUncheckedException(String message, Throwable cause) {
 		super(message, cause);
 	}

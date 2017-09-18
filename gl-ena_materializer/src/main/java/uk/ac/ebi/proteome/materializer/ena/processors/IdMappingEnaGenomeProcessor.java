@@ -22,30 +22,27 @@ import uk.ac.ebi.proteome.genomebuilder.xrefregistry.DatabaseReferenceTypeRegist
 import uk.ac.ebi.proteome.genomebuilder.xrefregistry.impl.XmlDatabaseReferenceTypeRegistry;
 import uk.ac.ebi.proteome.materializer.ena.EnaGenomeConfig;
 import uk.ac.ebi.proteome.materializer.ena.executor.SimpleExecutor;
-import uk.ac.ebi.proteome.services.ServiceContext;
+import uk.ac.ebi.proteome.services.sql.SqlService;
 
 public class IdMappingEnaGenomeProcessor extends EnaGenomeProcessor {
 
-	public IdMappingEnaGenomeProcessor(EnaGenomeConfig config,
-			ServiceContext context) {
-		this(config, context,new XmlDatabaseReferenceTypeRegistry(), new SimpleExecutor());
-	}
-	
-	public IdMappingEnaGenomeProcessor(EnaGenomeConfig config,
-			ServiceContext context, Executor executor) {
-		this(config, context,new XmlDatabaseReferenceTypeRegistry(), executor);
-	}
+    public IdMappingEnaGenomeProcessor(EnaGenomeConfig config, SqlService srv) {
+        this(config, srv, new XmlDatabaseReferenceTypeRegistry(), new SimpleExecutor());
+    }
 
-	public IdMappingEnaGenomeProcessor(EnaGenomeConfig config,
-			ServiceContext context, DatabaseReferenceTypeRegistry registry) {
-		this(config, context,registry, new SimpleExecutor());
-	}
-	
-	public IdMappingEnaGenomeProcessor(EnaGenomeConfig config,
-			ServiceContext context, DatabaseReferenceTypeRegistry registry, Executor executor) {
-		super(config, context, registry, executor);
-		this.addProcessor(new TypeAwareDuplicateIdProcessor(registry, config, context));
-		this.addProcessor(new IdMappingProcessor(registry, config, context));
-	}
-	
+    public IdMappingEnaGenomeProcessor(EnaGenomeConfig config, SqlService srv, Executor executor) {
+        this(config, srv, new XmlDatabaseReferenceTypeRegistry(), executor);
+    }
+
+    public IdMappingEnaGenomeProcessor(EnaGenomeConfig config, SqlService srv, DatabaseReferenceTypeRegistry registry) {
+        this(config, srv, registry, new SimpleExecutor());
+    }
+
+    public IdMappingEnaGenomeProcessor(EnaGenomeConfig config, SqlService srv, DatabaseReferenceTypeRegistry registry,
+            Executor executor) {
+        super(config, srv, registry, executor);
+        this.addProcessor(new TypeAwareDuplicateIdProcessor(config));
+        this.addProcessor(new IdMappingProcessor(config, srv));
+    }
+
 }

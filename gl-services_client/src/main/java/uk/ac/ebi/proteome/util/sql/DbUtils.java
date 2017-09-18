@@ -36,10 +36,6 @@ import uk.ac.ebi.proteome.services.sql.ROResultSet;
  */
 public class DbUtils {
 
-	/**
-	 * Classloader/thread safe version of logger which will return a 'new'
-	 * instance from {@link ServiceContext#getLoggingService()}
-	 */
 	private static Log getLog() {
 		return LogFactory.getLog(DbUtils.class);
 	}

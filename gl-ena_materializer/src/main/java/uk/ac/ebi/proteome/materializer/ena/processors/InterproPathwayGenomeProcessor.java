@@ -41,7 +41,7 @@ import uk.ac.ebi.proteome.genomebuilder.model.impl.DatabaseReferenceImpl;
 import uk.ac.ebi.proteome.genomebuilder.xrefregistry.DatabaseReferenceTypeRegistry;
 import uk.ac.ebi.proteome.materializer.ena.EnaGenomeConfig;
 import uk.ac.ebi.proteome.materializer.ena.impl.MaterializationUncheckedException;
-import uk.ac.ebi.proteome.services.ServiceContext;
+import uk.ac.ebi.proteome.services.sql.SqlService;
 import uk.ac.ebi.proteome.services.sql.SqlServiceException;
 import uk.ac.ebi.proteome.services.sql.impl.LocalSqlService;
 import uk.ac.ebi.proteome.util.collections.CollectionUtils;
@@ -75,9 +75,9 @@ public class InterproPathwayGenomeProcessor implements GenomeProcessor {
         this.pathwayQuery = SQLLIB.getQuery("interPro2Pathway");
     }
 
-    public InterproPathwayGenomeProcessor(EnaGenomeConfig config, ServiceContext context,
+    public InterproPathwayGenomeProcessor(EnaGenomeConfig config, SqlService srv,
             DatabaseReferenceTypeRegistry registry) {
-        this(new SqlServiceTemplateImpl(config.getInterproUri()), registry);
+        this(new SqlServiceTemplateImpl(config.getInterproUri(), srv), registry);
     }
 
     protected Log getLog() {

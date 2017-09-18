@@ -37,6 +37,7 @@ import uk.ac.ebi.proteome.genomebuilder.model.GenomeInfo.OrganismNameType;
 import uk.ac.ebi.proteome.genomebuilder.model.impl.GenomeInfoImpl;
 import uk.ac.ebi.proteome.materializer.ena.EnaGenomeConfig;
 import uk.ac.ebi.proteome.services.sql.ROResultSet;
+import uk.ac.ebi.proteome.services.sql.SqlService;
 import uk.ac.ebi.proteome.util.collections.CollectionUtils;
 import uk.ac.ebi.proteome.util.sql.RowMapper;
 import uk.ac.ebi.proteome.util.sql.SqlLib;
@@ -103,8 +104,8 @@ public class OracleGenomeCollections implements GenomeCollections {
 
     private final GcWgsPolicy policy;
 
-    public OracleGenomeCollections(EnaGenomeConfig config) {
-        this(new SqlServiceTemplateImpl(config.getEtaUri()), GcWgsPolicy.valueOf(config.getWgsPolicy().toUpperCase()));
+    public OracleGenomeCollections(EnaGenomeConfig config, SqlService srv) {
+        this(new SqlServiceTemplateImpl(config.getEtaUri(), srv), GcWgsPolicy.valueOf(config.getWgsPolicy().toUpperCase()));
     };
 
     public OracleGenomeCollections(SqlServiceTemplate gcServer, GcWgsPolicy policy) {

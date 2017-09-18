@@ -75,26 +75,20 @@ public class AssemblyContigProcessor implements GenomeProcessor {
         // 1. build a hash of the components
         final Map<String, GenomicComponent> newComponents = CollectionUtils.createHashMap();
         log.info("Processing contigs for genome " + genome.getName());
-        long id = 0;
         for (final GenomicComponent topLevel : genome.getGenomicComponents()) {
             if (config.isLoadAssembly() && assemblyValid) {
                 processComponent(topLevel, newComponents);
             } else {
                 processTopLevelComponent(topLevel, newComponents);
             }
-            if (topLevel.getId() > id) {
-                id = topLevel.getId();
-            }
         }
         // 2. add new components
         for (final GenomicComponent newComponent : newComponents.values()) {
-            ((GenomicComponentImpl) newComponent).setId(++id);
             genome.getGenomicComponents().add(newComponent);
         }
         if (config.isLoadAssembly() && assemblyValid) {
             // 3. check for and fix 3 level assemblies
             for (GenomicComponent newComponent : resolveThreeLevel(genome)) {
-                ((GenomicComponentImpl) newComponent).setId(++id);
                 genome.getGenomicComponents().add(newComponent);
             }
         }
