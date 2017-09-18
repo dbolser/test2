@@ -35,7 +35,7 @@ public class DatabaseBackedEnaIdentifierMapper implements EnaIdentifierMapper {
 
     public DatabaseBackedEnaIdentifierMapper(SqlServiceTemplate srv) {
         this.srv = srv;
-        this.lib = new SqlLib("/uk/ac/ebi/proteome/materializer/ena/identifiers/sql.xml");
+        this.lib = new SqlLib("/org/ensembl/genomeloader/materializer/identifiers/sql.xml");
     }
 
     public void createSchema(boolean clean) {

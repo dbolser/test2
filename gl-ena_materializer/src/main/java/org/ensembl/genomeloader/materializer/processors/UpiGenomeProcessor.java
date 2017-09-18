@@ -59,7 +59,7 @@ public class UpiGenomeProcessor implements GenomeProcessor {
         this.upiSrv = upiSrv;
         this.upiType = upiType;
         this.pidType = pidType;
-        this.sqlLib = new SqlLib("/uk/ac/ebi/proteome/materializer/ena/sql.xml");
+        this.sqlLib = new SqlLib("/org/ensembl/genomeloader/materializer/sql.xml");
     }
 
     public UpiGenomeProcessor(EnaGenomeConfig config, SqlService srv, DatabaseReferenceTypeRegistry registry) {

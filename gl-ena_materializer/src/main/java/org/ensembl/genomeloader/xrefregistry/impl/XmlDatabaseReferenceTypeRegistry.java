@@ -65,7 +65,7 @@ public class XmlDatabaseReferenceTypeRegistry extends
 	protected Reader getReader() throws ServiceUncheckedException {
 		Reader reader = null;
 		if (file == null) {
-			String cfgFile = "/uk/ac/ebi/proteome/genomebuilder/xrefregistry/impl/xrefreg.xml";
+			String cfgFile = "/org/ensembl/genomeloader/xrefregistry/impl/xrefreg.xml";
 			try {
 				reader = InputOutputUtils
 						.slurpTextClasspathResourceToStringReader(cfgFile);

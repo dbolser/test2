@@ -60,7 +60,7 @@ import oracle.sql.ArrayDescriptor;
  */
 public abstract class CollectionInterproGenomeProcessor implements GenomeProcessor {
 
-    protected final static SqlLib SQLLIB = new SqlLib("/uk/ac/ebi/proteome/materializer/ena/sql.xml");
+    protected final static SqlLib SQLLIB = new SqlLib("/org/ensembl/genomeloader/materializer/sql.xml");
 
     private static final String IEA_TYPE = "IEA";
     private Log log;

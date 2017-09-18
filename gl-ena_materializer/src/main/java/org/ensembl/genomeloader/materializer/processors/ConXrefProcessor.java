@@ -78,7 +78,7 @@ public class ConXrefProcessor implements GenomeProcessor {
     public ConXrefProcessor(SqlServiceTemplate enaTemplate, DatabaseReferenceTypeRegistry registry) {
         this.enaTemplate = enaTemplate;
         this.registry = registry;
-        final SqlLib sqlLib = new SqlLib("/uk/ac/ebi/proteome/materializer/ena/sql.xml");
+        final SqlLib sqlLib = new SqlLib("/org/ensembl/genomeloader/materializer/sql.xml");
         conXrefQuery = sqlLib.getQuery("conXrefQuery");
         conConXrefQuery = sqlLib.getQuery("conConXrefQuery");
     }

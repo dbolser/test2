@@ -60,7 +60,7 @@ import oracle.sql.ArrayDescriptor;
  */
 public class InterproPathwayGenomeProcessor implements GenomeProcessor {
 
-    protected final static SqlLib SQLLIB = new SqlLib("/uk/ac/ebi/proteome/materializer/ena/sql.xml");
+    protected final static SqlLib SQLLIB = new SqlLib("/org/ensembl/genomeloader/materializer/sql.xml");
 
     private Log log;
     private final SqlServiceTemplate ipSrv;

@@ -63,7 +63,7 @@ public class UniProtDescriptionGenomeProcessor implements GenomeProcessor {
         this.upSrv = upSrv;
         this.swType = swType;
         this.trType = trType;
-        this.sqlLib = new SqlLib("/uk/ac/ebi/proteome/materializer/ena/sql.xml");
+        this.sqlLib = new SqlLib("/org/ensembl/genomeloader/materializer/sql.xml");
         placeholders = CollectionUtils.createArrayList(BATCH_SIZE);
         for (int i = 0; i < BATCH_SIZE; i++) {
             placeholders.add("?");

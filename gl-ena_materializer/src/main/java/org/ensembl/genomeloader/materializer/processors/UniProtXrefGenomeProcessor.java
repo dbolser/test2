@@ -70,7 +70,7 @@ public class UniProtXrefGenomeProcessor implements GenomeProcessor {
         this.swType = registry.getTypeForQualifiedName("UniProtKB", "Swiss-Prot");
         this.trType = registry.getTypeForQualifiedName("UniProtKB", "TrEMBL");
         this.types = CollectionUtils.createHashMap();
-        this.sqlLib = new SqlLib("/uk/ac/ebi/proteome/materializer/ena/sql.xml");
+        this.sqlLib = new SqlLib("/org/ensembl/genomeloader/materializer/sql.xml");
         placeholders = CollectionUtils.createArrayList(BATCH_SIZE);
         for (int i = 0; i < BATCH_SIZE; i++) {
             placeholders.add("?");
@@ -78,7 +78,7 @@ public class UniProtXrefGenomeProcessor implements GenomeProcessor {
 
         final List<String> dbs = CollectionUtils.createArrayList();
         for (final String db : InputOutputUtils
-                .resourceToList("/uk/ac/ebi/proteome/materializer/ena/uniprot_xref_whitelist.txt")) {
+                .resourceToList("/org/ensembl/genomeloader/materializer/uniprot_xref_whitelist.txt")) {
             dbs.add("'" + db + "'");
         }
         dbList = StringUtils.join(dbs.iterator(), ',');
