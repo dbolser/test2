@@ -1,7 +1,0 @@
-configFile=./etc/services_config.xml
-registryImpl=uk.ac.ebi.proteome.services.pipeline.registry.WSClientJobRegistry
-executorImpl=uk.ac.ebi.proteome.services.pipeline.executor.WSClientPipelineExecutor
-versionServiceImpl=uk.ac.ebi.proteome.services.version.impl.LocalVersionService
-sqlServiceImpl=uk.ac.ebi.proteome.services.sql.impl.WSClientSqlService
-processName=mirrorPipeline
-configFactory=uk.ac.ebi.proteome.services.config.impl.DefaultingXmlServiceConfigFactory
