@@ -1,0 +1,11 @@
+<config>    
+	<enaUri>jdbc:oracle:thin:user/pass@//127.0.0.1:1471/ENAPRO</enaUri>
+	<etaUri>jdbc:oracle:thin:user/pass@//127.0.0.1:1471/ETAPRO</etaUri>
+	<enaXmlUrl><![CDATA[http://www.ebi.ac.uk/ena/data/view/$ac$&display=xml&expanded=true]]></enaXmlUrl>
+	<interproUri>jdbc:oracle:thin:user/pass@//127.0.0.1:1471/IPREAD</interproUri>
+	<uniProtUri>jdbc:oracle:thin:user/user@//127.0.0.1:1471/SWPREAD</uniProtUri>
+	<uniparcUri>jdbc:oracle:thin:user/user@//127.0.0.1:1471/UAPRO</uniparcUri>
+	<idUri><![CDATA[jdbc:mysql://127.0.0.1:3306/ena_identifiers?user=rwuser&password=pass]]></idUri>
+	<rfamUri><![CDATA[jdbc:mysql://127.0.0.1:3306/rfam_12?user=rouser]]></rfamUri>
+	<loadAssembly>true</loadAssembly>
+</config>
