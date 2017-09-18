@@ -22,7 +22,7 @@
  */
 package org.ensembl.genomeloader.materializer;
 
-import org.ensembl.genomeloader.genomebuilder.metadata.GenomicComponentMetaData;
+import org.ensembl.genomeloader.metadata.GenomicComponentMetaData;
 
 /**
  * @author dstaines

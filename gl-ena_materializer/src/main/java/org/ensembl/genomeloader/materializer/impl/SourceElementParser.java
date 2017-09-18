@@ -24,11 +24,11 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ensembl.genomeloader.genomebuilder.model.GenomeInfo;
-import org.ensembl.genomeloader.genomebuilder.model.GenomeInfo.OrganismNameType;
-import org.ensembl.genomeloader.genomebuilder.model.impl.GenomeInfoImpl;
 import org.ensembl.genomeloader.materializer.EnaParsingException;
 import org.ensembl.genomeloader.materializer.impl.XomUtils.ElementsIterable;
+import org.ensembl.genomeloader.model.GenomeInfo;
+import org.ensembl.genomeloader.model.GenomeInfo.OrganismNameType;
+import org.ensembl.genomeloader.model.impl.GenomeInfoImpl;
 import org.ensembl.genomeloader.util.collections.CollectionUtils;
 
 import nu.xom.Element;

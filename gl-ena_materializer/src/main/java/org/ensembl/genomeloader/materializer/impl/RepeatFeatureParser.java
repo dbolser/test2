@@ -29,12 +29,12 @@ import java.util.Map;
 import nu.xom.Element;
 
 import org.apache.commons.lang.StringUtils;
-import org.ensembl.genomeloader.genomebuilder.model.DatabaseReference;
-import org.ensembl.genomeloader.genomebuilder.model.impl.GenomicComponentImpl;
-import org.ensembl.genomeloader.genomebuilder.model.impl.RepeatRegionImpl;
-import org.ensembl.genomeloader.genomebuilder.model.impl.RepeatRegionImpl.RepeatUnitImpl;
-import org.ensembl.genomeloader.genomebuilder.xrefregistry.DatabaseReferenceTypeRegistry;
+import org.ensembl.genomeloader.model.DatabaseReference;
+import org.ensembl.genomeloader.model.impl.GenomicComponentImpl;
+import org.ensembl.genomeloader.model.impl.RepeatRegionImpl;
+import org.ensembl.genomeloader.model.impl.RepeatRegionImpl.RepeatUnitImpl;
 import org.ensembl.genomeloader.util.collections.CollectionUtils;
+import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 
 /**
  * @author dstaines

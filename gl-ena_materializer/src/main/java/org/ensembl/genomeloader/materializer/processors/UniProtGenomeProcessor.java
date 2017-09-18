@@ -24,15 +24,14 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ensembl.genomeloader.genomebuilder.model.DatabaseReferenceType;
-import org.ensembl.genomeloader.genomebuilder.model.Gene;
-import org.ensembl.genomeloader.genomebuilder.model.Genome;
-import org.ensembl.genomeloader.genomebuilder.model.GenomicComponent;
-import org.ensembl.genomeloader.genomebuilder.model.ModelUtils;
-import org.ensembl.genomeloader.genomebuilder.model.Protein;
-import org.ensembl.genomeloader.genomebuilder.model.impl.DatabaseReferenceImpl;
-import org.ensembl.genomeloader.genomebuilder.xrefregistry.DatabaseReferenceTypeRegistry;
 import org.ensembl.genomeloader.materializer.EnaGenomeConfig;
+import org.ensembl.genomeloader.model.DatabaseReferenceType;
+import org.ensembl.genomeloader.model.Gene;
+import org.ensembl.genomeloader.model.Genome;
+import org.ensembl.genomeloader.model.GenomicComponent;
+import org.ensembl.genomeloader.model.ModelUtils;
+import org.ensembl.genomeloader.model.Protein;
+import org.ensembl.genomeloader.model.impl.DatabaseReferenceImpl;
 import org.ensembl.genomeloader.services.sql.ROResultSet;
 import org.ensembl.genomeloader.services.sql.SqlService;
 import org.ensembl.genomeloader.util.collections.CollectionUtils;
@@ -40,6 +39,7 @@ import org.ensembl.genomeloader.util.sql.RowMapper;
 import org.ensembl.genomeloader.util.sql.SqlLib;
 import org.ensembl.genomeloader.util.sql.SqlServiceTemplate;
 import org.ensembl.genomeloader.util.sql.SqlServiceTemplateImpl;
+import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 
 /**
  * Processor to add UniProt accessions for genomes where there are no UniProt

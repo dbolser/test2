@@ -2,9 +2,9 @@ package org.ensembl.genomeloader.materializer.processors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ensembl.genomeloader.genomebuilder.metadata.GenomicComponentMetaData.GenomicComponentType;
-import org.ensembl.genomeloader.genomebuilder.model.Genome;
-import org.ensembl.genomeloader.genomebuilder.model.GenomicComponent;
+import org.ensembl.genomeloader.metadata.GenomicComponentMetaData.GenomicComponentType;
+import org.ensembl.genomeloader.model.Genome;
+import org.ensembl.genomeloader.model.GenomicComponent;
 
 public class ComponentAccessionNamingProcessor implements GenomeProcessor {
 

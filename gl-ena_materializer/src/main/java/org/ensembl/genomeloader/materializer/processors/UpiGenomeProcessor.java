@@ -21,21 +21,21 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ensembl.genomeloader.genomebuilder.model.DatabaseReference;
-import org.ensembl.genomeloader.genomebuilder.model.DatabaseReferenceType;
-import org.ensembl.genomeloader.genomebuilder.model.Gene;
-import org.ensembl.genomeloader.genomebuilder.model.Genome;
-import org.ensembl.genomeloader.genomebuilder.model.GenomicComponent;
-import org.ensembl.genomeloader.genomebuilder.model.ModelUtils;
-import org.ensembl.genomeloader.genomebuilder.model.Protein;
-import org.ensembl.genomeloader.genomebuilder.model.impl.DatabaseReferenceImpl;
-import org.ensembl.genomeloader.genomebuilder.xrefregistry.DatabaseReferenceTypeRegistry;
 import org.ensembl.genomeloader.materializer.EnaGenomeConfig;
 import org.ensembl.genomeloader.materializer.impl.MaterializationUncheckedException;
+import org.ensembl.genomeloader.model.DatabaseReference;
+import org.ensembl.genomeloader.model.DatabaseReferenceType;
+import org.ensembl.genomeloader.model.Gene;
+import org.ensembl.genomeloader.model.Genome;
+import org.ensembl.genomeloader.model.GenomicComponent;
+import org.ensembl.genomeloader.model.ModelUtils;
+import org.ensembl.genomeloader.model.Protein;
+import org.ensembl.genomeloader.model.impl.DatabaseReferenceImpl;
 import org.ensembl.genomeloader.services.sql.SqlService;
 import org.ensembl.genomeloader.util.sql.SqlLib;
 import org.ensembl.genomeloader.util.sql.SqlServiceTemplate;
 import org.ensembl.genomeloader.util.sql.SqlServiceTemplateImpl;
+import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 
 /**
  * Processor to add UPIs based on protein_ids

@@ -25,9 +25,9 @@ package org.ensembl.genomeloader.materializer.impl;
 import java.util.Collections;
 import java.util.List;
 
-import org.ensembl.genomeloader.genomebuilder.model.GenomeInfo;
-import org.ensembl.genomeloader.genomebuilder.model.impl.GenomicComponentImpl;
-import org.ensembl.genomeloader.genomebuilder.xrefregistry.DatabaseReferenceTypeRegistry;
+import org.ensembl.genomeloader.model.GenomeInfo;
+import org.ensembl.genomeloader.model.impl.GenomicComponentImpl;
+import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 
 import nu.xom.Element;
 

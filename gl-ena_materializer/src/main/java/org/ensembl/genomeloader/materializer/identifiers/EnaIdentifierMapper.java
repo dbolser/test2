@@ -16,12 +16,12 @@
 
 package org.ensembl.genomeloader.materializer.identifiers;
 
-import org.ensembl.genomeloader.genomebuilder.model.AnnotatedGene;
-import org.ensembl.genomeloader.genomebuilder.model.Identifiable;
-import org.ensembl.genomeloader.genomebuilder.model.Protein;
-import org.ensembl.genomeloader.genomebuilder.model.RepeatRegion;
-import org.ensembl.genomeloader.genomebuilder.model.RnaTranscript;
-import org.ensembl.genomeloader.genomebuilder.model.Transcript;
+import org.ensembl.genomeloader.model.AnnotatedGene;
+import org.ensembl.genomeloader.model.Identifiable;
+import org.ensembl.genomeloader.model.Protein;
+import org.ensembl.genomeloader.model.RepeatRegion;
+import org.ensembl.genomeloader.model.RnaTranscript;
+import org.ensembl.genomeloader.model.Transcript;
 
 /**
  * Interface defining how an ENAGenomes identifier can be produced given a

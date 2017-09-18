@@ -27,21 +27,21 @@ import java.util.concurrent.Executor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ensembl.genomeloader.genomebuilder.metadata.GenomeMetaData;
-import org.ensembl.genomeloader.genomebuilder.metadata.GenomicComponentMetaData;
-import org.ensembl.genomeloader.genomebuilder.model.Genome;
-import org.ensembl.genomeloader.genomebuilder.model.impl.GenomeImpl;
-import org.ensembl.genomeloader.genomebuilder.model.impl.GenomicComponentImpl;
-import org.ensembl.genomeloader.genomebuilder.xrefregistry.impl.XmlDatabaseReferenceTypeRegistry;
 import org.ensembl.genomeloader.materializer.executor.SimpleExecutor;
 import org.ensembl.genomeloader.materializer.impl.MaterializationUncheckedException;
 import org.ensembl.genomeloader.materializer.impl.XmlEnaComponentParser;
 import org.ensembl.genomeloader.materializer.processors.GenomeProcessor;
 import org.ensembl.genomeloader.materializer.processors.LocationIdEnaGenomeProcessor;
+import org.ensembl.genomeloader.metadata.GenomeMetaData;
+import org.ensembl.genomeloader.metadata.GenomicComponentMetaData;
+import org.ensembl.genomeloader.model.Genome;
+import org.ensembl.genomeloader.model.impl.GenomeImpl;
+import org.ensembl.genomeloader.model.impl.GenomicComponentImpl;
 import org.ensembl.genomeloader.services.sql.SqlService;
 import org.ensembl.genomeloader.services.sql.impl.LocalSqlService;
 import org.ensembl.genomeloader.util.collections.CollectionUtils;
 import org.ensembl.genomeloader.util.templating.TemplateBuilder;
+import org.ensembl.genomeloader.xrefregistry.impl.XmlDatabaseReferenceTypeRegistry;
 
 /**
  * Merge

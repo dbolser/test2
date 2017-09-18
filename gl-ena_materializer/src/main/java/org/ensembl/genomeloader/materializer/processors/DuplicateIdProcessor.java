@@ -22,16 +22,16 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ensembl.genomeloader.genomebuilder.model.Gene;
-import org.ensembl.genomeloader.genomebuilder.model.Genome;
-import org.ensembl.genomeloader.genomebuilder.model.GenomicComponent;
-import org.ensembl.genomeloader.genomebuilder.model.Identifiable;
-import org.ensembl.genomeloader.genomebuilder.model.Protein;
-import org.ensembl.genomeloader.genomebuilder.model.Pseudogene;
-import org.ensembl.genomeloader.genomebuilder.model.RnaTranscript;
-import org.ensembl.genomeloader.genomebuilder.model.Rnagene;
-import org.ensembl.genomeloader.genomebuilder.model.Transcript;
 import org.ensembl.genomeloader.materializer.EnaGenomeConfig;
+import org.ensembl.genomeloader.model.Gene;
+import org.ensembl.genomeloader.model.Genome;
+import org.ensembl.genomeloader.model.GenomicComponent;
+import org.ensembl.genomeloader.model.Identifiable;
+import org.ensembl.genomeloader.model.Protein;
+import org.ensembl.genomeloader.model.Pseudogene;
+import org.ensembl.genomeloader.model.RnaTranscript;
+import org.ensembl.genomeloader.model.Rnagene;
+import org.ensembl.genomeloader.model.Transcript;
 import org.ensembl.genomeloader.util.collections.CollectionUtils;
 
 /**

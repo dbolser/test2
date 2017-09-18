@@ -29,17 +29,17 @@ import java.util.Map;
 import nu.xom.Element;
 
 import org.apache.commons.lang.StringUtils;
-import org.ensembl.genomeloader.genomebuilder.model.AnnotatedGene;
-import org.ensembl.genomeloader.genomebuilder.model.DatabaseReference;
-import org.ensembl.genomeloader.genomebuilder.model.GeneName;
-import org.ensembl.genomeloader.genomebuilder.model.GeneNameType;
-import org.ensembl.genomeloader.genomebuilder.model.impl.GeneImpl;
-import org.ensembl.genomeloader.genomebuilder.model.impl.GenomicComponentImpl;
-import org.ensembl.genomeloader.genomebuilder.model.impl.RnaTranscriptImpl;
-import org.ensembl.genomeloader.genomebuilder.model.impl.RnageneImpl;
-import org.ensembl.genomeloader.genomebuilder.xrefregistry.DatabaseReferenceTypeRegistry;
 import org.ensembl.genomeloader.materializer.EnaParsingException;
+import org.ensembl.genomeloader.model.AnnotatedGene;
+import org.ensembl.genomeloader.model.DatabaseReference;
+import org.ensembl.genomeloader.model.GeneName;
+import org.ensembl.genomeloader.model.GeneNameType;
+import org.ensembl.genomeloader.model.impl.GeneImpl;
+import org.ensembl.genomeloader.model.impl.GenomicComponentImpl;
+import org.ensembl.genomeloader.model.impl.RnaTranscriptImpl;
+import org.ensembl.genomeloader.model.impl.RnageneImpl;
 import org.ensembl.genomeloader.util.collections.CollectionUtils;
+import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 
 /**
  * @author dstaines

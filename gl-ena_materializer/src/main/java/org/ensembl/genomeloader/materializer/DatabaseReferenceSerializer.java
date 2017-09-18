@@ -3,7 +3,7 @@ package org.ensembl.genomeloader.materializer;
 import java.io.IOException;
 
 import org.apache.commons.lang.StringUtils;
-import org.ensembl.genomeloader.genomebuilder.model.DatabaseReference;
+import org.ensembl.genomeloader.model.DatabaseReference;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;

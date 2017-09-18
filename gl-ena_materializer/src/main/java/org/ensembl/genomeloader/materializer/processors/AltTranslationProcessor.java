@@ -22,17 +22,17 @@ import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ensembl.genomeloader.genomebuilder.model.DatabaseReference;
-import org.ensembl.genomeloader.genomebuilder.model.DatabaseReferenceType;
-import org.ensembl.genomeloader.genomebuilder.model.Gene;
-import org.ensembl.genomeloader.genomebuilder.model.Genome;
-import org.ensembl.genomeloader.genomebuilder.model.GenomicComponent;
-import org.ensembl.genomeloader.genomebuilder.model.ModelUtils;
-import org.ensembl.genomeloader.genomebuilder.model.Protein;
-import org.ensembl.genomeloader.genomebuilder.model.Transcript;
-import org.ensembl.genomeloader.genomebuilder.xrefregistry.DatabaseReferenceTypeRegistry;
 import org.ensembl.genomeloader.materializer.EnaGenomeConfig;
+import org.ensembl.genomeloader.model.DatabaseReference;
+import org.ensembl.genomeloader.model.DatabaseReferenceType;
+import org.ensembl.genomeloader.model.Gene;
+import org.ensembl.genomeloader.model.Genome;
+import org.ensembl.genomeloader.model.GenomicComponent;
+import org.ensembl.genomeloader.model.ModelUtils;
+import org.ensembl.genomeloader.model.Protein;
+import org.ensembl.genomeloader.model.Transcript;
 import org.ensembl.genomeloader.util.collections.CollectionUtils;
+import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 
 /**
  * Processor that identifies proteins belonging to the same gene that share the

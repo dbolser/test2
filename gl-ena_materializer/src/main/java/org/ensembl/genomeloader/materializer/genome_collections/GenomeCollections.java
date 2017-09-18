@@ -25,8 +25,8 @@ package org.ensembl.genomeloader.materializer.genome_collections;
 
 import java.util.List;
 
-import org.ensembl.genomeloader.genomebuilder.metadata.GenomeMetaData;
-import org.ensembl.genomeloader.genomebuilder.metadata.GenomicComponentMetaData;
+import org.ensembl.genomeloader.metadata.GenomeMetaData;
+import org.ensembl.genomeloader.metadata.GenomicComponentMetaData;
 
 /**
  * @author dstaines

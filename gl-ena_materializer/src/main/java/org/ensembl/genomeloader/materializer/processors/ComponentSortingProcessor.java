@@ -22,12 +22,12 @@ import java.util.Comparator;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ensembl.genomeloader.genomebuilder.metadata.GenomicComponentDescriptionHandler;
-import org.ensembl.genomeloader.genomebuilder.metadata.GenomicComponentMetaData.GenomicComponentType;
-import org.ensembl.genomeloader.genomebuilder.model.Genome;
-import org.ensembl.genomeloader.genomebuilder.model.GenomicComponent;
 import org.ensembl.genomeloader.materializer.EnaGenomeConfig;
 import org.ensembl.genomeloader.materializer.EnaParsingException;
+import org.ensembl.genomeloader.metadata.GenomicComponentDescriptionHandler;
+import org.ensembl.genomeloader.metadata.GenomicComponentMetaData.GenomicComponentType;
+import org.ensembl.genomeloader.model.Genome;
+import org.ensembl.genomeloader.model.GenomicComponent;
 
 /**
  * Processor that sorts components according to specific rules

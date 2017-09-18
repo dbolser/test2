@@ -16,7 +16,7 @@
 
 package org.ensembl.genomeloader.materializer.processors;
 
-import org.ensembl.genomeloader.genomebuilder.model.Genome;
+import org.ensembl.genomeloader.model.Genome;
 
 /**
  * Interface for classes that can accept and modify a post-materialization

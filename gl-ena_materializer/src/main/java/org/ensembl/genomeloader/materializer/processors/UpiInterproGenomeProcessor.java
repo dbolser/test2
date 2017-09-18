@@ -16,10 +16,10 @@
 
 package org.ensembl.genomeloader.materializer.processors;
 
-import org.ensembl.genomeloader.genomebuilder.xrefregistry.DatabaseReferenceTypeRegistry;
 import org.ensembl.genomeloader.materializer.EnaGenomeConfig;
 import org.ensembl.genomeloader.services.sql.SqlService;
 import org.ensembl.genomeloader.util.sql.SqlServiceTemplateImpl;
+import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 
 /**
  * Add protein features from InterPro using UPI as lookup

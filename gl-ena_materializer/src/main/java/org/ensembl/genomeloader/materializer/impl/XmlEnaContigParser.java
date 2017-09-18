@@ -18,8 +18,8 @@ package org.ensembl.genomeloader.materializer.impl;
 
 import java.util.concurrent.Executor;
 
-import org.ensembl.genomeloader.genomebuilder.model.impl.GenomicComponentImpl;
-import org.ensembl.genomeloader.genomebuilder.xrefregistry.DatabaseReferenceTypeRegistry;
+import org.ensembl.genomeloader.model.impl.GenomicComponentImpl;
+import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 
 import nu.xom.Element;
 

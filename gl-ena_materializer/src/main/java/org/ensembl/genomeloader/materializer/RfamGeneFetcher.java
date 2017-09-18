@@ -2,7 +2,7 @@ package org.ensembl.genomeloader.materializer;
 
 import java.util.Collection;
 
-import org.ensembl.genomeloader.genomebuilder.model.Rnagene;
+import org.ensembl.genomeloader.model.Rnagene;
 
 /**
  * Interface for classes returning RFAM Rnagenes for a given INSDC accession

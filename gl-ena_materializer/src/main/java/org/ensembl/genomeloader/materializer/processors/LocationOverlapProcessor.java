@@ -18,20 +18,20 @@ package org.ensembl.genomeloader.materializer.processors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ensembl.genomeloader.genomebuilder.model.EntityLocation;
-import org.ensembl.genomeloader.genomebuilder.model.Gene;
-import org.ensembl.genomeloader.genomebuilder.model.Genome;
-import org.ensembl.genomeloader.genomebuilder.model.GenomicComponent;
-import org.ensembl.genomeloader.genomebuilder.model.ModelUtils;
-import org.ensembl.genomeloader.genomebuilder.model.Protein;
-import org.ensembl.genomeloader.genomebuilder.model.RnaTranscript;
-import org.ensembl.genomeloader.genomebuilder.model.Rnagene;
-import org.ensembl.genomeloader.genomebuilder.model.impl.DelegatingEntityLocation;
-import org.ensembl.genomeloader.genomebuilder.model.sequence.SequenceTranslationException;
-import org.ensembl.genomeloader.genomebuilder.validator.GenomeValidationUncheckedException;
-import org.ensembl.genomeloader.genomebuilder.xrefregistry.DatabaseReferenceTypeRegistry;
 import org.ensembl.genomeloader.materializer.EnaGenomeConfig;
+import org.ensembl.genomeloader.model.EntityLocation;
+import org.ensembl.genomeloader.model.Gene;
+import org.ensembl.genomeloader.model.Genome;
+import org.ensembl.genomeloader.model.GenomicComponent;
+import org.ensembl.genomeloader.model.ModelUtils;
+import org.ensembl.genomeloader.model.Protein;
+import org.ensembl.genomeloader.model.RnaTranscript;
+import org.ensembl.genomeloader.model.Rnagene;
+import org.ensembl.genomeloader.model.impl.DelegatingEntityLocation;
+import org.ensembl.genomeloader.model.sequence.SequenceTranslationException;
 import org.ensembl.genomeloader.util.biojava.LocationUtils;
+import org.ensembl.genomeloader.validator.GenomeValidationUncheckedException;
+import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 
 /**
  * Class to identify where proteins have internal overlaps and resolve them

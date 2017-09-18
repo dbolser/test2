@@ -18,14 +18,14 @@ package org.ensembl.genomeloader.materializer;
 
 import java.util.concurrent.Executor;
 
-import org.ensembl.genomeloader.genomebuilder.metadata.GenomeMetaData;
-import org.ensembl.genomeloader.genomebuilder.metadata.GenomicComponentMetaData;
-import org.ensembl.genomeloader.genomebuilder.model.Genome;
-import org.ensembl.genomeloader.genomebuilder.model.GenomicComponent;
-import org.ensembl.genomeloader.genomebuilder.model.GenomeInfo.OrganismNameType;
-import org.ensembl.genomeloader.genomebuilder.model.impl.GenomeImpl;
-import org.ensembl.genomeloader.genomebuilder.model.impl.GenomicComponentImpl;
 import org.ensembl.genomeloader.materializer.processors.GenomeProcessor;
+import org.ensembl.genomeloader.metadata.GenomeMetaData;
+import org.ensembl.genomeloader.metadata.GenomicComponentMetaData;
+import org.ensembl.genomeloader.model.Genome;
+import org.ensembl.genomeloader.model.GenomicComponent;
+import org.ensembl.genomeloader.model.GenomeInfo.OrganismNameType;
+import org.ensembl.genomeloader.model.impl.GenomeImpl;
+import org.ensembl.genomeloader.model.impl.GenomicComponentImpl;
 import org.ensembl.genomeloader.util.collections.CollectionUtils;
 
 public class AcOnlyEnaGenomeMaterializer extends EnaGenomeMaterializer {

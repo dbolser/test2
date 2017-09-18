@@ -16,11 +16,11 @@
 
 package org.ensembl.genomeloader.materializer.processors;
 
-import org.ensembl.genomeloader.genomebuilder.xrefregistry.DatabaseReferenceTypeRegistry;
-import org.ensembl.genomeloader.genomebuilder.xrefregistry.impl.XmlDatabaseReferenceTypeRegistry;
 import org.ensembl.genomeloader.materializer.EnaGenomeConfig;
 import org.ensembl.genomeloader.materializer.executor.SimpleExecutor;
 import org.ensembl.genomeloader.services.sql.SqlService;
+import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
+import org.ensembl.genomeloader.xrefregistry.impl.XmlDatabaseReferenceTypeRegistry;
 
 public class LocationIdEnaGenomeProcessor extends EnaGenomeProcessor {
 

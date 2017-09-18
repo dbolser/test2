@@ -22,8 +22,8 @@
  */
 package org.ensembl.genomeloader.materializer;
 
-import org.ensembl.genomeloader.genomebuilder.model.Genome;
-import org.ensembl.genomeloader.genomebuilder.model.GenomeInfo;
+import org.ensembl.genomeloader.model.Genome;
+import org.ensembl.genomeloader.model.GenomeInfo;
 
 /**
  * @author dstaines

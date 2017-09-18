@@ -26,20 +26,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.ensembl.genomeloader.genomebuilder.model.AnnotatedGene;
-import org.ensembl.genomeloader.genomebuilder.model.DatabaseReference;
-import org.ensembl.genomeloader.genomebuilder.model.EntityLocation;
-import org.ensembl.genomeloader.genomebuilder.model.Gene;
-import org.ensembl.genomeloader.genomebuilder.model.GeneName;
-import org.ensembl.genomeloader.genomebuilder.model.GeneNameType;
-import org.ensembl.genomeloader.genomebuilder.model.ModelUtils;
-import org.ensembl.genomeloader.genomebuilder.model.RnaTranscript;
-import org.ensembl.genomeloader.genomebuilder.model.Rnagene;
-import org.ensembl.genomeloader.genomebuilder.model.impl.GeneImpl;
-import org.ensembl.genomeloader.genomebuilder.model.impl.GenomicComponentImpl;
-import org.ensembl.genomeloader.genomebuilder.model.impl.ProteinImpl;
-import org.ensembl.genomeloader.genomebuilder.model.impl.TranscriptImpl;
-import org.ensembl.genomeloader.genomebuilder.xrefregistry.DatabaseReferenceTypeRegistry;
+import org.ensembl.genomeloader.model.AnnotatedGene;
+import org.ensembl.genomeloader.model.DatabaseReference;
+import org.ensembl.genomeloader.model.EntityLocation;
+import org.ensembl.genomeloader.model.Gene;
+import org.ensembl.genomeloader.model.GeneName;
+import org.ensembl.genomeloader.model.GeneNameType;
+import org.ensembl.genomeloader.model.ModelUtils;
+import org.ensembl.genomeloader.model.RnaTranscript;
+import org.ensembl.genomeloader.model.Rnagene;
+import org.ensembl.genomeloader.model.impl.GeneImpl;
+import org.ensembl.genomeloader.model.impl.GenomicComponentImpl;
+import org.ensembl.genomeloader.model.impl.ProteinImpl;
+import org.ensembl.genomeloader.model.impl.TranscriptImpl;
+import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 
 import nu.xom.Element;
 

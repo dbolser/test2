@@ -5,14 +5,14 @@ import java.util.Date;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ensembl.genomeloader.genomebuilder.metadata.GenomeMetaData;
-import org.ensembl.genomeloader.genomebuilder.model.DatabaseReference;
-import org.ensembl.genomeloader.genomebuilder.model.EntityLocation;
-import org.ensembl.genomeloader.genomebuilder.model.Genome;
 import org.ensembl.genomeloader.materializer.executor.FileLockExecutor;
 import org.ensembl.genomeloader.materializer.genome_collections.GenomeCollections;
 import org.ensembl.genomeloader.materializer.genome_collections.OracleGenomeCollections;
 import org.ensembl.genomeloader.materializer.processors.EnaGenomeProcessor;
+import org.ensembl.genomeloader.metadata.GenomeMetaData;
+import org.ensembl.genomeloader.model.DatabaseReference;
+import org.ensembl.genomeloader.model.EntityLocation;
+import org.ensembl.genomeloader.model.Genome;
 import org.ensembl.genomeloader.services.sql.SqlService;
 import org.ensembl.genomeloader.services.sql.impl.LocalSqlService;
 

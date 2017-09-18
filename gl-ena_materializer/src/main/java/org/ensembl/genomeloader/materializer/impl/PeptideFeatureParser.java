@@ -19,19 +19,19 @@ package org.ensembl.genomeloader.materializer.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.ensembl.genomeloader.genomebuilder.model.Gene;
-import org.ensembl.genomeloader.genomebuilder.model.ModelUtils;
-import org.ensembl.genomeloader.genomebuilder.model.Protein;
-import org.ensembl.genomeloader.genomebuilder.model.ProteinFeature;
-import org.ensembl.genomeloader.genomebuilder.model.ProteinFeatureSource;
-import org.ensembl.genomeloader.genomebuilder.model.ProteinFeatureType;
-import org.ensembl.genomeloader.genomebuilder.model.impl.DelegatingEntityLocation;
-import org.ensembl.genomeloader.genomebuilder.model.impl.GenomicComponentImpl;
-import org.ensembl.genomeloader.genomebuilder.model.impl.ProteinFeatureImpl;
-import org.ensembl.genomeloader.genomebuilder.xrefregistry.DatabaseReferenceTypeRegistry;
+import org.ensembl.genomeloader.model.Gene;
+import org.ensembl.genomeloader.model.ModelUtils;
+import org.ensembl.genomeloader.model.Protein;
+import org.ensembl.genomeloader.model.ProteinFeature;
+import org.ensembl.genomeloader.model.ProteinFeatureSource;
+import org.ensembl.genomeloader.model.ProteinFeatureType;
+import org.ensembl.genomeloader.model.impl.DelegatingEntityLocation;
+import org.ensembl.genomeloader.model.impl.GenomicComponentImpl;
+import org.ensembl.genomeloader.model.impl.ProteinFeatureImpl;
 import org.ensembl.genomeloader.util.biojava.FeatureLocationGapOverlapException;
 import org.ensembl.genomeloader.util.biojava.LocationUtils;
 import org.ensembl.genomeloader.util.biojava.TripletLocationException;
+import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 
 import nu.xom.Element;
 

@@ -17,21 +17,21 @@
 package org.ensembl.genomeloader.materializer.processors;
 
 import org.apache.commons.lang.StringUtils;
-import org.ensembl.genomeloader.genomebuilder.model.CrossReferenced;
-import org.ensembl.genomeloader.genomebuilder.model.DatabaseReference;
-import org.ensembl.genomeloader.genomebuilder.model.DatabaseReferenceType;
-import org.ensembl.genomeloader.genomebuilder.model.Gene;
-import org.ensembl.genomeloader.genomebuilder.model.Genome;
-import org.ensembl.genomeloader.genomebuilder.model.GenomicComponent;
-import org.ensembl.genomeloader.genomebuilder.model.Identifiable;
-import org.ensembl.genomeloader.genomebuilder.model.ModelUtils;
-import org.ensembl.genomeloader.genomebuilder.model.Protein;
-import org.ensembl.genomeloader.genomebuilder.model.Pseudogene;
-import org.ensembl.genomeloader.genomebuilder.model.RepeatRegion;
-import org.ensembl.genomeloader.genomebuilder.model.RnaTranscript;
-import org.ensembl.genomeloader.genomebuilder.model.Rnagene;
-import org.ensembl.genomeloader.genomebuilder.model.Transcript;
-import org.ensembl.genomeloader.genomebuilder.xrefregistry.DatabaseReferenceTypeRegistry;
+import org.ensembl.genomeloader.model.CrossReferenced;
+import org.ensembl.genomeloader.model.DatabaseReference;
+import org.ensembl.genomeloader.model.DatabaseReferenceType;
+import org.ensembl.genomeloader.model.Gene;
+import org.ensembl.genomeloader.model.Genome;
+import org.ensembl.genomeloader.model.GenomicComponent;
+import org.ensembl.genomeloader.model.Identifiable;
+import org.ensembl.genomeloader.model.ModelUtils;
+import org.ensembl.genomeloader.model.Protein;
+import org.ensembl.genomeloader.model.Pseudogene;
+import org.ensembl.genomeloader.model.RepeatRegion;
+import org.ensembl.genomeloader.model.RnaTranscript;
+import org.ensembl.genomeloader.model.Rnagene;
+import org.ensembl.genomeloader.model.Transcript;
+import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 
 /**
  * Add location based identifiers for features

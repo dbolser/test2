@@ -23,23 +23,23 @@ import java.util.concurrent.Executor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ensembl.genomeloader.genomebuilder.metadata.GenomicComponentMetaData;
-import org.ensembl.genomeloader.genomebuilder.metadata.GenomicComponentMetaData.GenomicComponentType;
-import org.ensembl.genomeloader.genomebuilder.model.AssemblyElement;
-import org.ensembl.genomeloader.genomebuilder.model.AssemblySequence;
-import org.ensembl.genomeloader.genomebuilder.model.Genome;
-import org.ensembl.genomeloader.genomebuilder.model.GenomicComponent;
-import org.ensembl.genomeloader.genomebuilder.model.impl.AssemblySequenceImpl;
-import org.ensembl.genomeloader.genomebuilder.model.impl.GenomicComponentImpl;
-import org.ensembl.genomeloader.genomebuilder.xrefregistry.DatabaseReferenceTypeRegistry;
 import org.ensembl.genomeloader.materializer.EnaGenomeConfig;
 import org.ensembl.genomeloader.materializer.EnaGenomeMaterializer;
 import org.ensembl.genomeloader.materializer.EnaParser;
 import org.ensembl.genomeloader.materializer.EnaParsingException;
 import org.ensembl.genomeloader.materializer.impl.MaterializationUncheckedException;
 import org.ensembl.genomeloader.materializer.impl.XmlEnaContigParser;
+import org.ensembl.genomeloader.metadata.GenomicComponentMetaData;
+import org.ensembl.genomeloader.metadata.GenomicComponentMetaData.GenomicComponentType;
+import org.ensembl.genomeloader.model.AssemblyElement;
+import org.ensembl.genomeloader.model.AssemblySequence;
+import org.ensembl.genomeloader.model.Genome;
+import org.ensembl.genomeloader.model.GenomicComponent;
+import org.ensembl.genomeloader.model.impl.AssemblySequenceImpl;
+import org.ensembl.genomeloader.model.impl.GenomicComponentImpl;
 import org.ensembl.genomeloader.util.biojava.LocationUtils;
 import org.ensembl.genomeloader.util.collections.CollectionUtils;
+import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 
 /**
  * Use assembly information for CON sequences to replicate assembly in an

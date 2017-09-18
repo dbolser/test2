@@ -3,8 +3,8 @@ package org.ensembl.genomeloader.materializer;
 import java.io.IOException;
 
 import org.biojavax.bio.seq.RichLocation;
-import org.ensembl.genomeloader.genomebuilder.model.EntityLocation;
-import org.ensembl.genomeloader.genomebuilder.model.EntityLocationInsertion;
+import org.ensembl.genomeloader.model.EntityLocation;
+import org.ensembl.genomeloader.model.EntityLocationInsertion;
 import org.ensembl.genomeloader.util.biojava.LocationUtils;
 
 import com.fasterxml.jackson.core.JsonGenerator;

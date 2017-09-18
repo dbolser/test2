@@ -28,15 +28,15 @@ import java.util.List;
 import nu.xom.Element;
 
 import org.biojavax.bio.seq.RichLocation.Strand;
-import org.ensembl.genomeloader.genomebuilder.model.DatabaseReference;
-import org.ensembl.genomeloader.genomebuilder.model.EntityLocation;
-import org.ensembl.genomeloader.genomebuilder.model.Gene;
-import org.ensembl.genomeloader.genomebuilder.model.Protein;
-import org.ensembl.genomeloader.genomebuilder.model.Transcript;
-import org.ensembl.genomeloader.genomebuilder.model.impl.DelegatingEntityLocation;
-import org.ensembl.genomeloader.genomebuilder.model.impl.GenomicComponentImpl;
-import org.ensembl.genomeloader.genomebuilder.xrefregistry.DatabaseReferenceTypeRegistry;
+import org.ensembl.genomeloader.model.DatabaseReference;
+import org.ensembl.genomeloader.model.EntityLocation;
+import org.ensembl.genomeloader.model.Gene;
+import org.ensembl.genomeloader.model.Protein;
+import org.ensembl.genomeloader.model.Transcript;
+import org.ensembl.genomeloader.model.impl.DelegatingEntityLocation;
+import org.ensembl.genomeloader.model.impl.GenomicComponentImpl;
 import org.ensembl.genomeloader.util.biojava.LocationUtils;
+import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 
 /**
  * @author dstaines

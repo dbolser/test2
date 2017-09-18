@@ -19,19 +19,19 @@ package org.ensembl.genomeloader.materializer.processors;
 import java.util.Map;
 import java.util.Set;
 
-import org.ensembl.genomeloader.genomebuilder.model.Genome;
-import org.ensembl.genomeloader.genomebuilder.model.Identifiable;
-import org.ensembl.genomeloader.genomebuilder.model.Protein;
-import org.ensembl.genomeloader.genomebuilder.model.impl.GeneImpl;
-import org.ensembl.genomeloader.genomebuilder.model.impl.ProteinImpl;
-import org.ensembl.genomeloader.genomebuilder.model.impl.RnaTranscriptImpl;
-import org.ensembl.genomeloader.genomebuilder.model.impl.RnageneImpl;
-import org.ensembl.genomeloader.genomebuilder.model.impl.TranscriptImpl;
-import org.ensembl.genomeloader.genomebuilder.xrefregistry.DatabaseReferenceTypeRegistry;
 import org.ensembl.genomeloader.materializer.DuplicateIdException;
 import org.ensembl.genomeloader.materializer.EnaGenomeConfig;
+import org.ensembl.genomeloader.model.Genome;
+import org.ensembl.genomeloader.model.Identifiable;
+import org.ensembl.genomeloader.model.Protein;
+import org.ensembl.genomeloader.model.impl.GeneImpl;
+import org.ensembl.genomeloader.model.impl.ProteinImpl;
+import org.ensembl.genomeloader.model.impl.RnaTranscriptImpl;
+import org.ensembl.genomeloader.model.impl.RnageneImpl;
+import org.ensembl.genomeloader.model.impl.TranscriptImpl;
 import org.ensembl.genomeloader.services.sql.SqlService;
 import org.ensembl.genomeloader.util.collections.CollectionUtils;
+import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 
 /**
  * Implementation of {@link DuplicateIdProcessor} that will discard genomes with

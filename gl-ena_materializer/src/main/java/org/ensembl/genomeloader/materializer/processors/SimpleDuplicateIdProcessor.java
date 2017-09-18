@@ -19,10 +19,10 @@ package org.ensembl.genomeloader.materializer.processors;
 import java.util.Map;
 import java.util.Set;
 
-import org.ensembl.genomeloader.genomebuilder.model.Genome;
-import org.ensembl.genomeloader.genomebuilder.model.Identifiable;
 import org.ensembl.genomeloader.materializer.EnaGenomeConfig;
 import org.ensembl.genomeloader.materializer.EnaParsingException;
+import org.ensembl.genomeloader.model.Genome;
+import org.ensembl.genomeloader.model.Identifiable;
 
 /**
  * {@link GenomeProcessor} to identify where IDs are duplicated for a given

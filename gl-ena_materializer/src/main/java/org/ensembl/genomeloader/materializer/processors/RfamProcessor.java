@@ -4,17 +4,17 @@ import java.util.Collection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ensembl.genomeloader.genomebuilder.model.DatabaseReferenceType;
-import org.ensembl.genomeloader.genomebuilder.model.Genome;
-import org.ensembl.genomeloader.genomebuilder.model.GenomicComponent;
-import org.ensembl.genomeloader.genomebuilder.model.Rnagene;
-import org.ensembl.genomeloader.genomebuilder.xrefregistry.DatabaseReferenceTypeRegistry;
 import org.ensembl.genomeloader.materializer.EnaGenomeConfig;
 import org.ensembl.genomeloader.materializer.RfamGeneFetcher;
 import org.ensembl.genomeloader.materializer.impl.RfamGeneFetcherImpl;
+import org.ensembl.genomeloader.model.DatabaseReferenceType;
+import org.ensembl.genomeloader.model.Genome;
+import org.ensembl.genomeloader.model.GenomicComponent;
+import org.ensembl.genomeloader.model.Rnagene;
 import org.ensembl.genomeloader.services.sql.SqlService;
 import org.ensembl.genomeloader.util.sql.SqlServiceTemplate;
 import org.ensembl.genomeloader.util.sql.SqlServiceTemplateImpl;
+import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 
 /**
  * {@link GenomeProcessor} to add {@link Rnagene} instances from RFAM to a

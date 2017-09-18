@@ -20,14 +20,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 
-import org.ensembl.genomeloader.genomebuilder.metadata.GenomeMetaData;
-import org.ensembl.genomeloader.genomebuilder.metadata.GenomicComponentMetaData;
-import org.ensembl.genomeloader.genomebuilder.model.GenomeInfo;
-import org.ensembl.genomeloader.genomebuilder.model.GenomeInfo.OrganismNameType;
 import org.ensembl.genomeloader.materializer.EnaGenomeConfig;
 import org.ensembl.genomeloader.materializer.EnaParser;
 import org.ensembl.genomeloader.materializer.impl.IdentificationUncheckedException;
 import org.ensembl.genomeloader.materializer.impl.XmlEnaGenomeInfoParser;
+import org.ensembl.genomeloader.metadata.GenomeMetaData;
+import org.ensembl.genomeloader.metadata.GenomicComponentMetaData;
+import org.ensembl.genomeloader.model.GenomeInfo;
+import org.ensembl.genomeloader.model.GenomeInfo.OrganismNameType;
 import org.ensembl.genomeloader.util.collections.CollectionUtils;
 import org.ensembl.genomeloader.util.templating.TemplateBuilder;
 

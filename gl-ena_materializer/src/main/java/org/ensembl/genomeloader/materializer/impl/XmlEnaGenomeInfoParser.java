@@ -16,10 +16,10 @@
 
 package org.ensembl.genomeloader.materializer.impl;
 
-import org.ensembl.genomeloader.genomebuilder.model.GenomeInfo;
-import org.ensembl.genomeloader.genomebuilder.model.impl.GenomeInfoImpl;
 import org.ensembl.genomeloader.materializer.EnaParser;
 import org.ensembl.genomeloader.materializer.EnaParsingException;
+import org.ensembl.genomeloader.model.GenomeInfo;
+import org.ensembl.genomeloader.model.impl.GenomeInfoImpl;
 
 import nu.xom.Document;
 import nu.xom.Element;

@@ -20,7 +20,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ensembl.genomeloader.genomebuilder.model.Genome;
+import org.ensembl.genomeloader.model.Genome;
 import org.ensembl.genomeloader.util.collections.CollectionUtils;
 
 public class DelegatingGenomeProcessor implements GenomeProcessor {
