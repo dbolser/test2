@@ -110,6 +110,8 @@ public class EnaGenomeConfig {
 	private boolean loadAssembly = true;
 	private boolean allowMissingUpis = false;
 	private boolean useAccessionsForNames = false;
+	private int maxEnaConnections = 10;
+	private String lockFileDir = System.getProperty("user.dir");
 
 	public String getEnaXmlUrl() {
 		return enaXmlUrl;
@@ -252,5 +254,21 @@ public class EnaGenomeConfig {
 	public void setUseAccessionsForNames(boolean useAccessionsForNames) {
 		this.useAccessionsForNames = useAccessionsForNames;
 	}
+
+    public int getMaxEnaConnections() {
+        return maxEnaConnections;
+    }
+
+    public void setMaxEnaConnections(int maxEnaConnections) {
+        this.maxEnaConnections = maxEnaConnections;
+    }
+
+    public String getLockFileDir() {
+        return lockFileDir;
+    }
+
+    public void setLockFileDir(String lockFileDir) {
+        this.lockFileDir = lockFileDir;
+    }
 
 }
