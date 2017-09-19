@@ -16,8 +16,6 @@
 
 package org.ensembl.genomeloader.util;
 
-import org.ensembl.genomeloader.util.DatabaseSettings;
-
 import junit.framework.TestCase;
 
 /**

@@ -21,8 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.ensembl.genomeloader.util.reflection.ReflectionUncheckedException;
-import org.ensembl.genomeloader.util.reflection.ReflectionUtils;
 import org.ensembl.genomeloader.util.reflection.sub.InvokerTestObject;
 import org.ensembl.genomeloader.util.reflection.sub.One;
 

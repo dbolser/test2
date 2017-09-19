@@ -26,14 +26,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import nu.xom.Element;
-import nu.xom.Elements;
-import nu.xom.Node;
-
 import org.apache.commons.lang.StringUtils;
 import org.ensembl.genomeloader.util.collections.CollectionUtils;
 import org.ensembl.genomeloader.util.collections.FactoryMap;
 import org.ensembl.genomeloader.util.collections.ObjectFactory;
+
+import nu.xom.Element;
+import nu.xom.Elements;
+import nu.xom.Node;
 
 /**
  * @author dstaines

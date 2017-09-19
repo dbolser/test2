@@ -22,7 +22,6 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import org.apache.commons.io.IOUtils;
-import org.ensembl.genomeloader.util.InputOutputUtils;
 import org.ensembl.genomeloader.util.reflection.ReflectionUtils;
 
 import junit.framework.TestCase;

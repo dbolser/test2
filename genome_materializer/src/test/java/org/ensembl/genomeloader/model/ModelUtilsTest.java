@@ -25,8 +25,6 @@ package org.ensembl.genomeloader.model;
 import static junit.framework.Assert.assertEquals;
 
 import org.biojava.bio.seq.RNATools;
-import org.ensembl.genomeloader.model.EntityLocation;
-import org.ensembl.genomeloader.model.ModelUtils;
 import org.ensembl.genomeloader.model.impl.DelegatingEntityLocation;
 import org.ensembl.genomeloader.model.sequence.Sequence;
 import org.ensembl.genomeloader.util.biojava.LocationUtils;

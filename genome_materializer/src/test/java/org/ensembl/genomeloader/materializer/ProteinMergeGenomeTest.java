@@ -28,7 +28,6 @@ import static junit.framework.Assert.assertNotNull;
 
 import java.util.Map;
 
-import org.ensembl.genomeloader.materializer.EnaGenomeConfig;
 import org.ensembl.genomeloader.materializer.processors.AltTranslationProcessor;
 import org.ensembl.genomeloader.materializer.processors.GenomeProcessor;
 import org.ensembl.genomeloader.model.DatabaseReferenceType;

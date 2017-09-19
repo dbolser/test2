@@ -23,7 +23,7 @@
  */
 package org.ensembl.genomeloader.materializer;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -37,7 +37,6 @@ import org.ensembl.genomeloader.materializer.impl.SourceFeatureParser;
 import org.ensembl.genomeloader.materializer.impl.XmlEnaComponentParser;
 import org.ensembl.genomeloader.materializer.impl.XmlEnaFeatureParser;
 import org.ensembl.genomeloader.util.collections.CollectionUtils;
-import org.ensembl.genomeloader.util.collections.CollectionUtils.TopologicalComparator;
 import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 import org.ensembl.genomeloader.xrefregistry.impl.XmlDatabaseReferenceTypeRegistry;
 import org.junit.Test;

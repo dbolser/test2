@@ -24,7 +24,6 @@ package org.ensembl.genomeloader.model.impl;
 
 import java.util.Set;
 
-import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.ensembl.genomeloader.model.DatabaseReference;
 import org.ensembl.genomeloader.model.GeneName;
 import org.ensembl.genomeloader.model.GeneNameType;

@@ -19,14 +19,14 @@ package org.ensembl.genomeloader.materializer.impl;
 import java.util.Collections;
 import java.util.List;
 
-import nu.xom.Element;
-
 import org.apache.commons.lang.StringUtils;
 import org.ensembl.genomeloader.model.DatabaseReference;
 import org.ensembl.genomeloader.model.SimpleFeature;
 import org.ensembl.genomeloader.model.impl.GenomicComponentImpl;
 import org.ensembl.genomeloader.model.impl.SimpleFeatureImpl;
 import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
+
+import nu.xom.Element;
 
 /**
  * Parser to use for any feature for which there is no more specific parser

@@ -16,8 +16,6 @@
 
 package org.ensembl.genomeloader.services.config;
 
-import org.ensembl.genomeloader.services.config.ServiceConfig;
-
 import junit.framework.TestCase;
 
 /**

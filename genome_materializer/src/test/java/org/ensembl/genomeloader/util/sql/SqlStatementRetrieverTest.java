@@ -18,9 +18,6 @@ package org.ensembl.genomeloader.util.sql;
 
 import java.util.Map;
 
-import org.ensembl.genomeloader.util.sql.SqlLibrary;
-import org.ensembl.genomeloader.util.sql.SqlStatementRetriever;
-
 import junit.framework.TestCase;
 
 /**

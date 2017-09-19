@@ -40,6 +40,8 @@ import org.biojava.bio.seq.RNATools;
 import org.biojava.bio.symbol.TranslationTable;
 import org.biojavax.bio.seq.RichLocation;
 import org.biojavax.bio.seq.RichLocation.Strand;
+import org.biojavax.bio.seq.SimplePosition;
+import org.biojavax.bio.seq.SimpleRichLocation;
 import org.ensembl.genomeloader.model.EntityLocation.MappingState;
 import org.ensembl.genomeloader.model.impl.DelegatingEntityLocation;
 import org.ensembl.genomeloader.model.sequence.Sequence;
@@ -50,8 +52,6 @@ import org.ensembl.genomeloader.util.biojava.FeatureLocationNotFoundException;
 import org.ensembl.genomeloader.util.biojava.LocationException;
 import org.ensembl.genomeloader.util.biojava.LocationUtils;
 import org.ensembl.genomeloader.util.collections.CollectionUtils;
-import org.biojavax.bio.seq.SimplePosition;
-import org.biojavax.bio.seq.SimpleRichLocation;
 
 /**
  * @author dstaines

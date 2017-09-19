@@ -23,7 +23,6 @@
 package org.ensembl.genomeloader.metadata;
 
 import java.io.Serializable;
-import java.util.Date;
 
 import org.ensembl.genomeloader.model.GenomeInfo;
 

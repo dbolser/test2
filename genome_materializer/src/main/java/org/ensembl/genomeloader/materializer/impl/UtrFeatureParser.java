@@ -25,8 +25,6 @@ package org.ensembl.genomeloader.materializer.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import nu.xom.Element;
-
 import org.biojavax.bio.seq.RichLocation.Strand;
 import org.ensembl.genomeloader.model.DatabaseReference;
 import org.ensembl.genomeloader.model.EntityLocation;
@@ -37,6 +35,8 @@ import org.ensembl.genomeloader.model.impl.DelegatingEntityLocation;
 import org.ensembl.genomeloader.model.impl.GenomicComponentImpl;
 import org.ensembl.genomeloader.util.biojava.LocationUtils;
 import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
+
+import nu.xom.Element;
 
 /**
  * @author dstaines

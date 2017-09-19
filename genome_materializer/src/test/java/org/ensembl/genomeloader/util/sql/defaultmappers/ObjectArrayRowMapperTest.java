@@ -27,7 +27,6 @@ import java.sql.SQLException;
 import java.util.Arrays;
 
 import org.ensembl.genomeloader.services.sql.ROResultSet;
-import org.ensembl.genomeloader.util.sql.defaultmappers.ObjectArrayRowMapper;
 
 import junit.framework.TestCase;
 

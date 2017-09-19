@@ -19,7 +19,6 @@ package org.ensembl.genomeloader.xrefregistry;
 import static org.junit.Assert.assertEquals;
 
 import org.ensembl.genomeloader.model.DatabaseReferenceType;
-import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 import org.junit.Before;
 import org.junit.Test;
 

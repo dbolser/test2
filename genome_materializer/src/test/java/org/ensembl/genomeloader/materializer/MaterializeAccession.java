@@ -18,9 +18,6 @@ package org.ensembl.genomeloader.materializer;
 
 import java.util.Collection;
 
-import org.ensembl.genomeloader.materializer.AcOnlyEnaGenomeMaterializer;
-import org.ensembl.genomeloader.materializer.EnaGenomeConfig;
-import org.ensembl.genomeloader.materializer.EnaGenomeMaterializer;
 import org.ensembl.genomeloader.materializer.identifiers.EnaComponentSetIdentifier;
 import org.ensembl.genomeloader.metadata.GenomeMetaData;
 import org.ensembl.genomeloader.util.collections.CollectionUtils;

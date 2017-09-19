@@ -21,8 +21,6 @@ import java.util.Arrays;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ensembl.genomeloader.services.config.ServiceConfig;
-import org.ensembl.genomeloader.services.sql.SqlService;
-import org.ensembl.genomeloader.services.sql.SqlServiceException;
 import org.ensembl.genomeloader.services.sql.impl.LocalSqlService;
 import org.ensembl.genomeloader.util.sql.TransactionalDmlHolder;
 

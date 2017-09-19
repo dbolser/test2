@@ -17,7 +17,6 @@
 package org.ensembl.genomeloader.validator.impl;
 
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;

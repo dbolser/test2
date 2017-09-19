@@ -28,9 +28,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.ensembl.genomeloader.services.sql.DatabaseConnection;
-import org.ensembl.genomeloader.services.sql.SqlService;
-import org.ensembl.genomeloader.services.sql.SqlServiceException;
 import org.ensembl.genomeloader.services.sql.impl.LocalSqlService;
 
 import junit.framework.Assert;

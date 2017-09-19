@@ -26,20 +26,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import nu.xom.Element;
-
 import org.apache.commons.lang.StringUtils;
-import org.ensembl.genomeloader.materializer.EnaParsingException;
 import org.ensembl.genomeloader.model.AnnotatedGene;
 import org.ensembl.genomeloader.model.DatabaseReference;
 import org.ensembl.genomeloader.model.GeneName;
 import org.ensembl.genomeloader.model.GeneNameType;
-import org.ensembl.genomeloader.model.impl.GeneImpl;
 import org.ensembl.genomeloader.model.impl.GenomicComponentImpl;
 import org.ensembl.genomeloader.model.impl.RnaTranscriptImpl;
 import org.ensembl.genomeloader.model.impl.RnageneImpl;
 import org.ensembl.genomeloader.util.collections.CollectionUtils;
 import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
+
+import nu.xom.Element;
 
 /**
  * @author dstaines

@@ -29,7 +29,6 @@ import static junit.framework.Assert.assertNotNull;
 import java.util.Collections;
 import java.util.List;
 
-import org.ensembl.genomeloader.materializer.EnaGenomeConfig;
 import org.ensembl.genomeloader.materializer.processors.GenomeProcessor;
 import org.ensembl.genomeloader.materializer.processors.LocusTagMergeProcessor;
 import org.ensembl.genomeloader.model.Gene;

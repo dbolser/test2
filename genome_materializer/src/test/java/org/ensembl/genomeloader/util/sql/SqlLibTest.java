@@ -1,7 +1,5 @@
 package org.ensembl.genomeloader.util.sql;
 
-import org.ensembl.genomeloader.util.sql.SqlLib;
-
 import junit.framework.TestCase;
 
 public class SqlLibTest extends TestCase {

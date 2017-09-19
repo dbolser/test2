@@ -19,7 +19,6 @@ package org.ensembl.genomeloader.util;
 import java.text.MessageFormat;
 
 import org.ensembl.genomeloader.services.ServiceUncheckedException;
-import org.ensembl.genomeloader.util.PropertyUtils;
 
 import junit.framework.TestCase;
 

@@ -26,8 +26,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import nu.xom.Element;
-
 import org.apache.commons.lang.StringUtils;
 import org.ensembl.genomeloader.model.DatabaseReference;
 import org.ensembl.genomeloader.model.impl.GenomicComponentImpl;
@@ -35,6 +33,8 @@ import org.ensembl.genomeloader.model.impl.RepeatRegionImpl;
 import org.ensembl.genomeloader.model.impl.RepeatRegionImpl.RepeatUnitImpl;
 import org.ensembl.genomeloader.util.collections.CollectionUtils;
 import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
+
+import nu.xom.Element;
 
 /**
  * @author dstaines

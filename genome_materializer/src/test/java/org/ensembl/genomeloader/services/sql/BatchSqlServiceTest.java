@@ -18,9 +18,6 @@ package org.ensembl.genomeloader.services.sql;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ensembl.genomeloader.services.sql.SqlService;
-import org.ensembl.genomeloader.services.sql.SqlServiceException;
-import org.ensembl.genomeloader.services.sql.SqlServiceUncheckedException;
 import org.ensembl.genomeloader.services.sql.impl.LocalSqlService;
 import org.ensembl.genomeloader.util.sql.BatchDmlHolder;
 import org.ensembl.genomeloader.util.sql.SqlServiceTemplate;

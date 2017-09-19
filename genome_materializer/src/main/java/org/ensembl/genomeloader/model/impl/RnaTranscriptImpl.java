@@ -28,7 +28,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.ensembl.genomeloader.model.*;
+import org.ensembl.genomeloader.model.AnnotatedGene;
+import org.ensembl.genomeloader.model.DatabaseReference;
+import org.ensembl.genomeloader.model.EntityLocation;
+import org.ensembl.genomeloader.model.GeneName;
+import org.ensembl.genomeloader.model.GeneNameType;
+import org.ensembl.genomeloader.model.RnaTranscript;
+import org.ensembl.genomeloader.model.Rnagene;
 import org.ensembl.genomeloader.util.reflection.ObjectRenderer;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;

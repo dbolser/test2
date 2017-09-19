@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.ensembl.genomeloader.util.UtilUncheckedException;
-import org.ensembl.genomeloader.util.templating.TemplateBuilder;
 
 import junit.framework.TestCase;
 

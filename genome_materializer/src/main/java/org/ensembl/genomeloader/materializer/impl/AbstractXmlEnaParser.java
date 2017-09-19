@@ -33,16 +33,16 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.concurrent.Executor;
 
-import nu.xom.Builder;
-import nu.xom.Document;
-import nu.xom.ParsingException;
-import nu.xom.ValidityException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ensembl.genomeloader.materializer.EnaParsingException;
 import org.ensembl.genomeloader.materializer.executor.SimpleExecutor;
 import org.ensembl.genomeloader.util.InputOutputUtils;
+
+import nu.xom.Builder;
+import nu.xom.Document;
+import nu.xom.ParsingException;
+import nu.xom.ValidityException;
 
 /**
  * @author dstaines

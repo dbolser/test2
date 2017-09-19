@@ -38,8 +38,6 @@ import org.ensembl.genomeloader.model.Protein;
 import org.ensembl.genomeloader.util.collections.CollectionUtils;
 import org.ensembl.genomeloader.util.reflection.ObjectRenderer;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 /**
  * Bean implementation of Gene
  *

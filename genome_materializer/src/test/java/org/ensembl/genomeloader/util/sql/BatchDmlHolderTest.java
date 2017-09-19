@@ -16,8 +16,6 @@
 
 package org.ensembl.genomeloader.util.sql;
 
-import org.ensembl.genomeloader.util.sql.BatchDmlHolder;
-
 import junit.framework.TestCase;
 
 /**

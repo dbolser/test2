@@ -23,7 +23,6 @@
 package org.ensembl.genomeloader.util.biojava;
 
 import org.biojavax.bio.seq.RichLocation;
-import org.ensembl.genomeloader.util.biojava.LocationUtils;
 
 import junit.framework.TestCase;
 

@@ -28,13 +28,11 @@ import static junit.framework.Assert.assertNotNull;
 
 import java.io.InputStream;
 
-import org.ensembl.genomeloader.materializer.EnaParser;
 import org.ensembl.genomeloader.materializer.executor.SimpleExecutor;
 import org.ensembl.genomeloader.materializer.impl.XmlEnaComponentParser;
 import org.ensembl.genomeloader.materializer.impl.XmlEnaGenomeInfoParser;
 import org.ensembl.genomeloader.model.GenomeInfo;
 import org.ensembl.genomeloader.model.GenomicComponent;
-import org.ensembl.genomeloader.model.impl.GenomeInfoImpl;
 import org.ensembl.genomeloader.model.impl.GenomicComponentImpl;
 import org.ensembl.genomeloader.util.InputOutputUtils;
 import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;

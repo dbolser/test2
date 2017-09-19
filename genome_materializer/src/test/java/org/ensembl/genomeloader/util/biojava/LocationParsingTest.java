@@ -26,7 +26,6 @@ import java.util.Iterator;
 
 import org.apache.commons.lang.StringUtils;
 import org.biojavax.bio.seq.RichLocation;
-import org.ensembl.genomeloader.util.biojava.LocationUtils;
 
 import junit.framework.TestCase;
 

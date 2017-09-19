@@ -27,8 +27,6 @@ import java.util.List;
 
 import org.biojavax.bio.seq.RichLocation;
 import org.biojavax.bio.seq.RichLocation.Strand;
-import org.ensembl.genomeloader.util.biojava.FeatureLocationGapOverlapException;
-import org.ensembl.genomeloader.util.biojava.LocationUtils;
 
 import junit.framework.TestCase;
 

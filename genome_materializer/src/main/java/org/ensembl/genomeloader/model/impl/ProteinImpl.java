@@ -33,8 +33,6 @@ import org.ensembl.genomeloader.model.ProteinFeature;
 import org.ensembl.genomeloader.model.Transcript;
 import org.ensembl.genomeloader.util.collections.CollectionUtils;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 /**
  * Simple bean implementation of a protein
  *

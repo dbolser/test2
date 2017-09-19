@@ -28,8 +28,6 @@ import static junit.framework.Assert.assertNotNull;
 
 import java.io.InputStream;
 
-import org.ensembl.genomeloader.materializer.EnaGenomeConfig;
-import org.ensembl.genomeloader.materializer.EnaParser;
 import org.ensembl.genomeloader.materializer.executor.SimpleExecutor;
 import org.ensembl.genomeloader.materializer.impl.XmlEnaComponentParser;
 import org.ensembl.genomeloader.materializer.processors.GenomeProcessor;

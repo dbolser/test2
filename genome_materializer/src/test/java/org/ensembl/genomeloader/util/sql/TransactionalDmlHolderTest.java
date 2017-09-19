@@ -18,8 +18,6 @@ package org.ensembl.genomeloader.util.sql;
 
 import java.util.Arrays;
 
-import org.ensembl.genomeloader.util.sql.TransactionalDmlHolder;
-
 import junit.framework.TestCase;
 
 /**

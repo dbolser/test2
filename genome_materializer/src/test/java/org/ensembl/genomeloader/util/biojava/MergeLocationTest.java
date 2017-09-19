@@ -29,9 +29,6 @@ import java.util.List;
 import org.biojavax.bio.seq.RichLocation;
 import org.biojavax.bio.seq.SimplePosition;
 import org.biojavax.bio.seq.SimpleRichLocation;
-import org.ensembl.genomeloader.util.biojava.LocationUtils;
-import org.ensembl.genomeloader.util.biojava.RankedCompoundRichLocation;
-import org.ensembl.genomeloader.util.biojava.TranssplicedCompoundRichLocation;
 import org.ensembl.genomeloader.util.collections.CollectionUtils;
 
 import junit.framework.TestCase;

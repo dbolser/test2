@@ -18,8 +18,6 @@ package org.ensembl.genomeloader.util;
 
 import java.util.ArrayList;
 
-import org.ensembl.genomeloader.util.EqualsHelper;
-
 import junit.framework.TestCase;
 
 /**

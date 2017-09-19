@@ -44,9 +44,9 @@ import org.biojavax.bio.seq.MultiSourceCompoundRichLocation;
 import org.biojavax.bio.seq.Position;
 import org.biojavax.bio.seq.RichLocation;
 import org.biojavax.bio.seq.RichLocation.Strand;
-import org.ensembl.genomeloader.util.collections.CollectionUtils;
 import org.biojavax.bio.seq.SimplePosition;
 import org.biojavax.bio.seq.SimpleRichLocation;
+import org.ensembl.genomeloader.util.collections.CollectionUtils;
 
 /**
  *

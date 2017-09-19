@@ -29,9 +29,7 @@ import org.ensembl.genomeloader.model.impl.ProteinImpl;
 import org.ensembl.genomeloader.model.impl.RnaTranscriptImpl;
 import org.ensembl.genomeloader.model.impl.RnageneImpl;
 import org.ensembl.genomeloader.model.impl.TranscriptImpl;
-import org.ensembl.genomeloader.services.sql.SqlService;
 import org.ensembl.genomeloader.util.collections.CollectionUtils;
-import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 
 /**
  * Implementation of {@link DuplicateIdProcessor} that will discard genomes with
