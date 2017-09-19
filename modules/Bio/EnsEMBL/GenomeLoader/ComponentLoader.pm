@@ -28,8 +28,8 @@ package Bio::EnsEMBL::GenomeLoader::ComponentLoader;
 use warnings;
 use strict;
 use Carp;
-use GenomeLoader::Utils qw(flush_session);
-use GenomeLoader::Constants qw(BIOTYPES NAMES);
+use Bio::EnsEMBL::GenomeLoader::Utils qw(flush_session);
+use Bio::EnsEMBL::GenomeLoader::Constants qw(BIOTYPES NAMES);
 use Data::Dumper;
 use base qw(GenomeLoader::BaseLoader);
 

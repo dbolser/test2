@@ -26,7 +26,7 @@ package Bio::EnsEMBL::GenomeLoader::SequenceLoader::EnaSequenceLoader;
 use warnings;
 use strict;
 use Carp;
-use GenomeLoader::Constants qw(CS);
+use Bio::EnsEMBL::GenomeLoader::Constants qw(CS);
 use base qw(GenomeLoader::SequenceLoader);
 
 sub new {

@@ -29,7 +29,7 @@ use strict;
 use Bio::EnsEMBL::Gene;
 use Bio::EnsEMBL::Exon;
 use Bio::EnsEMBL::Transcript;
-use GenomeLoader::Constants qw(XREFS NAMES BIOTYPES);
+use Bio::EnsEMBL::GenomeLoader::Constants qw(XREFS NAMES BIOTYPES);
 use Carp;
 use base qw(GenomeLoader::GeneLoader::RnaGeneLoader);
 

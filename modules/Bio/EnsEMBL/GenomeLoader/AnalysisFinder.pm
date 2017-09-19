@@ -32,7 +32,7 @@ use Carp;
 use Data::Dumper;
 use Bio::EnsEMBL::Analysis;
 use Bio::EnsEMBL::DBSQL::BaseAdaptor;
-use GenomeLoader::Utils qw(get_ensembl_dba);
+use Bio::EnsEMBL::GenomeLoader::Utils qw(get_ensembl_dba);
 use EGUtils::IO qw(parse_json);
 
 my $sql = q/select description, display_label, data from analysis_description 

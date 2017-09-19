@@ -30,7 +30,7 @@ use Bio::EnsEMBL::Gene;
 use Bio::EnsEMBL::Exon;
 use Bio::EnsEMBL::Transcript;
 use Carp;
-use GenomeLoader::Constants qw(XREFS NAMES);
+use Bio::EnsEMBL::GenomeLoader::Constants qw(XREFS NAMES);
 use base qw(GenomeLoader::GeneLoader);
 
 sub new {

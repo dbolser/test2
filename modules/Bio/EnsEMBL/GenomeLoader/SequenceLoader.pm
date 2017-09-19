@@ -29,7 +29,7 @@ use Carp;
 use Data::Dumper;
 use Bio::EnsEMBL::Slice;
 use Bio::EnsEMBL::Attribute;
-use GenomeLoader::Constants qw(CS);
+use Bio::EnsEMBL::GenomeLoader::Constants qw(CS);
 use base qw(GenomeLoader::BaseLoader);
 
 sub new {

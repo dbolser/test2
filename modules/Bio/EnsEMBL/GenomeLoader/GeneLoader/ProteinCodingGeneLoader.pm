@@ -29,7 +29,7 @@ use warnings;
 use strict;
 use Carp;
 use Data::Dumper;
-use GenomeLoader::Constants qw(XREFS NAMES PEPSTATS_CODES BIOTYPES);
+use Bio::EnsEMBL::GenomeLoader::Constants qw(XREFS NAMES PEPSTATS_CODES BIOTYPES);
 use Bio::EnsEMBL::Attribute;
 use Bio::EnsEMBL::Gene;
 use Bio::EnsEMBL::ProteinFeature;

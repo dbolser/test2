@@ -20,8 +20,8 @@ package Bio::EnsEMBL::GenomeLoader::PluginProvider;
 use warnings;
 use strict;
 use Carp;
-use GenomeLoader::Constants qw(BIOTYPES NAMES);
-use GenomeLoader::Utils qw(from_json_file_default);
+use Bio::EnsEMBL::GenomeLoader::Constants qw(BIOTYPES NAMES);
+use Bio::EnsEMBL::GenomeLoader::Utils qw(from_json_file_default);
 use Log::Log4perl qw(get_logger);
 use Bio::EnsEMBL::Utils::ScriptUtils qw(inject);
 sub new {

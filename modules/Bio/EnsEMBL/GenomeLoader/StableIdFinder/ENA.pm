@@ -29,7 +29,7 @@ use strict;
 use Carp;
 use Data::Dumper;
 use base 'GenomeLoader::StableIdFinder';
-use GenomeLoader::Constants qw(NAMES XREFS GENE_NAMES BIOTYPES);
+use Bio::EnsEMBL::GenomeLoader::Constants qw(NAMES XREFS GENE_NAMES BIOTYPES);
 
 sub new {
 	my $caller = shift;

@@ -28,7 +28,7 @@ package Bio::EnsEMBL::GenomeLoader::BaseLoader;
 use warnings;
 use strict;
 use Carp;
-use GenomeLoader::Constants qw(CS);
+use Bio::EnsEMBL::GenomeLoader::Constants qw(CS);
 use Data::Dumper;
 use Log::Log4perl qw(get_logger);
 

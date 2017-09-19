@@ -30,7 +30,7 @@ use warnings;
 use strict;
 use Carp;
 use Data::Dumper;
-use GenomeLoader::Constants qw(NAMES XREFS GENE_NAMES BIOTYPES);
+use Bio::EnsEMBL::GenomeLoader::Constants qw(NAMES XREFS GENE_NAMES BIOTYPES);
 
 sub new {
   my ($caller, @args) = @_;
