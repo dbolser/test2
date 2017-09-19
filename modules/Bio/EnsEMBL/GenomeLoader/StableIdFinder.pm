@@ -1,3 +1,4 @@
+
 =head1 LICENSE
 
 Copyright [2009-2014] EMBL-European Bioinformatics Institute
@@ -29,40 +30,44 @@ use warnings;
 use strict;
 use Carp;
 use Data::Dumper;
-use Bio::EnsEMBL::GenomeLoader::Constants qw(NAMES XREFS GENE_NAMES BIOTYPES);
+use Bio::EnsEMBL::GenomeLoader::Constants
+  qw(NAMES XREFS GENE_NAMES BIOTYPES);
 use Log::Log4perl qw(get_logger);
 
 sub new {
-  my ($caller, @args) = @_;
+  my ( $caller, @args ) = @_;
   my $class = ref($caller) || $caller;
   my $self;
-  if ($class =~ /GenomeLoader::StableIdFinder::(\S+)/x) {
-	$self = $class->SUPER::new(@args);
-	$self->_initialize(@args);
-  } else {
-	my %args = @args;
-	$self = {};
-	bless($self, $class);
-	$self->_initialize(@args);
-	$self->{species_id} = $args{dba}->species_id();
+  if ( $class =~ /GenomeLoader::StableIdFinder::(\S+)/x ) {
+    $self = $class->SUPER::new(@args);
+    $self->_initialize(@args);
   }
-  if (!$self->log()) {
-	$self->log(get_logger());
+  else {
+    my %args = @args;
+    $self = {};
+    bless( $self, $class );
+    $self->_initialize(@args);
+    $self->{species_id} = $args{dba}->species_id();
+  }
+  if ( !$self->log() ) {
+    $self->log( get_logger() );
   }
   return $self;
 }
 
 sub _initialize {
-  my ($self, @args) = @_;
+  my ( $self, @args ) = @_;
   my %args = @args;
   $self->{species_id} = $args{species_id};
   my $id_search = $args{id_search};
-  if (!$id_search) {
-	$id_search = {
-	  NAMES()->{GENE}        => ['get_identifying_id', 'get_public_id'],
-	  NAMES()->{TRANSCRIPT}  => ['get_identifying_id', 'get_public_id', 'get_parent_id'],
-	  NAMES()->{TRANSLATION} => ['get_identifying_id', 'get_public_id', 'get_parent_id'],
-	  NAMES()->{EXON} => ['get_parent_id']};
+  if ( !$id_search ) {
+    $id_search = {
+           NAMES()->{GENE} => [ 'get_identifying_id', 'get_public_id' ],
+           NAMES()->{TRANSCRIPT} =>
+             [ 'get_identifying_id', 'get_public_id', 'get_parent_id' ],
+           NAMES()->{TRANSLATION} =>
+             [ 'get_identifying_id', 'get_public_id', 'get_parent_id' ],
+           NAMES()->{EXON} => ['get_parent_id'] };
   }
   $self->id_search($id_search);
   return;
@@ -81,54 +86,57 @@ sub id_search {
 }
 
 sub get_id_search_for_obj {
-  my ($self, $eobj) = @_;
-  return $self->id_search()->{ref($eobj)};
+  my ( $self, $eobj ) = @_;
+  return $self->id_search()->{ ref($eobj) };
 }
 
 sub get_stable_id {
-  my ($self, $iobj, $eobj, $parent, $index) = @_;
-  if (!$iobj) {
-	return;
+  my ( $self, $iobj, $eobj, $parent, $index ) = @_;
+  if ( !$iobj ) {
+    return;
   }
   my $search = $self->get_id_search_for_obj($eobj);
-  if (!$search) {
-	return;
+  if ( !$search ) {
+    return;
   }
   my $stable_id;
-  foreach my $id_source (@{$search}) {
-	$stable_id = $self->$id_source($iobj, $eobj, $parent, $index);
-	last if $stable_id;
+  foreach my $id_source ( @{$search} ) {
+    $stable_id = $self->$id_source( $iobj, $eobj, $parent, $index );
+    last if $stable_id;
   }
-  if (!$stable_id) {
-	$self->log()->warn("Cannot get stable ID for object of type " . ref($eobj) . " using methods " . join(',', @$search));
+  if ( !$stable_id ) {
+    $self->log()
+      ->warn( "Cannot get stable ID for object of type " .
+              ref($eobj) . " using methods " .
+              join( ',', @$search ) );
   }
   return $stable_id;
 }
 
 sub get_identifying_id {
-  my ($self, $iobj) = @_;
+  my ( $self, $iobj ) = @_;
   return $iobj->{identifyingId};
 }
 
 sub get_public_id {
-  my ($self, $iobj) = @_;
+  my ( $self, $iobj ) = @_;
   return $iobj->{publicId};
 }
 
 sub get_igi_id {
-  my ($self, $iobj) = @_;
+  my ( $self, $iobj ) = @_;
   return $iobj->{igi};
 }
 
 sub get_persistable_id {
-  my ($self, $iobj) = @_;
+  my ( $self, $iobj ) = @_;
   return $iobj->{persistableId};
 }
 
 sub get_parent_id {
-  my ($self, $iobj, $eobj, $parent, $index) = @_;
-  if (defined $parent && defined $parent->stable_id()) {
-	return $parent->stable_id() . "-$index";
+  my ( $self, $iobj, $eobj, $parent, $index ) = @_;
+  if ( defined $parent && defined $parent->stable_id() ) {
+    return $parent->stable_id() . "-$index";
   }
   return;
 }

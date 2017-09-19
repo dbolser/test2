@@ -41,111 +41,114 @@ our @EXPORT_OK =
 
 my $log = get_logger();
 
-
 sub get_ensembl_dba {
-	# Get Ensembl DB adaptor.
-	my ( $ens_config, $schema_name, $species_id ) = @_;
-	my %args = ( -DBNAME => $schema_name,
-				 -HOST   => $ens_config->{host},
-				 -USER   => $ens_config->{user},
-				 -PASS   => $ens_config->{pass},
-				 -PORT   => $ens_config->{port}, );
-	if ( defined($species_id) && $schema_name =~ m/_collection_core_/ ) {
-		$args{-MULTISPECIES_DB} = 1;
-		$args{-SPECIES_ID}      = $species_id;
-	}
-	return Bio::EnsEMBL::DBSQL::DBAdaptor->new(%args) or
-	  croak "Could not connect to database for $schema_name";
+  # Get Ensembl DB adaptor.
+  my ( $ens_config, $schema_name, $species_id ) = @_;
+  my %args = ( -DBNAME => $schema_name,
+               -HOST   => $ens_config->{host},
+               -USER   => $ens_config->{user},
+               -PASS   => $ens_config->{pass},
+               -PORT   => $ens_config->{port}, );
+  if ( defined($species_id) && $schema_name =~ m/_collection_core_/ ) {
+    $args{-MULTISPECIES_DB} = 1;
+    $args{-SPECIES_ID}      = $species_id;
+  }
+  return Bio::EnsEMBL::DBSQL::DBAdaptor->new(%args) or
+    croak "Could not connect to database for $schema_name";
 }
 
 sub start_session {
-	my ( $dba, $config ) = @_;
-	if ( $config->{ensembl}{engine} eq 'InnoDB' ) {
-		$log->debug("Starting session");
-		$dba->dbc()->db_handle()->{'AutoCommit'} = 0;
-	}
-	return;
+  my ( $dba, $config ) = @_;
+  if ( $config->{ensembl}{engine} eq 'InnoDB' ) {
+    $log->debug("Starting session");
+    $dba->dbc()->db_handle()->{'AutoCommit'} = 0;
+  }
+  return;
 }
 
 sub flush_session {
-	my ( $dba, $config ) = @_;
-	if ( $config->{ensembl}{engine} eq 'InnoDB' ) {
-		$log->debug("Flushing session");
-		$dba->dbc()->db_handle()->commit();
-	}
-	return;
+  my ( $dba, $config ) = @_;
+  if ( $config->{ensembl}{engine} eq 'InnoDB' ) {
+    $log->debug("Flushing session");
+    $dba->dbc()->db_handle()->commit();
+  }
+  return;
 }
 
 sub get_database_connection {
-	my ($conf) = @_;
-	my $connstr;
-	if ( $conf->{driver} eq 'Oracle' ) {
-		$connstr = "DBI:Oracle:host=" .
-		  $conf->{host} . ";sid=" . $conf->{sid} . ";port=" . $conf->{port};
-	}
-	else {
-		$connstr =
-		  'DBI:' . $conf->{driver} .
-		  ':' . $conf->{schema} . '@' . $conf->{host} . ':' . $conf->{port};
-	}
-	return DBI->connect( $connstr, $conf->{user}, $conf->{pass} ) or
-	  croak 'Could not connect to database';
+  my ($conf) = @_;
+  my $connstr;
+  if ( $conf->{driver} eq 'Oracle' ) {
+    $connstr =
+      "DBI:Oracle:host=" . $conf->{host} . ";sid=" . $conf->{sid} .
+      ";port=" . $conf->{port};
+  }
+  else {
+    $connstr =
+      'DBI:' . $conf->{driver} . ':' . $conf->{schema} . '@' .
+      $conf->{host} . ':' . $conf->{port};
+  }
+  return DBI->connect( $connstr, $conf->{user}, $conf->{pass} ) or
+    croak 'Could not connect to database';
 }
 
 sub from_json_file_default {
-	my ( $filename, $default ) = @_;
-	if ( !$default ) { $default = {}; }
-	my $o = $default;
-	if ( -e $filename ) { $o = parse_json($filename); }
-	return $o;
+  my ( $filename, $default ) = @_;
+  if ( !$default ) { $default = {}; }
+  my $o = $default;
+  if ( -e $filename ) { $o = parse_json($filename); }
+  return $o;
 }
+
 sub println {
-	my $possible_fh = select();
-	my $handle;
-	{
-		## no critic (ProhibitNoStrict)
-		no strict 'refs';
-		$handle = (openhandle($_[0])) ? shift @_ : \*$possible_fh;
-		## use critic
-	}
+  my $possible_fh = select();
+  my $handle;
+  {
+    ## no critic (ProhibitNoStrict)
+    no strict 'refs';
+    $handle = ( openhandle( $_[0] ) ) ? shift @_ : \*$possible_fh;
+    ## use critic
+  }
 
-	@_ = $_ unless @_;
+  @_ = $_ unless @_;
 
-	if(blessed($handle)) {
-		return $handle->print(@_, $RS);
-	}
-	else {
-		return print {$handle} @_, $RS;
-	}
+  if ( blessed($handle) ) {
+    return $handle->print( @_, $RS );
+  }
+  else {
+    return print {$handle} @_, $RS;
+  }
 }
 
 sub slurp {
-  my $in = shift @_;
+  my $in     = shift @_;
   my $as_ref = shift @_;
   my $return_ref;
-  if(openhandle($in)) {
+  if ( openhandle($in) ) {
     $return_ref = _slurp_fh($in);
   }
   else {
-    open(my $fh, '<', $in) or confess "Cannot open '${in}' for reading: $!";
+    open( my $fh, '<', $in ) or
+      confess "Cannot open '${in}' for reading: $!";
     $return_ref = _slurp_fh($fh);
     close($fh);
   }
 
-	return $return_ref if($as_ref);
+  return $return_ref if ($as_ref);
   return ${$return_ref};
 }
 
 sub write_out {
-	my ($in, $closure) = @_;
-	if(openhandle($in)) {
-		$closure->($in);
-	}
-	else {
-		open(my $fh, '>', $in) or confess "Cannot open '${in}' for writing: $!";
-		$closure->($fh);
-		close($fh);
-	}
+  my ( $in, $closure ) = @_;
+  if ( openhandle($in) ) {
+    $closure->($in);
+  }
+  else {
+    open( my $fh, '>', $in ) or
+      confess "Cannot open '${in}' for writing: $!";
+    $closure->($fh);
+    close($fh);
+  }
 }
 
 sub _slurp_fh {
@@ -158,55 +161,56 @@ sub _slurp_fh {
 }
 
 sub quote {
-	return sprintf('"%s"', shift @_);
+  return sprintf( '"%s"', shift @_ );
 }
 
 sub parse_json {
-	my ($incoming, $relaxed_parsing) = @_;
-	my $data_ref;
-	#If it looks like a file(_handle) then treat it as such
-	if(!defined $incoming) {
-		confess('Undefined reference given');
-	}
-	elsif( openhandle($incoming) || ($incoming !~ /\n/ && -f $incoming) ) {
-		$data_ref = slurp($incoming, 1);
-	}
-	else {
-		$data_ref = \$incoming;
-	}
+  my ( $incoming, $relaxed_parsing ) = @_;
+  my $data_ref;
+  #If it looks like a file(_handle) then treat it as such
+  if ( !defined $incoming ) {
+    confess('Undefined reference given');
+  }
+  elsif ( openhandle($incoming) ||
+          ( $incoming !~ /\n/ && -f $incoming ) )
+  {
+    $data_ref = slurp( $incoming, 1 );
+  }
+  else {
+    $data_ref = \$incoming;
+  }
 
-	my $json = JSON->new();
-	$json->relaxed(1) if $relaxed_parsing;
-	return $json->decode(${$data_ref});
+  my $json = JSON->new();
+  $json->relaxed(1) if $relaxed_parsing;
+  return $json->decode( ${$data_ref} );
 }
 
 sub process_dir {
-	my ($dir, $closure, $include_unix_relative) = @_;
+  my ( $dir, $closure, $include_unix_relative ) = @_;
 
-	opendir my $dh, $dir or confess "Couldn't open dir '$dir': $!";
+  opendir my $dh, $dir or confess "Couldn't open dir '$dir': $!";
 
-	my @files = grep {
-		my ($file, $ok) = ($_, 1);
-		if(!$include_unix_relative) {
-			$ok = 0 if ($file eq '.' || $file eq '..');
-		}
-		$ok;
-	} readdir $dh;
+  my @files = grep {
+    my ( $file, $ok ) = ( $_, 1 );
+    if ( !$include_unix_relative ) {
+      $ok = 0 if ( $file eq '.' || $file eq '..' );
+    }
+    $ok;
+  } readdir $dh;
 
-	closedir $dh or confess "Could not close dir '$dir' : $!";
+  closedir $dh or confess "Could not close dir '$dir' : $!";
 
-	if($closure) {
-		foreach my $file (@files) {
-			if($closure) {
-				$closure->($file);
-			}
-		}
-	}
-	else {
-		return @files;
-	}
-}
-
+  if ($closure) {
+    foreach my $file (@files) {
+      if ($closure) {
+        $closure->($file);
+      }
+    }
+  }
+  else {
+    return @files;
+  }
+} ## end sub process_dir
 
 1;
 __END__

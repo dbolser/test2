@@ -1,3 +1,4 @@
+
 =head1 LICENSE
 
 Copyright [2009-2014] EMBL-European Bioinformatics Institute
@@ -34,37 +35,43 @@ use Carp;
 use base qw(GenomeLoader::GeneLoader::RnaGeneLoader);
 
 sub new {
-	my $caller = shift;
-	my $class  = ref($caller) || $caller;
-	my $self   = $class->SUPER::new(@_);
-	return $self;
+  my $caller = shift;
+  my $class  = ref($caller) || $caller;
+  my $self   = $class->SUPER::new(@_);
+  return $self;
 }
 
 sub get_rna_display_xref {
-	my ( $self, $egene, $igene ) = @_;
-	my $display_xref  = $self->find_xref($egene, XREFS()->{EMBL});
-	if(!$display_xref) {
+  my ( $self, $egene, $igene ) = @_;
+  my $display_xref = $self->find_xref( $egene, XREFS()->{EMBL} );
+  if ( !$display_xref ) {
 
-	    # if analysis == EMBL-NCRNA => Use EMBL as a Xref external_db
-	    # else if analysis == NCRNA => Use tRNAScan-SE
+    # if analysis == EMBL-NCRNA => Use EMBL as a Xref external_db
+    # else if analysis == NCRNA => Use tRNAScan-SE
 
-	    if ($egene->analysis->logic_name eq "ncRNA-ENA" || lc $egene->analysis->logic_name eq "ena_rna") {
-		    $display_xref = $self->get_xref_for_name($egene,XREFS()->{EMBL_GENE_NAME},$igene->{name});
-	    }
-	    else {
-		    $display_xref = $self->get_xref_for_name($egene,XREFS()->{TRNASCAN},$igene->{name});
-	    }
-	    
-	}
+    if ( $egene->analysis->logic_name eq "ncRNA-ENA" ||
+         lc $egene->analysis->logic_name eq "ena_rna" )
+    {
+      $display_xref =
+        $self->get_xref_for_name( $egene, XREFS()->{EMBL_GENE_NAME},
+                                  $igene->{name} );
+    }
+    else {
+      $display_xref =
+        $self->get_xref_for_name( $egene, XREFS()->{TRNASCAN},
+                                  $igene->{name} );
+    }
 
-	# Add synonyms - required for EMBL ncRNA genes
-	# make sure it behaves fine for computed ncRNA genes (we don't want any synonym in these cases) 
-	if (defined $display_xref) {
-	    $self->{displayXrefFinder}->add_synonyms($display_xref, $igene);
-	}
+  }
 
-	return $display_xref;
-}
+# Add synonyms - required for EMBL ncRNA genes
+# make sure it behaves fine for computed ncRNA genes (we don't want any synonym in these cases)
+  if ( defined $display_xref ) {
+    $self->{displayXrefFinder}->add_synonyms( $display_xref, $igene );
+  }
+
+  return $display_xref;
+} ## end sub get_rna_display_xref
 
 1;
 __END__

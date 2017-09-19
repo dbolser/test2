@@ -1,3 +1,4 @@
+
 =head1 LICENSE
 
 Copyright [2009-2014] EMBL-European Bioinformatics Institute
@@ -28,30 +29,27 @@ use warnings;
 use strict;
 use Carp;
 use Data::Dumper;
-use Bio::EnsEMBL::GenomeLoader::Constants qw(NAMES XREFS GENE_NAMES BIOTYPES);
+use Bio::EnsEMBL::GenomeLoader::Constants
+  qw(NAMES XREFS GENE_NAMES BIOTYPES);
 use base 'GenomeLoader::DisplayXrefFinder';
 
 sub new {
-	my $caller = shift;
-	my $class = ref($caller) || $caller;
-	my $self = $class->SUPER::new(@_);
-	return $self;
+  my $caller = shift;
+  my $class  = ref($caller) || $caller;
+  my $self   = $class->SUPER::new(@_);
+  return $self;
 }
 
 sub _initialize {
-	my ( $self, @args ) = @_;
-	$self->SUPER::_initialize(@args);
-	my	$xrefs_search = {
-			NAMES()->{GENE} => [
-				'get_display_xref_for_gene',
-				'get_display_xref_for_gene_name'
-			],
-			NAMES()->{TRANSCRIPT} => [
-				'get_hybrid_display_xref_protein_id_for_transcript'
-			]
-		};
-	$self->display_xrefs_search($xrefs_search);
-	return;
+  my ( $self, @args ) = @_;
+  $self->SUPER::_initialize(@args);
+  my $xrefs_search = {
+    NAMES()->{GENE} =>
+      [ 'get_display_xref_for_gene', 'get_display_xref_for_gene_name' ],
+    NAMES()->{TRANSCRIPT} =>
+      [ 'get_hybrid_display_xref_protein_id_for_transcript' ] };
+  $self->display_xrefs_search($xrefs_search);
+  return;
 }
 
 1;

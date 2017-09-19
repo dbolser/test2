@@ -1,3 +1,4 @@
+
 =head1 LICENSE
 
 Copyright [2009-2014] EMBL-European Bioinformatics Institute
@@ -34,120 +35,120 @@ use Bio::EnsEMBL::GenomeLoader::Constants qw(XREFS NAMES);
 use base qw(GenomeLoader::GeneLoader);
 
 sub new {
-	my $caller = shift;
-	my $class = ref($caller) || $caller;
-	my $self = $class->SUPER::new(@_);
-	return $self;
+  my $caller = shift;
+  my $class  = ref($caller) || $caller;
+  my $self   = $class->SUPER::new(@_);
+  return $self;
 }
 
 sub load_gene {
 
-	my ( $self, $igene, $slice ) = @_;
+  my ( $self, $igene, $slice ) = @_;
 
-	# Stable ID suffix index.
-	my $feature_index = 1;
+  # Stable ID suffix index.
+  my $feature_index = 1;
 
 # Remove swissprot and trembl xrefs from the gene. (Move EMBL-CDS xrefs from the gene and add them to the transcript later.)
-	my @igene_xrefs;
-	my @itranscript_xrefs;
-	foreach my $xref ( @{ $igene->{xrefs} } ) {
-		my $ensembl_dbname = $xref->{databaseReferenceType}{ensemblName};
-		if (   $ensembl_dbname ne XREFS()->{UNIPROT_SWISSPROT}
-			&& $ensembl_dbname ne XREFS()->{UNIPROT_TREMBL} )
-		{
+  my @igene_xrefs;
+  my @itranscript_xrefs;
+  foreach my $xref ( @{ $igene->{xrefs} } ) {
+    my $ensembl_dbname = $xref->{databaseReferenceType}{ensemblName};
+    if ( $ensembl_dbname ne XREFS()->{UNIPROT_SWISSPROT} &&
+         $ensembl_dbname ne XREFS()->{UNIPROT_TREMBL} )
+    {
 
-			# Keep all other gene xrefs.
-			push( @igene_xrefs, $xref );
-		}
-	}
-	$igene->{xrefs} = \@igene_xrefs;
+      # Keep all other gene xrefs.
+      push( @igene_xrefs, $xref );
+    }
+  }
+  $igene->{xrefs} = \@igene_xrefs;
 
-	# Choose analysis track based upon the gene location mapping type.
-	my $gene_analysis =
-	  $self->get_analysis_for_location( $igene->{locations}->[0]->{state} );
-	my $time  = time();
-	my $egene = Bio::EnsEMBL::Gene->new(
-		-SLICE     => $slice,
-		-BIOTYPE   => $igene->{biotype},
-		-SOURCE    => $self->config()->{source},
-		-ANALYSIS  => $gene_analysis,
-		-CREATED_DATE  => $time,
-		-MODIFIED_DATE => $time
-	);
+  # Choose analysis track based upon the gene location mapping type.
+  my $gene_analysis =
+    $self->get_analysis_for_location(
+                                    $igene->{locations}->[0]->{state} );
+  my $time = time();
+  my $egene =
+    Bio::EnsEMBL::Gene->new( -SLICE        => $slice,
+                             -BIOTYPE      => $igene->{biotype},
+                             -SOURCE       => $self->config()->{source},
+                             -ANALYSIS     => $gene_analysis,
+                             -CREATED_DATE => $time,
+                             -MODIFIED_DATE => $time );
 
-	# Gene description.
-	$egene->description( $igene->{description} ) if ( $igene->{description} );
-	$self->set_stable_id( $igene, $egene );
-	
-	# Set gene xrefs (including GO xrefs).
-	$self->set_xrefs( $igene, $egene );
+  # Gene description.
+  $egene->description( $igene->{description} )
+    if ( $igene->{description} );
+  $self->set_stable_id( $igene, $egene );
 
-	# Set gene display xref.
-	$self->set_display_xref( $igene, $egene );
+  # Set gene xrefs (including GO xrefs).
+  $self->set_xrefs( $igene, $egene );
 
-	# Create exons.  There is only one location for pseudogenes.
-	my @eexons;
-	my $exonN = 0;
-	foreach my $igene_location ( @{ $igene->{locations} } ) {
-		$time = time();
-		my $eexon = Bio::EnsEMBL::Exon->new(
-			-SLICE     => $slice,
-			-START  => $igene_location->{min},
-			-END    => $igene_location->{max},
-			-STRAND => $igene_location->{strand},
+  # Set gene display xref.
+  $self->set_display_xref( $igene, $egene );
 
-			# Forced phase to 0
-			-PHASE         => 0,
-			-END_PHASE     => 0,
-			-CREATED_DATE  => $time,
-			-MODIFIED_DATE => $time
-		);
-		$self->set_stable_id( {}, $eexon, $egene, ++$exonN );
-		push( @eexons, $eexon );
-			$self->set_stable_id( $igene, $egene );
-	}
+  # Create exons.  There is only one location for pseudogenes.
+  my @eexons;
+  my $exonN = 0;
+  foreach my $igene_location ( @{ $igene->{locations} } ) {
+    $time = time();
+    my $eexon = Bio::EnsEMBL::Exon->new(
+      -SLICE  => $slice,
+      -START  => $igene_location->{min},
+      -END    => $igene_location->{max},
+      -STRAND => $igene_location->{strand},
 
-	my $transcriptN = 0;
-	# Create transcripts.
-	foreach my $igene_location ( @{ $igene->{locations} } ) {
+      # Forced phase to 0
+      -PHASE         => 0,
+      -END_PHASE     => 0,
+      -CREATED_DATE  => $time,
+      -MODIFIED_DATE => $time );
+    $self->set_stable_id( {}, $eexon, $egene, ++$exonN );
+    push( @eexons, $eexon );
+    $self->set_stable_id( $igene, $egene );
+  }
 
-		# Create a dummy Integr8 transcript with EMBL-CDS xrefs.
-		my $itranscript;
-		$itranscript->{xrefs} = \@itranscript_xrefs;
-		my $time        = time();
-		my $etranscript = Bio::EnsEMBL::Transcript->new(
-			-BIOTYPE       => $egene->biotype(),
-			-SLICE         => $slice,
-			-ANALYSIS      => $egene->analysis(),
-			-CREATED_DATE  => $time,
-			-MODIFIED_DATE => $time
-		);
+  my $transcriptN = 0;
+  # Create transcripts.
+  foreach my $igene_location ( @{ $igene->{locations} } ) {
 
-		# Add exons to transcripts.
-		foreach my $eexon (@eexons) {
-			$etranscript->add_Exon($eexon);
-		}
+    # Create a dummy Integr8 transcript with EMBL-CDS xrefs.
+    my $itranscript;
+    $itranscript->{xrefs} = \@itranscript_xrefs;
+    my $time = time();
+    my $etranscript =
+      Bio::EnsEMBL::Transcript->new( -BIOTYPE  => $egene->biotype(),
+                                     -SLICE    => $slice,
+                                     -ANALYSIS => $egene->analysis(),
+                                     -CREATED_DATE  => $time,
+                                     -MODIFIED_DATE => $time );
 
-		# Set transcript xrefs (including GO xrefs).
-		$self->set_xrefs( $itranscript, $etranscript );
+    # Add exons to transcripts.
+    foreach my $eexon (@eexons) {
+      $etranscript->add_Exon($eexon);
+    }
 
-		# Set transcript display xref.
-		$self->set_display_xref( $itranscript, $etranscript, $egene,
-				++$transcriptN );
-		$self->set_stable_id( $itranscript, $etranscript, $egene, $transcriptN );
-		# Add transcript to gene.
-		$egene->add_Transcript($etranscript);
-	}
+    # Set transcript xrefs (including GO xrefs).
+    $self->set_xrefs( $itranscript, $etranscript );
 
-	# Store the gene, but only if it has at least one transcript.
-	if ( @{ $egene->get_all_Transcripts() } > 0 ) {
-		eval { $self->dba()->get_GeneAdaptor->store($egene); };
-		if ($@) {
-			croak( $self->store_gene_error_handler( $igene, $egene ) );
-		}
-	}
-	return ;
-}
+    # Set transcript display xref.
+    $self->set_display_xref( $itranscript, $etranscript,
+                             $egene,       ++$transcriptN );
+    $self->set_stable_id( $itranscript, $etranscript,
+                          $egene,       $transcriptN );
+    # Add transcript to gene.
+    $egene->add_Transcript($etranscript);
+  } ## end foreach my $igene_location ...
+
+  # Store the gene, but only if it has at least one transcript.
+  if ( @{ $egene->get_all_Transcripts() } > 0 ) {
+    eval { $self->dba()->get_GeneAdaptor->store($egene); };
+    if ($@) {
+      croak( $self->store_gene_error_handler( $igene, $egene ) );
+    }
+  }
+  return;
+} ## end sub load_gene
 
 1;
 __END__

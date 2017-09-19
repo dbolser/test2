@@ -1,3 +1,4 @@
+
 =head1 LICENSE
 
 Copyright [2009-2014] EMBL-European Bioinformatics Institute
@@ -30,40 +31,40 @@ use Bio::EnsEMBL::SimpleFeature;
 use base qw(GenomeLoader::FeatureLoader);
 
 sub new {
-	my $caller = shift;
-	my $class = ref($caller) || $caller;
-	my $self = $class->SUPER::new(@_);
-	$self->{sfa} = $self->dba()->get_SimpleFeatureAdaptor();
-	return $self;
+  my $caller = shift;
+  my $class  = ref($caller) || $caller;
+  my $self   = $class->SUPER::new(@_);
+  $self->{sfa} = $self->dba()->get_SimpleFeatureAdaptor();
+  return $self;
 }
 
 sub load_feature {
-	my ( $self, $isimplefeature, $slice ) = @_;
-		if(!$isimplefeature->{analysis}) {
-			$isimplefeature->{analysis} = $isimplefeature->{featureType};
-		}
-	
-	my $name = lc($isimplefeature->{analysis});
-	$name =~ s/[^0-9a-z_]+//g;
-	my $eanalysis = $self->analysis_finder()->get_analysis_by_name($name,'feature');
-	
-	my $ilocation      = $isimplefeature->{location};
-	my $label = $isimplefeature->{displayLabel};
-	if(length($label)>255) {
-		$label = substr($label,0,252).'...';
-	}
-	my $esimplefeature = Bio::EnsEMBL::SimpleFeature->new(
-		-START         => $ilocation->{min},
-		-END           => $ilocation->{max},
-		-STRAND        => $ilocation->{strand},
-		-SLICE         => $slice,
-		-ANALYSIS      => $eanalysis,
-		-SCORE         => $isimplefeature->{score},
-		-DISPLAY_LABEL => $label
-	);
-	$self->{sfa}->store($esimplefeature);
-	return $esimplefeature;
-}
+  my ( $self, $isimplefeature, $slice ) = @_;
+  if ( !$isimplefeature->{analysis} ) {
+    $isimplefeature->{analysis} = $isimplefeature->{featureType};
+  }
+
+  my $name = lc( $isimplefeature->{analysis} );
+  $name =~ s/[^0-9a-z_]+//g;
+  my $eanalysis =
+    $self->analysis_finder()->get_analysis_by_name( $name, 'feature' );
+
+  my $ilocation = $isimplefeature->{location};
+  my $label     = $isimplefeature->{displayLabel};
+  if ( length($label) > 255 ) {
+    $label = substr( $label, 0, 252 ) . '...';
+  }
+  my $esimplefeature =
+    Bio::EnsEMBL::SimpleFeature->new(-START    => $ilocation->{min},
+                                     -END      => $ilocation->{max},
+                                     -STRAND   => $ilocation->{strand},
+                                     -SLICE    => $slice,
+                                     -ANALYSIS => $eanalysis,
+                                     -SCORE => $isimplefeature->{score},
+                                     -DISPLAY_LABEL => $label );
+  $self->{sfa}->store($esimplefeature);
+  return $esimplefeature;
+} ## end sub load_feature
 1;
 __END__
 

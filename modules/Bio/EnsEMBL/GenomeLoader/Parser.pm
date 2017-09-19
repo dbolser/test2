@@ -38,7 +38,8 @@ sub new {
   my ($class) = shift;
   $class = ref($class) || $class;
   my $self =
-    ( @_ && defined $_[0] && ( ref( $_[0] ) eq 'HASH' ) ) ? $_[0] : {@_};
+    ( @_ && defined $_[0] && ( ref( $_[0] ) eq 'HASH' ) ) ? $_[0] :
+                                                            {@_};
   bless( $self, $class );
   return $self;
 }
@@ -68,8 +69,9 @@ sub parse {
   $self->log()->info("Parsing repeats and features from $data_dir");
   $self->add_repeats( $data_dir, $componentsById );
   $self->set_object_xrefs( $componentsById,
-                           from_json_file_default( $data_dir . 'componentxref' )
-  );
+                           from_json_file_default(
+                                             $data_dir . 'componentxref'
+                           ) );
 
   for my $com ( values( %{$componentsById} ) ) {
     push @{ $genome->{components} }, $com;
@@ -80,12 +82,12 @@ sub parse {
 
 sub parse_components {
   my ( $self, $data_dir, $genomeId ) = @_;
-  my $icomponents    = from_json_file_default( $data_dir . 'component' );
+  my $icomponents = from_json_file_default( $data_dir . 'component' );
   my $componentsById = {};
   my $n              = 1;
   for my $icomponent ( @{ $icomponents->{$genomeId} } ) {
     $icomponent->{name} =~
-      s/[^A-z0-9.-]+//g;    # replace characters that Ensembl cannot handle
+      s/[^A-z0-9.-]+//g; # replace characters that Ensembl cannot handle
     $icomponent->{rank} = $n++;
     $componentsById->{ $icomponent->{persistableId} } = $icomponent;
   }
@@ -126,7 +128,8 @@ sub add_repeats {
   my ( $self, $data_dir, $componentsById ) = @_;
 
   for my $type (
-     qw(dustrepeatregion trfrepeatregion repeatmaskerrepeatregion repeatregion))
+    qw(dustrepeatregion trfrepeatregion repeatmaskerrepeatregion repeatregion)
+    )
   {
     $self->log()->info( "Parsing " . $type . " repeats" );
     $self->add_repeatfeatures( $componentsById, $data_dir . $type,
@@ -152,8 +155,8 @@ sub add_repeatfeatures {
     my $i         = 0;
     foreach my $feature ( @{$features} ) {
       $self->log()
-        ->info(
-             "Adding repeat features " . $i++ . " to component $component_id" );
+        ->info( "Adding repeat features " . $i++ .
+                " to component $component_id" );
       $feature->{component_id} = $component_id;
       push @{ $component->{$feature_type} }, $feature;
     }
@@ -175,13 +178,14 @@ sub add_protein_coding_genes {
   $self->log()->info("LOAD INTEGR8 GENE NAMES");
   $self->add_gene_names( $data_dir . 'genename', $igeneid2gene );
 
-  #	$self->log()->info("LOAD INTEGR8 GENE DESCRIPTIONS");
-  #	add_gene_descriptions( $data_dir . 'genedescription', $igeneid2gene );
+#	$self->log()->info("LOAD INTEGR8 GENE DESCRIPTIONS");
+#	add_gene_descriptions( $data_dir . 'genedescription', $igeneid2gene );
 
   # Set locations for each Integr8 gene object.
   $self->log()->info("LOAD INTEGR8 GENE LOCATIONS");
   $self->set_object_locations( $igeneid2gene,
-                               from_json_file_default($data_dir . 'genelocation'
+                               from_json_file_default(
+                                              $data_dir . 'genelocation'
                                ),
                                {},
                                {} );
@@ -202,25 +206,28 @@ sub add_proteins {
 
   # protein ID -> protein
   my $iproteinid2protein =
-    $self->add_proteins_from_file( $data_dir . 'protein', $igeneid2gene );
+    $self->add_proteins_from_file( $data_dir . 'protein',
+                                   $igeneid2gene );
 
-  # Set locations, sub-locations and location mods for each Integr8 protein
+# Set locations, sub-locations and location mods for each Integr8 protein
   $self->log()->info("SET INTEGR8 PROTEIN LOCATIONS");
   $self->set_object_locations( $iproteinid2protein,
                                from_json_file_default(
-                                                   $data_dir . 'proteinlocation'
+                                           $data_dir . 'proteinlocation'
                                ),
                                from_json_file_default(
-                                                $data_dir . 'proteinsublocation'
+                                        $data_dir . 'proteinsublocation'
                                ),
                                from_json_file_default(
-                                                $data_dir . 'proteinlocationmod'
+                                        $data_dir . 'proteinlocationmod'
                                ) );
 
   # Set xrefs for each Integr8 protein object.
   $self->log()->info("SET INTEGR8 PROTEIN XREFS");
   $self->set_object_xrefs( $iproteinid2protein,
-                          from_json_file_default( $data_dir . 'proteinxref' ) );
+                           from_json_file_default(
+                                               $data_dir . 'proteinxref'
+                           ) );
   $self->log()->info("LOAD INTEGR8 PROTEIN FEATURES");
 
   # Must be called AFTER protein xrefs have been loaded and set
@@ -296,9 +303,11 @@ sub add_interpro_features {
           }
           else {
             $self->log()
-              ->warn( 'Could not create protein feature from InterPro xref ' .
-                      $xref->{primaryIdentifier} . ' as no logic key matches ' .
-                      $xref->{quarternaryIdentifier} );
+              ->warn(
+                'Could not create protein feature from InterPro xref ' .
+                  $xref->{primaryIdentifier} .
+                  ' as no logic key matches ' .
+                  $xref->{quarternaryIdentifier} );
           }
         }
       } ## end if ( uc $xref->{databaseReferenceType...})
@@ -312,15 +321,16 @@ sub add_transcripts {
 
   # transcript ID -> transcript
   my $itranscriptid2transcript =
-    $self->add_transcripts_from_file( $data_dir . 'transcript',
-                                      BIOTYPES()->{PROTEIN_CODING_GENE_TYPE},
-                                      $iproteinid2protein );
+    $self->add_transcripts_from_file(
+                                 $data_dir . 'transcript',
+                                 BIOTYPES()->{PROTEIN_CODING_GENE_TYPE},
+                                 $iproteinid2protein );
 
   # Set locations for each Integr8 transcript object.
   $self->log()->debug("LOAD INTEGR8 TRANSCRIPT LOCATIONS");
   $self->set_object_locations( $itranscriptid2transcript,
                                from_json_file_default(
-                                                $data_dir . 'transcriptlocation'
+                                        $data_dir . 'transcriptlocation'
                                ),
                                {},
                                {} );
@@ -328,7 +338,8 @@ sub add_transcripts {
 
   # Set xrefs for each Integr8 transcript object.
   $self->set_object_xrefs( $itranscriptid2transcript,
-                           from_json_file_default( $data_dir . 'transcriptxref'
+                           from_json_file_default(
+                                            $data_dir . 'transcriptxref'
                            ) );
 
   $self->add_operons( $data_dir, $itranscriptid2transcript );
@@ -349,7 +360,7 @@ sub add_transcripts_from_file {
 
         # We have processed this transcript before.
         push( @{ $existing_transcript->{proteins} }, $iprotein );
-        push( @{ $iprotein->{transcripts} },         $existing_transcript );
+        push( @{ $iprotein->{transcripts} }, $existing_transcript );
       }
       else {
 
@@ -376,7 +387,7 @@ sub add_operons {
   $self->log()->debug("LOAD INTEGR8 OPERON LOCATIONS");
   $self->set_object_locations( $ioperonid2operon,
                                from_json_file_default(
-                                                    $data_dir . 'operonlocation'
+                                            $data_dir . 'operonlocation'
                                ),
                                {},
                                {} );
@@ -384,7 +395,9 @@ sub add_operons {
 
   # Set xrefs for each Integr8 transcript object.
   $self->set_object_xrefs( $ioperonid2operon,
-                           from_json_file_default( $data_dir . 'operonxref' ) );
+                           from_json_file_default(
+                                                $data_dir . 'operonxref'
+                           ) );
   return;
 }
 
@@ -395,10 +408,12 @@ sub add_operons_from_file {
   while ( my ( $itranscript_id, $ioperons ) = each( %{$o} ) ) {
     foreach my $ioperon ( @{$ioperons} ) {
       $self->log()
-        ->debug( "operon " . $ioperon->{persistableId} . " for transcript" .
-                 $itranscript_id );
-      my $itranscript     = $itranscriptid2transcript->{$itranscript_id};
-      my $existing_operon = $ioperonid2operon{ $ioperon->{persistableId} };
+        ->debug(
+             "operon " . $ioperon->{persistableId} . " for transcript" .
+               $itranscript_id );
+      my $itranscript = $itranscriptid2transcript->{$itranscript_id};
+      my $existing_operon =
+        $ioperonid2operon{ $ioperon->{persistableId} };
       if ( !defined $existing_operon ) {
         $existing_operon = $ioperon;
         $ioperonid2operon{ $ioperon->{persistableId} } = $ioperon;
@@ -422,13 +437,14 @@ sub add_pseudogenes {
                                 BIOTYPES()->{PSEUDOGENE_TYPE},
                                 $componentsById );
   $self->log()->info("LOAD INTEGR8 PSEUDOGENE NAMES");
-  $self->add_gene_names( $data_dir . 'pseudogenename', $ipgeneid2pgene );
+  $self->add_gene_names( $data_dir . 'pseudogenename',
+                         $ipgeneid2pgene );
   $self->log()->info("LOAD INTEGR8 PSEUDOGENE LOCATIONS");
 
   # Set locations for each Integr8 pseudogene object.
   $self->set_object_locations( $ipgeneid2pgene,
                                from_json_file_default(
-                                                $data_dir . 'pseudogenelocation'
+                                        $data_dir . 'pseudogenelocation'
                                ),
                                {},
                                {} );
@@ -449,8 +465,8 @@ sub add_genes_from_file {
   while ( my ( $component_id, $igenes ) = each( %{$obj} ) ) {
     my $component = $componentsById->{$component_id};
     foreach my $igene ( @{$igenes} ) {
-      $igene->{biotype}                                        = $biotype;
-      $igene->{component_id}                                   = $component_id;
+      $igene->{biotype}      = $biotype;
+      $igene->{component_id} = $component_id;
       $igeneid2gene->{ $igene->{ NAMES()->{PERSISTABLE_ID} } } = $igene;
     }
     push @{ $component->{genes} }, @{$igenes};
@@ -464,8 +480,10 @@ sub add_gene_names {
   my $obj = from_json_file_default($filename);
   while ( my ( $igene_id, $igene_names ) = each( %{$obj} ) ) {
     foreach my $igene_name ( @{$igene_names} ) {
-      push( @{ $igeneid2gene->{$igene_id}->{names}->{ $igene_name->{type} } },
-            $igene_name->{name} );
+      push(
+          @{$igeneid2gene->{$igene_id}->{names}->{ $igene_name->{type} }
+          },
+          $igene_name->{name} );
     }
   }
   return;
@@ -481,9 +499,12 @@ sub add_rna_gene_names {
   my $igene_nameMap_href = $igene->{nameMap};
 
   foreach my $igene_type ( keys(%$igene_nameMap_href) ) {
-    foreach my $name_entry_href ( @{ $igene_nameMap_href->{$igene_type} } ) {
+    foreach
+      my $name_entry_href ( @{ $igene_nameMap_href->{$igene_type} } )
+    {
       if ( !defined $names{ $name_entry_href->{type} } ) {
-        $names{ $name_entry_href->{type} } = [ $name_entry_href->{name} ];
+        $names{ $name_entry_href->{type} } =
+          [ $name_entry_href->{name} ];
       }
       else {
         my $names_aref = $names{ $name_entry_href->{type} };
@@ -521,7 +542,8 @@ sub add_rnagenes {
       if ( $self->config()->{suppressTrackingRefs} == 1 ) {
         $igene->{xrefs} = [
           grep {
-            $_->{databaseReferenceType}{ensemblName} !~ m/ENA_FEATURE_[A-Z]+/
+            $_->{databaseReferenceType}{ensemblName} !~
+              m/ENA_FEATURE_[A-Z]+/
           } @{ $igene->{databaseReferences} } ];
       }
       else {
@@ -554,7 +576,8 @@ sub add_rna_transcripts {
       if ( $self->config()->{suppressTrackingRefs} == 1 ) {
         $itranscript->{xrefs} = [
           grep {
-            $_->{databaseReferenceType}{ensemblName} !~ m/ENA_FEATURE_[A-Z]+/
+            $_->{databaseReferenceType}{ensemblName} !~
+              m/ENA_FEATURE_[A-Z]+/
           } @{ $itranscript->{databaseReferences} } ];
       }
       else {
@@ -622,12 +645,15 @@ sub remove_duplicate_genes_from_hash {
 
 sub set_object_xrefs {
   my ( $self, $iobjectid2object_ref, $iobjectid2xrefs_ref ) = @_;
-  while ( my ( $iobject_id, $ixrefs ) = each( %{$iobjectid2xrefs_ref} ) ) {
+  while ( my ( $iobject_id, $ixrefs ) =
+          each( %{$iobjectid2xrefs_ref} ) )
+  {
     my $iobject = $iobjectid2object_ref->{$iobject_id};
     if ( $self->config()->{suppressTrackingRefs} == 1 ) {
       $iobject->{xrefs} = [
         grep {
-          $_->{databaseReferenceType}{ensemblName} !~ m/ENA_FEATURE_[A-Z]+/
+          $_->{databaseReferenceType}{ensemblName} !~
+            m/ENA_FEATURE_[A-Z]+/
         } @{$ixrefs} ];
     }
     else {
@@ -643,21 +669,27 @@ sub set_object_xrefs {
         $ixref->{primaryIdentifier};
       my $val = $xref_details->{description}{$key};
       if ( defined $val ) {
-        if ( !defined $ixref->{description} || $ixref->{description} eq '' ) {
+        if ( !defined $ixref->{description} ||
+             $ixref->{description} eq '' )
+        {
           $ixref->{description} = $val;
         }
         elsif ( $val ne $ixref->{description} ) {
           $self->log()
-            ->warn( "Conflicting descriptions found for $key: $val vs. " .
+            ->warn(
+                  "Conflicting descriptions found for $key: $val vs. " .
                     $ixref->{description} );
         }
       }
-      elsif ( defined $ixref->{description} && $ixref->{description} ne '' ) {
+      elsif ( defined $ixref->{description} &&
+              $ixref->{description} ne '' )
+      {
         $xref_details->{description}{$key} = $ixref->{description};
       }
       $ixref->{object} = $iobject;
       if ( defined $ixref->{version} ) {
-        if ( looks_like_number( $ixref->{version} ) && $ixref->{version} == 0 )
+        if ( looks_like_number( $ixref->{version} ) &&
+             $ixref->{version} == 0 )
         {
           $ixref->{version} = undef;
         }
@@ -677,7 +709,9 @@ sub set_object_locations {
        $ilocationid2sublocations, $ilocationid2locationmods )
     = @_;
   my $PERSISTABLE_ID = NAMES()->{PERSISTABLE_ID};
-  while ( my ( $iobject_id, $ilocations ) = each( %{$iobjectid2locations} ) ) {
+  while ( my ( $iobject_id, $ilocations ) =
+          each( %{$iobjectid2locations} ) )
+  {
     my $iobject = $iobjectid2object->{$iobject_id};
     $iobject->{locations} = $ilocations;
     foreach my $ilocation ( @{$ilocations} ) {
@@ -695,7 +729,8 @@ sub set_object_locations {
         }
       }
       my $ilocationmods =
-        $ilocationid2locationmods->{ $ilocation->{$PERSISTABLE_ID} } || [];
+        $ilocationid2locationmods->{ $ilocation->{$PERSISTABLE_ID} } ||
+        [];
       $ilocation->{mods} = $ilocationmods;
       foreach my $ilocationmod ( @{$ilocationmods} ) {
         $ilocationmod->{location} = $ilocation;

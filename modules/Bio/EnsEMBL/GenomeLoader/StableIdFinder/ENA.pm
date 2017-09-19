@@ -1,3 +1,4 @@
+
 =head1 LICENSE
 
 Copyright [2009-2014] EMBL-European Bioinformatics Institute
@@ -29,37 +30,32 @@ use strict;
 use Carp;
 use Data::Dumper;
 use base 'GenomeLoader::StableIdFinder';
-use Bio::EnsEMBL::GenomeLoader::Constants qw(NAMES XREFS GENE_NAMES BIOTYPES);
+use Bio::EnsEMBL::GenomeLoader::Constants
+  qw(NAMES XREFS GENE_NAMES BIOTYPES);
 
 sub new {
-	my $caller = shift;
-	my $class = ref($caller) || $caller;
-	my $self = $class->SUPER::new(@_);
-	return $self;
+  my $caller = shift;
+  my $class  = ref($caller) || $caller;
+  my $self   = $class->SUPER::new(@_);
+  return $self;
 }
+
 sub _initialize {
-	my ( $self, @args ) = @_;
-	my %args = @args;
-	$self->{species_id} = $args{species_id};
-	my $id_search = $args{id_search};
-	if ( !$id_search ) {
-		$id_search = {
-			NAMES()->{GENE} => [
-				'get_identifying_id', 'get_public_id'
-			],
-			NAMES()->{TRANSCRIPT} => [
-				'get_identifying_id', 'get_public_id'
-			],
-			NAMES()->{TRANSLATION} => [
-				'get_identifying_id', 'get_public_id', 'get_parent_id'
-			],
-			NAMES()->{EXON} => [
-				'get_parent_id'
-			]
-		};
-	}
-	$self->id_search($id_search);
-	return;
+  my ( $self, @args ) = @_;
+  my %args = @args;
+  $self->{species_id} = $args{species_id};
+  my $id_search = $args{id_search};
+  if ( !$id_search ) {
+    $id_search = {
+           NAMES()->{GENE} => [ 'get_identifying_id', 'get_public_id' ],
+           NAMES()->{TRANSCRIPT} =>
+             [ 'get_identifying_id', 'get_public_id' ],
+           NAMES()->{TRANSLATION} =>
+             [ 'get_identifying_id', 'get_public_id', 'get_parent_id' ],
+           NAMES()->{EXON} => [ 'get_parent_id' ] };
+  }
+  $self->id_search($id_search);
+  return;
 }
 1;
 

@@ -1,3 +1,4 @@
+
 =head1 LICENSE
 
 Copyright [2009-2014] EMBL-European Bioinformatics Institute
@@ -32,57 +33,63 @@ use Data::Dumper;
 use base qw(GenomeLoader::FeatureLoader);
 
 sub new {
-	my $caller = shift;
-	my $class  = ref($caller) || $caller;
-	my $self   = $class->SUPER::new(@_);
-	$self->{aa}  = $self->dba()->get_AnalysisAdaptor();
-	$self->{rfa} = $self->dba()->get_RepeatFeatureAdaptor();
-	return $self;
+  my $caller = shift;
+  my $class  = ref($caller) || $caller;
+  my $self   = $class->SUPER::new(@_);
+  $self->{aa}  = $self->dba()->get_AnalysisAdaptor();
+  $self->{rfa} = $self->dba()->get_RepeatFeatureAdaptor();
+  return $self;
 }
 
 sub load_feature {
-	my ( $self, $irepeatfeature, $slice ) = @_;
-	# Consensus.
-	my $irepeatUnit = $irepeatfeature->{repeatUnit};
+  my ( $self, $irepeatfeature, $slice ) = @_;
+  # Consensus.
+  my $irepeatUnit = $irepeatfeature->{repeatUnit};
 
-	my $name = $irepeatUnit->{repeatName}||$irepeatUnit->{repeatClass};
-	$name =~ s/'/\\'/g;
-	
-	my $analysis = lc($irepeatfeature->{analysis});
-	my $type;
-	eval {
-		$type = $self->analysis_finder()->get_analysis_by_name($analysis,"repeat");
-	};
-	if($@) {
-		$self->log()->debug("Could not find repeat type with name $name - using ena_repeat");	
-		$type = $self->analysis_finder()->get_analysis_by_name("repeat","repeat");
-	}
+  my $name = $irepeatUnit->{repeatName} || $irepeatUnit->{repeatClass};
+  $name =~ s/'/\\'/g;
 
-	my $econsensus =
-	  Bio::EnsEMBL::RepeatConsensus->new(
-						   -NAME   => $name,
-						   -LENGTH => length( $irepeatUnit->{repeatConsensus} ),
-						   -REPEAT_CLASS     => $irepeatUnit->{repeatClass},
-						   -REPEAT_CONSENSUS => $irepeatUnit->{repeatConsensus},
-						   -REPEAT_TYPE      => $irepeatUnit->{repeatType} );
-	# store analysis track if not yet stored (not necessary for other features)
-	if ( !$type->dbID() ) {
-		$self->{aa}->store($type);
-	}
-	my $ilocation = $irepeatfeature->{location};
-	my $erepeatfeature =
-	  Bio::EnsEMBL::RepeatFeature->new(
-									  -REPEAT_CONSENSUS => $econsensus,
-									  -HSTART => $irepeatfeature->{repeatStart},
-									  -HEND   => $irepeatfeature->{repeatEnd},
-									  -SCORE  => $irepeatfeature->{score},
-									  -START  => $ilocation->{min},
-									  -END    => $ilocation->{max},
-									  -STRAND => $ilocation->{strand},
-									  -ANALYSIS => $type,
-									  -SLICE    => $slice );
-	$self->{rfa}->store($erepeatfeature);
-	return $erepeatfeature;
+  my $analysis = lc( $irepeatfeature->{analysis} );
+  my $type;
+  eval {
+    $type =
+      $self->analysis_finder()
+      ->get_analysis_by_name( $analysis, "repeat" );
+  };
+  if ($@) {
+    $self->log()
+      ->debug(
+       "Could not find repeat type with name $name - using ena_repeat");
+    $type =
+      $self->analysis_finder()
+      ->get_analysis_by_name( "repeat", "repeat" );
+  }
+
+  my $econsensus =
+    Bio::EnsEMBL::RepeatConsensus->new(
+                   -NAME   => $name,
+                   -LENGTH => length( $irepeatUnit->{repeatConsensus} ),
+                   -REPEAT_CLASS     => $irepeatUnit->{repeatClass},
+                   -REPEAT_CONSENSUS => $irepeatUnit->{repeatConsensus},
+                   -REPEAT_TYPE      => $irepeatUnit->{repeatType} );
+# store analysis track if not yet stored (not necessary for other features)
+  if ( !$type->dbID() ) {
+    $self->{aa}->store($type);
+  }
+  my $ilocation = $irepeatfeature->{location};
+  my $erepeatfeature =
+    Bio::EnsEMBL::RepeatFeature->new(
+                              -REPEAT_CONSENSUS => $econsensus,
+                              -HSTART => $irepeatfeature->{repeatStart},
+                              -HEND   => $irepeatfeature->{repeatEnd},
+                              -SCORE  => $irepeatfeature->{score},
+                              -START  => $ilocation->{min},
+                              -END    => $ilocation->{max},
+                              -STRAND => $ilocation->{strand},
+                              -ANALYSIS => $type,
+                              -SLICE    => $slice );
+  $self->{rfa}->store($erepeatfeature);
+  return $erepeatfeature;
 } ## end sub load_feature
 1;
 __END__

@@ -1,3 +1,4 @@
+
 =head1 LICENSE
 
 Copyright [2009-2014] EMBL-European Bioinformatics Institute
@@ -22,37 +23,37 @@ use strict;
 use Carp;
 
 sub new {
-	my ( $caller, @args ) = @_;
-	my $class = ref($caller) || $caller;
-	my $self = {@args};
-	bless( $self, $class );
-	return $self;
+  my ( $caller, @args ) = @_;
+  my $class = ref($caller) || $caller;
+  my $self = {@args};
+  bless( $self, $class );
+  return $self;
 }
 
 sub dba {
-	my $self = shift;
-	$self->{dba} = shift if @_;
-	return $self->{dba};
+  my $self = shift;
+  $self->{dba} = shift if @_;
+  return $self->{dba};
 }
 
 sub gene_to_id {
-	my ( $self, $gene ) = @_;
-	croak("gene_to_id not implemented!");
+  my ( $self, $gene ) = @_;
+  croak("gene_to_id not implemented!");
 }
 
 sub transcript_to_id {
-	my ( $self, $transcript, $gene, $index ) = @_;
-	croak("transcript_to_id not implemented!");
+  my ( $self, $transcript, $gene, $index ) = @_;
+  croak("transcript_to_id not implemented!");
 }
 
 sub translation_to_id {
-	my ( $self, $translation, $transcript, $gene, $index ) = @_;
-	croak("translation_to_id not implemented!");
+  my ( $self, $translation, $transcript, $gene, $index ) = @_;
+  croak("translation_to_id not implemented!");
 }
 
 sub exon_to_id {
-	my ( $self, $exon, $gene, $index ) = @_;
-	croak("exon_to_id not implemented!");
+  my ( $self, $exon, $gene, $index ) = @_;
+  croak("exon_to_id not implemented!");
 }
 1;
 __END__

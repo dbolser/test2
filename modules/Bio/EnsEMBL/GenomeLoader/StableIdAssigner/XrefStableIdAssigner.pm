@@ -1,3 +1,4 @@
+
 =head1 LICENSE
 
 Copyright [2009-2014] EMBL-European Bioinformatics Institute
@@ -23,28 +24,28 @@ use Carp;
 use base 'GenomeLoader::StableIdAssigner::DisplayXrefStableIdAssigner';
 
 sub new {
-	my $caller = shift;
-	my $class = ref($caller) || $caller;
-	my $self = $class->SUPER::new(@_);
-	if(!$self->xref_type()) {
-		croak "xref_type not specified";
-	}
-	return $self;
+  my $caller = shift;
+  my $class  = ref($caller) || $caller;
+  my $self   = $class->SUPER::new(@_);
+  if ( !$self->xref_type() ) {
+    croak "xref_type not specified";
+  }
+  return $self;
 }
 
 sub xref_type {
-	my $self = shift;
-	$self->{xref_type} = shift if @_;
-	return $self->{xref_type};
+  my $self = shift;
+  $self->{xref_type} = shift if @_;
+  return $self->{xref_type};
 }
 
 sub gene_to_id {
-	my ($self,$gene) = @_;
-	my $id = undef;
-	for my $xref (@{$gene->get_all_DBEntries($self->xref_type())}) {
-		$id = $xref->primary_id();
-	}
-	return $id;
+  my ( $self, $gene ) = @_;
+  my $id = undef;
+  for my $xref ( @{ $gene->get_all_DBEntries( $self->xref_type() ) } ) {
+    $id = $xref->primary_id();
+  }
+  return $id;
 }
 
 1;

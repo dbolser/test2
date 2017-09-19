@@ -1,3 +1,4 @@
+
 =head1 LICENSE
 
 Copyright [2009-2014] EMBL-European Bioinformatics Institute
@@ -22,6 +23,7 @@ limitations under the License.
 #
 # Object for loading data into an ensembl database
 #
+
 package Bio::EnsEMBL::GenomeLoader::SequenceLoader;
 use warnings;
 use strict;
@@ -36,8 +38,8 @@ sub new {
   my $caller = shift;
   my $class  = ref($caller) || $caller;
   my $self   = $class->SUPER::new(@_);
-  if (!$self->genome_metadata()) {
-	croak("Genome metadata not supplied");
+  if ( !$self->genome_metadata() ) {
+    croak("Genome metadata not supplied");
   }
   return $self;
 }
@@ -49,17 +51,21 @@ sub genome_metadata {
 }
 
 sub load_sequence {
-  my ($self, $icomponent) = @_;
+  my ( $self, $icomponent ) = @_;
 
   my $slice_adaptor = $self->dba()->get_SliceAdaptor;
   my $aa            = $self->dba()->get_AttributeAdaptor;
   # Store coord system.
   my $csa = $self->dba()->get_CoordSystemAdaptor;
 
-  my ($component_name_prefix, $component_name) = $self->parse_description($icomponent);
-  $self->log()->info("Handling $component_name_prefix, $component_name");
-  my $slice_coord_system = $self->genome_metadata()->{coord_systems}{$component_name_prefix};
-  $self->log()->debug("Using coord system " . $slice_coord_system->name());
+  my ( $component_name_prefix, $component_name ) =
+    $self->parse_description($icomponent);
+  $self->log()
+    ->info("Handling $component_name_prefix, $component_name");
+  my $slice_coord_system =
+    $self->genome_metadata()->{coord_systems}{$component_name_prefix};
+  $self->log()
+    ->debug( "Using coord system " . $slice_coord_system->name() );
 
   # reformat troublesome characterspp
   $component_name =~ s/\+/plus/g;
@@ -67,140 +73,170 @@ sub load_sequence {
   $component_name =~ s/_+/_/g;
 
   # Component slice.
-  my $slice = Bio::EnsEMBL::Slice->new(-SEQ_REGION_NAME   => $component_name,
-									   -COORD_SYSTEM      => $slice_coord_system,
-									   -START             => 1,
-									   -END               => $icomponent->{length},
-									   -SEQ_REGION_LENGTH => $icomponent->{length});
+  my $slice =
+    Bio::EnsEMBL::Slice->new(-SEQ_REGION_NAME => $component_name,
+                             -COORD_SYSTEM    => $slice_coord_system,
+                             -START           => 1,
+                             -END             => $icomponent->{length},
+                             -SEQ_REGION_LENGTH => $icomponent->{length}
+    );
 
   # Has the coord system been stored yet ? possible race condition
-  if (!defined $slice->coord_system()->dbID() || $slice->coord_system()->dbID() == 0) {
-	$self->log()->info("Storing coord system " . $slice->coord_system()->name());
+  if ( !defined $slice->coord_system()->dbID() ||
+       $slice->coord_system()->dbID() == 0 )
+  {
+    $self->log()
+      ->info("Storing coord system " . $slice->coord_system()->name() );
 
-	# Store coord system.
-	$csa->store($slice->coord_system);
+    # Store coord system.
+    $csa->store( $slice->coord_system );
 
   }
 
-  if (defined $icomponent->{seq}) {
-	my $seq = $icomponent->{seq};
-	$slice_adaptor->store($slice, \$seq);
-  } else {
-  	print "Storing ".$slice->seq_region_name()."\n";
-	$slice_adaptor->store($slice);
+  if ( defined $icomponent->{seq} ) {
+    my $seq = $icomponent->{seq};
+    $slice_adaptor->store( $slice, \$seq );
+  }
+  else {
+    print "Storing " . $slice->seq_region_name() . "\n";
+    $slice_adaptor->store($slice);
   }
 
   my @attributes = ();
 
-  if ($icomponent->{topLevel}) {
-	push @attributes,
-	  Bio::EnsEMBL::Attribute->new(-CODE        => 'toplevel',
-								   -NAME        => 'Top Level',
-								   -DESCRIPTION => 'Top Level Non-Redundant Sequence',
-								   -VALUE       => '1');
+  if ( $icomponent->{topLevel} ) {
+    push @attributes,
+      Bio::EnsEMBL::Attribute->new(
+                     -CODE        => 'toplevel',
+                     -NAME        => 'Top Level',
+                     -DESCRIPTION => 'Top Level Non-Redundant Sequence',
+                     -VALUE       => '1' );
 
-	my $long_name = $self->get_longname($icomponent);
-	if (defined $long_name && $long_name ne 'unknown') {
-	  push @attributes,
-		Bio::EnsEMBL::Attribute->new(-CODE        => 'name',
-									 -NAME        => 'Name',
-									 -DESCRIPTION => 'User-friendly name',
-									 -VALUE       => $long_name);
-	}
-	if ($icomponent->{geneticCode} ne '1') {
-	  push @attributes,
-		Bio::EnsEMBL::Attribute->new(-CODE        => 'codon_table',
-									 -NAME        => 'Codon table ID',
-									 -DESCRIPTION => 'Codon table ID',
-									 -VALUE       => $icomponent->{geneticCode});
-	}
-  }
+    my $long_name = $self->get_longname($icomponent);
+    if ( defined $long_name && $long_name ne 'unknown' ) {
+      push @attributes,
+        Bio::EnsEMBL::Attribute->new(
+                                   -CODE        => 'name',
+                                   -NAME        => 'Name',
+                                   -DESCRIPTION => 'User-friendly name',
+                                   -VALUE       => $long_name );
+    }
+    if ( $icomponent->{geneticCode} ne '1' ) {
+      push @attributes,
+        Bio::EnsEMBL::Attribute->new(
+                                    -CODE        => 'codon_table',
+                                    -NAME        => 'Codon table ID',
+                                    -DESCRIPTION => 'Codon table ID',
+                                    -VALUE => $icomponent->{geneticCode}
+        );
+    }
+  } ## end if ( $icomponent->{topLevel...})
 
-  if (   $slice->coord_system_name() eq CS()->{CHROMOSOME}
-	  || $slice->coord_system_name() eq CS()->{PLASMID})
+  if ( $slice->coord_system_name() eq CS()->{CHROMOSOME} ||
+       $slice->coord_system_name() eq CS()->{PLASMID} )
   {
-	push(@attributes,
-		 Bio::EnsEMBL::Attribute->new(-CODE        => 'karyotype_rank',
-									  -NAME        => 'Rank in the karyotype',
-									  -DESCRIPTION => 'For a given seq_region, if it is part of the species karyotype, will indicate its rank',
-									  -VALUE       => $icomponent->{rank}));
+    push(
+      @attributes,
+      Bio::EnsEMBL::Attribute->new(
+        -CODE => 'karyotype_rank',
+        -NAME => 'Rank in the karyotype',
+        -DESCRIPTION =>
+'For a given seq_region, if it is part of the species karyotype, will indicate its rank',
+        -VALUE => $icomponent->{rank} ) );
   }
 
   # Add circular sequence attribute to top-level seq_region.
-  if ($icomponent->{circular}) {
-	push(@attributes,
-		 Bio::EnsEMBL::Attribute->new(-CODE        => 'circular_seq',
-									  -NAME        => 'Circular sequence',
-									  -DESCRIPTION => 'Circular sequence',
-									  -VALUE       => '1'));
+  if ( $icomponent->{circular} ) {
+    push( @attributes,
+          Bio::EnsEMBL::Attribute->new(
+                                    -CODE        => 'circular_seq',
+                                    -NAME        => 'Circular sequence',
+                                    -DESCRIPTION => 'Circular sequence',
+                                    -VALUE       => '1' ) );
   }
 
   # add any references
   my $xa = $self->dba()->get_DBEntryAdaptor();
-  for my $xref (@{$icomponent->{xrefs}}) {
-	my $dbentry = Bio::EnsEMBL::DBEntry->new(-DBNAME     => $xref->{databaseReferenceType}{ensemblName},
-											 -PRIMARY_ID => $xref->{primaryIdentifier},
-											 -DISPLAY_ID => $xref->{secondaryIdentifier} || $xref->{primaryIdentifier});
-	my $dbX = $xa->store($dbentry);
-	push(@attributes,
-		 Bio::EnsEMBL::Attribute->new(-CODE        => 'xref_id',
-									  -NAME        => 'Xref ID',
-									  -DESCRIPTION => 'ID of associated database reference',
-									  -VALUE       => $dbX));
+  for my $xref ( @{ $icomponent->{xrefs} } ) {
+    my $dbentry =
+      Bio::EnsEMBL::DBEntry->new(
+                 -DBNAME => $xref->{databaseReferenceType}{ensemblName},
+                 -PRIMARY_ID => $xref->{primaryIdentifier},
+                 -DISPLAY_ID => $xref->{secondaryIdentifier} ||
+                   $xref->{primaryIdentifier} );
+    my $dbX = $xa->store($dbentry);
+    push( @attributes,
+          Bio::EnsEMBL::Attribute->new(
+                  -CODE        => 'xref_id',
+                  -NAME        => 'Xref ID',
+                  -DESCRIPTION => 'ID of associated database reference',
+                  -VALUE       => $dbX ) );
   }
 
-  if (defined $icomponent->{creationDate}) {
-	push(@attributes,
-		 Bio::EnsEMBL::Attribute->new(-CODE        => 'creation_date',
-									  -NAME        => 'Creation date',
-									  -DESCRIPTION => 'Creation date of annotation',
-									  -VALUE       => $icomponent->{creationDate}{date}));
+  if ( defined $icomponent->{creationDate} ) {
+    push( @attributes,
+          Bio::EnsEMBL::Attribute->new(
+                          -CODE        => 'creation_date',
+                          -NAME        => 'Creation date',
+                          -DESCRIPTION => 'Creation date of annotation',
+                          -VALUE => $icomponent->{creationDate}{date} )
+    );
   }
-  if (defined $icomponent->{updateDate}) {
-	push(@attributes,
-		 Bio::EnsEMBL::Attribute->new(-CODE        => 'update_date',
-									  -NAME        => 'Update date',
-									  -DESCRIPTION => 'Last update date of annotation',
-									  -VALUE       => $icomponent->{updateDate}{date}));
+  if ( defined $icomponent->{updateDate} ) {
+    push( @attributes,
+          Bio::EnsEMBL::Attribute->new(
+                       -CODE        => 'update_date',
+                       -NAME        => 'Update date',
+                       -DESCRIPTION => 'Last update date of annotation',
+                       -VALUE       => $icomponent->{updateDate}{date} )
+    );
   }
 
   $self->log()->debug("Storing attributes on slice");
 
   # Store attributes on the top-level seq_region.
-  $aa->store_on_Slice($slice, \@attributes);
+  $aa->store_on_Slice( $slice, \@attributes );
 
   my $syna = $slice_adaptor->db->get_SeqRegionSynonymAdaptor();
   my $vacc = $icomponent->{accession} . '.' . $icomponent->{version};
-  if ($vacc ne $component_name) {
-	$syna->store(Bio::EnsEMBL::SeqRegionSynonym->new(-synonym        => $vacc,
-													 -external_db_id => 50710,
-													 -seq_region_id  => $slice->get_seq_region_id()));
-  } else {
-	$aa->store_on_Slice(
-	  $slice, [
-	   Bio::EnsEMBL::Attribute->new(-CODE        => 'external_db',
-									-NAME        => 'External database',
-									-DESCRIPTION => 'External database',
-									-VALUE       => 'ENA')]);
+  if ( $vacc ne $component_name ) {
+    $syna->store( Bio::EnsEMBL::SeqRegionSynonym->new(
+                           -synonym        => $vacc,
+                           -external_db_id => 50710,
+                           -seq_region_id => $slice->get_seq_region_id()
+                  ) );
+  }
+  else {
+    $aa->store_on_Slice( $slice, [
+                           Bio::EnsEMBL::Attribute->new(
+                                    -CODE        => 'external_db',
+                                    -NAME        => 'External database',
+                                    -DESCRIPTION => 'External database',
+                                    -VALUE       => 'ENA' ) ] );
   }
 
   return $slice;
 } ## end sub load_sequence
 
 sub parse_description {
-  my ($self, $icomponent) = @_;
+  my ( $self, $icomponent ) = @_;
   my $component_name        = $icomponent->{name};
   my $component_name_prefix = lc $icomponent->{componentType};
-  return ($component_name_prefix, $component_name);
+  return ( $component_name_prefix, $component_name );
 }
 
 sub get_longname {
-  my ($self, $icomponent) = @_;
+  my ( $self, $icomponent ) = @_;
   my $longname;
-  if ($icomponent->{genome}->{shortName} && $icomponent->{description}) {
-	$longname = $icomponent->{genome}->{shortName} . ' ' . $icomponent->{description};
-  } else {
-	$longname = 'unknown';
+  if ( $icomponent->{genome}->{shortName} &&
+       $icomponent->{description} )
+  {
+    $longname =
+      $icomponent->{genome}->{shortName} . ' ' .
+      $icomponent->{description};
+  }
+  else {
+    $longname = 'unknown';
   }
   return $longname;
 }

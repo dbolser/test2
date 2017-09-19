@@ -1,3 +1,4 @@
+
 =head1 LICENSE
 
 Copyright [2009-2014] EMBL-European Bioinformatics Institute
@@ -31,15 +32,15 @@ use Data::Dumper;
 use base qw(GenomeLoader::BaseLoader);
 
 sub new {
-	my $caller = shift;
-	my $class = ref($caller) || $caller;
-	my $self = $class->SUPER::new(@_);
-	return $self;
+  my $caller = shift;
+  my $class  = ref($caller) || $caller;
+  my $self   = $class->SUPER::new(@_);
+  return $self;
 }
 
 sub load_feature {
-	my ( $self, $irepeat, $slice ) = @_;
-	croak("store_feature cannot be invoked on the base class");
+  my ( $self, $irepeat, $slice ) = @_;
+  croak("store_feature cannot be invoked on the base class");
 }
 1;
 __END__

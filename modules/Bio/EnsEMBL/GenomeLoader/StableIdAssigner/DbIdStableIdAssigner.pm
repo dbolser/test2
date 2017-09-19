@@ -1,3 +1,4 @@
+
 =head1 LICENSE
 
 Copyright [2009-2014] EMBL-European Bioinformatics Institute
@@ -23,53 +24,51 @@ use strict;
 use Carp;
 
 sub new {
-	my $caller = shift;
-	my $class = ref($caller) || $caller;
-	my $self = $class->SUPER::new(@_);
-	return $self;
+  my $caller = shift;
+  my $class  = ref($caller) || $caller;
+  my $self   = $class->SUPER::new(@_);
+  return $self;
 }
-
 
 sub id_root {
-	my $self = shift;
-	$self->{id_root} = shift if @_;
-	return $self->{id_root};
+  my $self = shift;
+  $self->{id_root} = shift if @_;
+  return $self->{id_root};
 }
 
-my %type_to_string= (
-	'Bio::EnsEMBL::Gene'=>'G',
-	'Bio::EnsEMBL::Transcript'=>'T',
-	'Bio::EnsEMBL::Exon'=>'E',
-	'Bio::EnsEMBL::Translation'=>'P'
-);
+my %type_to_string = ( 'Bio::EnsEMBL::Gene'        => 'G',
+                       'Bio::EnsEMBL::Transcript'  => 'T',
+                       'Bio::EnsEMBL::Exon'        => 'E',
+                       'Bio::EnsEMBL::Translation' => 'P' );
 
 my $pad_len = 11;
 
 sub obj_to_id {
-	my ($self,$obj) = @_;
-	my $type = $type_to_string{ref($obj)};
-	croak("Unsupported type ".ref($obj)) unless $type;
-	return sprintf("%s%s%0${pad_len}d", $self->id_root,$type,$obj->dbID());
+  my ( $self, $obj ) = @_;
+  my $type = $type_to_string{ ref($obj) };
+  croak( "Unsupported type " . ref($obj) ) unless $type;
+  return
+    sprintf( "%s%s%0${pad_len}d", $self->id_root, $type, $obj->dbID() );
 }
 
 sub gene_to_id {
-	my($self,$gene) = @_;
-	return $self->obj_to_id($gene);
+  my ( $self, $gene ) = @_;
+  return $self->obj_to_id($gene);
 }
 
 sub transcript_to_id {
-	my($self,$transcript,$gene,$index) = @_;
-	return $self->obj_to_id($transcript);
+  my ( $self, $transcript, $gene, $index ) = @_;
+  return $self->obj_to_id($transcript);
 }
 
 sub translation_to_id {
-	my($self,$translation,$transcript,$gene,$index) = @_;
-	return $self->obj_to_id($translation);
+  my ( $self, $translation, $transcript, $gene, $index ) = @_;
+  return $self->obj_to_id($translation);
 }
 
 sub exon_to_id {
-	my($self,$exon,$gene,$index) = @_;
-	return $self->obj_to_id($exon);
+  my ( $self, $exon, $gene, $index ) = @_;
+  return $self->obj_to_id($exon);
 }
 
 1;

@@ -1,3 +1,4 @@
+
 =head1 LICENSE
 
 Copyright [2009-2014] EMBL-European Bioinformatics Institute
@@ -23,42 +24,43 @@ use Carp;
 use base 'GenomeLoader::StableIdAssigner';
 
 sub new {
-	my $caller = shift;
-	my $class = ref($caller) || $caller;
-	my $self = $class->SUPER::new(@_);
-	return $self;
+  my $caller = shift;
+  my $class  = ref($caller) || $caller;
+  my $self   = $class->SUPER::new(@_);
+  return $self;
 }
 
 sub multi_transcript {
-	my $self = shift;
-	$self->{multi_transcript} = shift if @_;
-	return $self->{multi_transcript};
+  my $self = shift;
+  $self->{multi_transcript} = shift if @_;
+  return $self->{multi_transcript};
 }
 
 sub gene_to_id {
-	my ($self,$gene) = @_;
-	return $gene->display_xref()->primary_id();
+  my ( $self, $gene ) = @_;
+  return $gene->display_xref()->primary_id();
 }
 
 sub transcript_to_id {
-	my ($self,$transcript, $gene, $index) = @_;
-	my $sid;
-	if($self->{multi_transcript}) {
-		$sid = $gene->stable_id()."-$index";
-	} else {
-		$sid = $gene->stable_id();
-	}
-	return $sid;
+  my ( $self, $transcript, $gene, $index ) = @_;
+  my $sid;
+  if ( $self->{multi_transcript} ) {
+    $sid = $gene->stable_id() . "-$index";
+  }
+  else {
+    $sid = $gene->stable_id();
+  }
+  return $sid;
 }
 
 sub translation_to_id {
-	my ($self, $translation, $transcript, $gene, $index) = @_;
-	return $transcript->stable_id();
+  my ( $self, $translation, $transcript, $gene, $index ) = @_;
+  return $transcript->stable_id();
 }
 
 sub exon_to_id {
-	my ($self, $exon, $gene, $index) = @_;
-	return $gene->stable_id()."-$index";
+  my ( $self, $exon, $gene, $index ) = @_;
+  return $gene->stable_id() . "-$index";
 }
 
 1;

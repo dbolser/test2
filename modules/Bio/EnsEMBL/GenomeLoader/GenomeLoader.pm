@@ -49,7 +49,8 @@ sub load_genome_data {
   my $meta = $self->dba()->get_MetaContainer();
 
   if ( $self->config()->{addComponents} == 1 ) {
-    $self->log()->info("Loading components only - skipping genome metadata");
+    $self->log()
+      ->info("Loading components only - skipping genome metadata");
     # reuse existing assembly version
     $genome_metadata->{assemblyDefault} =
       $meta->single_value_by_key('assembly.default');
@@ -66,15 +67,18 @@ sub load_genome_data {
                             $genome_metadata->{assemblyDefault} );
     $self->log()->debug("Setting meta assembly.accession");
     $meta->store_key_value( 'assembly.accession',
-                   $genome_metadata->{id} . '.' . $genome_metadata->{version} );
+           $genome_metadata->{id} . '.' . $genome_metadata->{version} );
     $self->log()->debug("Setting meta assembly.name");
-    $meta->store_key_value( 'assembly.name', $genome_metadata->{assemblyName} );
+    $meta->store_key_value( 'assembly.name',
+                            $genome_metadata->{assemblyName} );
     $self->log()->debug("Setting meta assembly.date");
-    $meta->store_key_value( 'assembly.date', $genome_metadata->{assemblyDate} );
+    $meta->store_key_value( 'assembly.date',
+                            $genome_metadata->{assemblyDate} );
 
     if ( defined $genome_metadata->{description} ) {
       $meta->store_key_value( 'assembly.description',
-                            substr( $genome_metadata->{description}, 0, 255 ) );
+                              substr($genome_metadata->{description}, 0,
+                                     255 ) );
     }
 
     # Gene build.
@@ -109,13 +113,15 @@ sub load_genome_data {
     $meta->store_key_value( 'species.production_name',
                             $genome_metadata->{productionName} );
     $meta->store_key_value( 'species.url',
-                            ucfirst( $genome_metadata->{productionName} ) );
+                            ucfirst( $genome_metadata->{productionName}
+                            ) );
     $meta->store_key_value( 'species.scientific_name',
                             $genome_metadata->{proteomeName} );
     $meta->store_key_value( 'species.display_name',
                             $genome_metadata->{proteomeName} );
     if ( defined $genome_metadata->{strain} ) {
-      $meta->store_key_value( 'species.strain', $genome_metadata->{strain} );
+      $meta->store_key_value( 'species.strain',
+                              $genome_metadata->{strain} );
     }
     if ( defined $genome_metadata->{substrain} ) {
       $meta->store_key_value( 'species.substrain',
@@ -153,35 +159,43 @@ sub load_genome_data {
 
     # Taxonomy. eg. AB002632.species.taxonomy_id	83201
     $self->log()->debug("Setting meta species.taxonomy_id");
-    $meta->store_key_value( 'species.taxonomy_id', $genome_metadata->{taxId} );
+    $meta->store_key_value( 'species.taxonomy_id',
+                            $genome_metadata->{taxId} );
 
     # EG Division
     $self->log()->debug("Setting meta species.proteome_id");
-    $meta->store_key_value( 'species.division', $genome_metadata->{division} );
-    $meta->store_key_value( 'provider.name',    $genome_metadata->{provider} );
+    $meta->store_key_value( 'species.division',
+                            $genome_metadata->{division} );
+    $meta->store_key_value( 'provider.name',
+                            $genome_metadata->{provider} );
     if ( $genome_metadata->{providerUrl} ) {
-      $meta->store_key_value( 'provider.url', $genome_metadata->{providerUrl} );
+      $meta->store_key_value( 'provider.url',
+                              $genome_metadata->{providerUrl} );
     }
   } ## end else [ if ( $self->config()->...)]
 
   # Create plasmid coord system.
   my $contig_cs = $self->get_coord_system( CS()->{CONTIG}, 1, 4, 1 );
-  my $supercontig_cs = $self->get_coord_system( CS()->{SUPERCONTIG},
-                                 0, 3, 1, $genome_metadata->{assemblyDefault} );
-  my $chr_cs = $self->get_coord_system( CS()->{CHROMOSOME},
-                                        0, 1, 1,
-                                        $genome_metadata->{assemblyDefault} );
+  my $supercontig_cs =
+    $self->get_coord_system( CS()->{SUPERCONTIG},
+                             0, 3, 1,
+                             $genome_metadata->{assemblyDefault} );
+  my $chr_cs =
+    $self->get_coord_system( CS()->{CHROMOSOME},
+                             0, 1, 1,
+                             $genome_metadata->{assemblyDefault} );
   my $plasmid_cs =
     $self->get_coord_system( CS()->{PLASMID}, 0, 2, 1,
                              $genome_metadata->{assemblyDefault} );
 
-  $genome_metadata->{coord_systems} = { CS()->{CHROMOSOME}    => $chr_cs,
-                                        CS()->{MITOCHONDRION} => $chr_cs,
-                                        CS()->{CHLOROPLAST}   => $chr_cs,
-                                        CS()->{PLASMID}       => $plasmid_cs,
-                                        CS()->{CONTIG}        => $contig_cs,
-                                        CS()->{SUPERCONTIG} => $supercontig_cs,
-                                        CS()->{SCAFFOLD}    => $supercontig_cs
+  $genome_metadata->{coord_systems} = {
+                                 CS()->{CHROMOSOME}    => $chr_cs,
+                                 CS()->{MITOCHONDRION} => $chr_cs,
+                                 CS()->{CHLOROPLAST}   => $chr_cs,
+                                 CS()->{PLASMID}       => $plasmid_cs,
+                                 CS()->{CONTIG}        => $contig_cs,
+                                 CS()->{SUPERCONTIG} => $supercontig_cs,
+                                 CS()->{SCAFFOLD}    => $supercontig_cs
   };
 
   return;
@@ -192,11 +206,12 @@ sub get_coord_system {
   my $csa = $self->dba()->get_CoordSystemAdaptor();
   my $cs  = $csa->fetch_by_name($name);
   if ( !defined $cs ) {
-    $cs = Bio::EnsEMBL::CoordSystem->new( -NAME           => $name,
-                                          -SEQUENCE_LEVEL => $seq_level,
-                                          -RANK           => $rank,
-                                          -DEFAULT        => $default,
-                                          -VERSION        => $version );
+    $cs =
+      Bio::EnsEMBL::CoordSystem->new( -NAME           => $name,
+                                      -SEQUENCE_LEVEL => $seq_level,
+                                      -RANK           => $rank,
+                                      -DEFAULT        => $default,
+                                      -VERSION        => $version );
   }
   return $cs;
 }
@@ -206,7 +221,8 @@ sub set_sample_data {
   $self->log()->info("Storing sample data");
   my @genes =
     @{ $self->dba()->get_GeneAdaptor()
-      ->fetch_all_by_biotype( BIOTYPES()->{PROTEIN_CODING_GENE_TYPE} ) };
+      ->fetch_all_by_biotype( BIOTYPES()->{PROTEIN_CODING_GENE_TYPE} )
+    };
 
   my @named_genes = grep { defined $_->external_name() } @genes;
 
@@ -229,12 +245,14 @@ sub set_sample_data {
 
     $self->log()
       ->debug( "Storing sample gene data " .
-               ( $random_gene->external_name() || $random_gene->stable_id() ) );
+          ( $random_gene->external_name() || $random_gene->stable_id() )
+      );
     $meta->store_key_value( 'sample.location_param',
                             "$sr_name:${sr_start}-${sr_end}" );
     $meta->store_key_value( 'sample.location_text',
                             "$sr_name:${sr_start}-${sr_end}" );
-    $meta->store_key_value( 'sample.gene_param', $random_gene->stable_id() );
+    $meta->store_key_value( 'sample.gene_param',
+                            $random_gene->stable_id() );
 
     $meta->store_key_value( 'sample.gene_text', (
                               $random_gene->external_name() ||
@@ -242,7 +260,8 @@ sub set_sample_data {
     my $transcript = @{ $random_gene->get_all_Transcripts() }[0];
     $self->log()
       ->debug( "Storing sample transcript data for " .
-               ( $random_gene->external_name() || $random_gene->stable_id() ) );
+          ( $random_gene->external_name() || $random_gene->stable_id() )
+      );
     $meta->store_key_value( 'sample.transcript_param',
                             $transcript->stable_id() );
     $meta->store_key_value( 'sample.transcript_text', (
@@ -265,11 +284,13 @@ sub load_genome {
   $genome_metadata->{superregnum} = $genome->{superregnum};
   # 2. store components
   my $component_loader =
-    GenomeLoader::ComponentLoader->new( dba             => $self->dba(),
-                                        genome_metadata => $genome_metadata,
-                                        log             => $self->log(),
-                                        config          => $self->config(),
-                                        plugins         => $self->plugins() );
+    GenomeLoader::ComponentLoader->new(
+                                    dba             => $self->dba(),
+                                    genome_metadata => $genome_metadata,
+                                    log             => $self->log(),
+                                    config          => $self->config(),
+                                    plugins         => $self->plugins()
+    );
 
   # 2. store assembly
   $component_loader->load_assembly( $genome->{components} );
@@ -278,9 +299,11 @@ sub load_genome {
   my @hashes = ();
   for my $component ( @{ $genome->{components} } ) {
     if ( $component->{topLevel} ) {
-      $self->log()->info( "Loading component " . $component->{accession} );
+      $self->log()
+        ->info( "Loading component " . $component->{accession} );
       my $chashes =
-        $component_loader->load_features( $component, $genome_metadata );
+        $component_loader->load_features( $component,
+                                          $genome_metadata );
       flush_session( $self->dba(), $self->config() );
       if ( defined $chashes && scalar(@$chashes) > 0 ) {
         @hashes = ( @hashes, @$chashes );
@@ -291,9 +314,8 @@ sub load_genome {
 
   my $ctx = Digest::MD5->new();
   if ( $self->config()->{addComponents} == 1 ) {
-    $ctx->add(
-        $self->dba()->get_MetaContainer()->single_value_by_key('genebuild.hash')
-    );
+    $ctx->add( $self->dba()->get_MetaContainer()
+               ->single_value_by_key('genebuild.hash') );
   }
   $ctx->add( sort @hashes );
   $genome_metadata->{genome_hash} = $ctx->hexdigest();
@@ -328,8 +350,8 @@ sub post_process_genome {
   }
   # set checksum
   $self->log()->debug("Storing genebuild hash");
-  $self->dba()->get_MetaContainer()
-    ->store_key_value( 'genebuild.hash', $genome_metadata->{genome_hash} );
+  $self->dba()->get_MetaContainer()->store_key_value( 'genebuild.hash',
+                                      $genome_metadata->{genome_hash} );
   $self->log()->info("Completed post-processing genome");
   return;
 } ## end sub post_process_genome
