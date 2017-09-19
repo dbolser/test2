@@ -32,8 +32,7 @@ use Carp;
 use Data::Dumper;
 use Bio::EnsEMBL::Analysis;
 use Bio::EnsEMBL::DBSQL::BaseAdaptor;
-use Bio::EnsEMBL::GenomeLoader::Utils qw(get_ensembl_dba);
-use EGUtils::IO qw(parse_json);
+use Bio::EnsEMBL::GenomeLoader::Utils qw(get_ensembl_dba parse_json);
 
 my $sql = q/select description, display_label, data from analysis_description 
 	left join web_data on (web_data_id=default_web_data_id) 
