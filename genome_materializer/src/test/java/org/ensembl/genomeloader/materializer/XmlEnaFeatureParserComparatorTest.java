@@ -52,18 +52,17 @@ public class XmlEnaFeatureParserComparatorTest {
         MrnaFeatureParser mrna = new MrnaFeatureParser(registry);
         GeneFeatureParser gene = new GeneFeatureParser(registry);
         CdsFeatureParser cds = new CdsFeatureParser(registry);
-        SourceFeatureParser src = new SourceFeatureParser(registry);
         DefaultXmlEnaFeatureParser def = new DefaultXmlEnaFeatureParser(registry);
-        List<XmlEnaFeatureParser> list = Arrays.asList(new XmlEnaFeatureParser[] { mrna, gene, cds, def, src });
+        List<XmlEnaFeatureParser> list = Arrays.asList(new XmlEnaFeatureParser[] { mrna, gene, cds, def });
         EnaParser.XmlEnaFeatureParserComparator cmp = new EnaParser.XmlEnaFeatureParserComparator();
         Collections.sort(list, cmp);
         assertTrue(firstBeforeSecond(list, cds, mrna));
         assertTrue(firstBeforeSecond(list, cds, gene));
-        list = Arrays.asList(new XmlEnaFeatureParser[] { src, mrna, cds, def, gene });
+        list = Arrays.asList(new XmlEnaFeatureParser[] { mrna, cds, def, gene });
         Collections.sort(list, cmp);
         assertTrue(firstBeforeSecond(list, cds, mrna));
         assertTrue(firstBeforeSecond(list, cds, gene));
-        list = Arrays.asList(new XmlEnaFeatureParser[] { cds, src, def, gene, mrna });
+        list = Arrays.asList(new XmlEnaFeatureParser[] { cds, def, gene, mrna });
         Collections.sort(list, cmp);
         assertTrue(firstBeforeSecond(list, cds, mrna));
         assertTrue(firstBeforeSecond(list, cds, gene));
@@ -90,7 +89,6 @@ public class XmlEnaFeatureParserComparatorTest {
         MrnaFeatureParser mrna = new MrnaFeatureParser(registry);
         GeneFeatureParser gene = new GeneFeatureParser(registry);
         CdsFeatureParser cds = new CdsFeatureParser(registry);
-        SourceFeatureParser src = new SourceFeatureParser(registry);
         DefaultXmlEnaFeatureParser def = new DefaultXmlEnaFeatureParser(registry);
         CollectionUtils.TopologicalComparator<XmlEnaFeatureParser> cmp = new CollectionUtils.TopologicalComparator<XmlEnaFeatureParser>() {
             public int countEdges(XmlEnaFeatureParser t) {
@@ -101,17 +99,17 @@ public class XmlEnaFeatureParserComparatorTest {
                 return from.dependsOn().contains(to.getClass());
             }
         };
-        List<XmlEnaFeatureParser> list = Arrays.asList(new XmlEnaFeatureParser[] { mrna, gene, cds, def, src });
+        List<XmlEnaFeatureParser> list = Arrays.asList(new XmlEnaFeatureParser[] { mrna, gene, cds, def });
         list = CollectionUtils.topoSort(list, cmp);
         Collections.reverse(list);
         assertTrue(firstBeforeSecond(list, cds, mrna));
         assertTrue(firstBeforeSecond(list, cds, gene));
-        list = Arrays.asList(new XmlEnaFeatureParser[] { src, mrna, cds, def, gene });
+        list = Arrays.asList(new XmlEnaFeatureParser[] { mrna, cds, def, gene });
         list = CollectionUtils.topoSort(list, cmp);
         Collections.reverse(list);
         assertTrue(firstBeforeSecond(list, cds, mrna));
         assertTrue(firstBeforeSecond(list, cds, gene));
-        list = Arrays.asList(new XmlEnaFeatureParser[] { cds, src, def, gene, mrna });
+        list = Arrays.asList(new XmlEnaFeatureParser[] { cds, def, gene, mrna });
         list = CollectionUtils.topoSort(list, cmp);
         Collections.reverse(list);
         assertTrue(firstBeforeSecond(list, cds, mrna));
