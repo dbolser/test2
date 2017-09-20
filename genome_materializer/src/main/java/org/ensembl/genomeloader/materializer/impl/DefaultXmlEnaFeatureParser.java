@@ -16,6 +16,7 @@
 
 package org.ensembl.genomeloader.materializer.impl;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -36,6 +37,8 @@ import nu.xom.Element;
  * 
  */
 public class DefaultXmlEnaFeatureParser extends XmlEnaFeatureParser {
+    
+    private final List<String> ignore = Arrays.asList("source");
 
 	public DefaultXmlEnaFeatureParser(DatabaseReferenceTypeRegistry registry) {
 		super(registry);
@@ -43,12 +46,18 @@ public class DefaultXmlEnaFeatureParser extends XmlEnaFeatureParser {
 
 	@Override
 	public void parseFeature(GenomicComponentImpl component, Element element) {
+	    
+        String name = element.getAttributeValue("name");
+	    if(ignore.contains(name)) {
+	        return;
+	    }
+	    
 		SimpleFeatureImpl feature = new SimpleFeatureImpl();
 		DatabaseReference idReg = getFeatureIdentifierRef(component, element, "FEATURE");
 		feature.addDatabaseReference(idReg);
 		feature.getDatabaseReferences().addAll(parseXrefs(element));
 		feature.setLocation(parseLocation(element));
-		feature.setFeatureType(element.getAttributeValue("name"));
+        feature.setFeatureType(name);
 		feature.getQualifiers().putAll(getQualifiers(element));
 		if (feature.getQualifiers().containsKey("note")) {
 			feature.setDisplayLabel(StringUtils.join(
