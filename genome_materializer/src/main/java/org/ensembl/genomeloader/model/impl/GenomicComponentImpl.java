@@ -84,8 +84,6 @@ public class GenomicComponentImpl implements GenomicComponent {
 
     private int type;
 
-    private Map<String, Object> sourceMetaData = new HashMap<>();
-
     public GenomicComponentImpl(GenomicComponentMetaData metadata) {
         this.metaData = metadata;
     }
@@ -294,10 +292,6 @@ public class GenomicComponentImpl implements GenomicComponent {
     @Override
     public String toString() {
         return ObjectRenderer.objectToString(this);
-    }
-
-    public Map<String, Object> getSourceMetaData() {
-        return sourceMetaData;
     }
 
 }

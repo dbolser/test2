@@ -112,7 +112,6 @@ public class EnaParser {
         {
             put("CDS", CdsFeatureParser.class);
             put("gene", GeneFeatureParser.class);
-            put("source", SourceFeatureParser.class);
             put("tRNA", RnaFeatureParser.class);
             put("rRNA", RnaFeatureParser.class);
             put("ncRNA", RnaFeatureParser.class);
@@ -186,6 +185,8 @@ public class EnaParser {
         if (entryElem == null) {
             throw new EnaParsingException("entry element not found - record not available");
         }
+        // metadata needs parsing first to pick up version of record which is
+        // used by other parsers
         parseMetaData(md, entryElem);
         Sequence seq = parseSequence(entryElem);
         parseFeatures(component, entryElem);
@@ -383,6 +384,14 @@ public class EnaParser {
     }
 
     protected void parseMetaData(GenomicComponentMetaData md, Element entryElem) {
+
+        // parse out source first so we can set it into the genome metadata if required
+        for (Element elem : new ElementsIterable(entryElem.getChildElements("feature"))) {
+            if ("source".equals(elem.getAttributeValue("name"))) {
+               new SourceFeatureParser().parseFeature(md, elem);
+            }
+        }
+
         // <entry accession="AP001918" version="1" entryVersion="12"
         // dataClass="STD"
         // taxonomicDivision="UNC" moleculeType="genomic DNA"
@@ -428,6 +437,7 @@ public class EnaParser {
                 }
             }
         }
+
     }
 
     protected Set<DatabaseReference> parseReferences(Element entryElem) {
