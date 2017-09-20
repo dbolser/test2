@@ -23,35 +23,26 @@
  */
 package org.ensembl.genomeloader.materializer.genome_collections;
 
-import java.util.List;
-
 import org.ensembl.genomeloader.metadata.GenomeMetaData;
-import org.ensembl.genomeloader.metadata.GenomicComponentMetaData;
 
 /**
  * @author dstaines
  *
  */
 public interface GenomeCollections {
-	
-	public static final String ENA_SRC = "ENA";
 
-	public abstract GenomeMetaData getGenomeForSetChain(String setChain);
+    public abstract GenomeMetaData getGenomeForSetChain(String setChain);
 
-	public abstract GenomeMetaData getGenomeForOrganism(String name);
+    public abstract GenomeMetaData getGenomeForOrganism(String name);
 
-	public abstract GenomeMetaData getGenomeForTaxId(int taxId);
+    public abstract GenomeMetaData getGenomeForTaxId(int taxId);
 
-	public abstract GenomeMetaData getGenomeForEnaAccession(String accession);
+    public abstract GenomeMetaData getGenomeForEnaAccession(String accession);
 
-	public abstract String getSetChainForOrganism(String name);
+    public abstract String getSetChainForOrganism(String name);
 
-	public abstract String getSetChainForTaxId(int taxId);
+    public abstract String getSetChainForTaxId(int taxId);
 
-	public abstract String getSetChainForEnaAccession(String accession);
-
-	public abstract List<GenomicComponentMetaData> getComponentsForGenome(GenomeMetaData md);
-
-	public abstract List<GenomicComponentMetaData> getComponentsForGenome(String setChain, String version);
+    public abstract String getSetChainForEnaAccession(String accession);
 
 }

@@ -25,10 +25,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ensembl.genomeloader.materializer.EnaGenomeConfig;
 import org.ensembl.genomeloader.materializer.EnaGenomeMaterializer;
-import org.ensembl.genomeloader.materializer.EnaParser;
 import org.ensembl.genomeloader.materializer.EnaParsingException;
+import org.ensembl.genomeloader.materializer.impl.EnaContigParser;
 import org.ensembl.genomeloader.materializer.impl.MaterializationUncheckedException;
-import org.ensembl.genomeloader.materializer.impl.XmlEnaContigParser;
 import org.ensembl.genomeloader.metadata.GenomicComponentMetaData;
 import org.ensembl.genomeloader.metadata.GenomicComponentMetaData.GenomicComponentType;
 import org.ensembl.genomeloader.model.AssemblyElement;
@@ -55,11 +54,10 @@ public class AssemblyContigProcessor implements GenomeProcessor {
     private final Log log;
 
     public AssemblyContigProcessor(EnaGenomeConfig config, DatabaseReferenceTypeRegistry registry, Executor executor) {
-        this(config, new XmlEnaContigParser(executor, registry), null);
+        this(config, new EnaContigParser(executor, registry), null);
     }
 
-    public AssemblyContigProcessor(EnaGenomeConfig config, EnaParser<GenomicComponentImpl> parser,
-            GenomeProcessor processor) {
+    public AssemblyContigProcessor(EnaGenomeConfig config, EnaContigParser parser, GenomeProcessor processor) {
         this(config, new EnaGenomeMaterializer(config, parser, processor));
     }
 
@@ -190,7 +188,8 @@ public class AssemblyContigProcessor implements GenomeProcessor {
                     if (!newComponents.containsKey(seq.getAccession())) {
                         try {
                             // get the component
-                            final GenomicComponentImpl assComp = materializer.getComponent(seq.getAccession());
+                            GenomicComponentMetaData md = new GenomicComponentMetaData(seq.getAccession(), component.getGenome().getMetaData());                            
+                            final GenomicComponent assComp = materializer.getComponent(md);
                             newComponents.put(seq.getAccession(), assComp);
                             assComp.setTopLevel(false);
                             // process it...
@@ -255,8 +254,8 @@ public class AssemblyContigProcessor implements GenomeProcessor {
 
     private GenomicComponentImpl cloneComponent(GenomicComponent component, GenomicComponentType type, String accession,
             String name) {
-        final GenomicComponentMetaData metaData = new GenomicComponentMetaData();
-        metaData.setIdentifier(accession);
+        final GenomicComponentMetaData metaData = new GenomicComponentMetaData(accession,
+                component.getMetaData().getGenomeMetaData());
         metaData.setComponentType(type);
         metaData.setAccession(accession);
         metaData.setName(name);
@@ -264,9 +263,8 @@ public class AssemblyContigProcessor implements GenomeProcessor {
         metaData.setCircular(component.getMetaData().isCircular());
         metaData.setGeneticCode(component.getMetaData().getGeneticCode());
         metaData.setLength(component.getMetaData().getLength());
-        final GenomicComponentImpl contig = new GenomicComponentImpl();
+        final GenomicComponentImpl contig = new GenomicComponentImpl(metaData);
         contig.setSequence(component.getSequence());
-        contig.setMetaData(metaData);
         contig.setLength(metaData.getLength());
         contig.setAccession(accession);
         return contig;

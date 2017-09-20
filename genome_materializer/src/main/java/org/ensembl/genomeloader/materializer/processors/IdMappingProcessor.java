@@ -242,7 +242,7 @@ public class IdMappingProcessor implements GenomeProcessor {
     }
 
     protected double getThreshold(Genome genome) {
-        if (genome.getCreationDate() != null && genome.getCreationDate().after(config.getStrictDate())) {
+        if (genome.getMetaData().getCreationDate() != null && genome.getMetaData().getCreationDate().after(config.getStrictDate())) {
             return config.getNullCdsTagThreshold();
         } else {
             return 1.0;

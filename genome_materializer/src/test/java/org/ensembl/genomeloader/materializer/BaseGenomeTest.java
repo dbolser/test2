@@ -18,6 +18,7 @@ package org.ensembl.genomeloader.materializer;
 
 import java.util.Arrays;
 
+import org.ensembl.genomeloader.metadata.GenomeMetaData;
 import org.ensembl.genomeloader.metadata.GenomicComponentMetaData;
 import org.ensembl.genomeloader.model.Gene;
 import org.ensembl.genomeloader.model.Genome;
@@ -32,9 +33,9 @@ import org.ensembl.genomeloader.util.biojava.LocationUtils;
 public abstract class BaseGenomeTest {
 
     protected Genome getEmptyGenome(int length, Gene... genes) {
-        Genome g = new GenomeImpl("1", 0, "", "");
-        GenomicComponentImpl gc = new GenomicComponentImpl("A");
-        gc.setMetaData(new GenomicComponentMetaData());
+        GenomeMetaData gmd = new GenomeMetaData("1", "", 0);
+        Genome g = new GenomeImpl(gmd);
+        GenomicComponentImpl gc = new GenomicComponentImpl(new GenomicComponentMetaData("A", gmd));
         gc.setLength(length);
         gc.getMetaData().setCircular(true);
         gc.getMetaData().setLength(length);

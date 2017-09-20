@@ -22,10 +22,9 @@
  */
 package org.ensembl.genomeloader.model;
 
-import java.util.Collection;
 import java.util.List;
 
-import org.ensembl.genomeloader.metadata.DataItem;
+import org.ensembl.genomeloader.metadata.GenomeMetaData;
 
 /**
  * Interface adding some information on components and versions for a genome
@@ -33,11 +32,13 @@ import org.ensembl.genomeloader.metadata.DataItem;
  * @author dstaines
  *
  */
-public interface Genome extends GenomeInfo, Integr8ModelComponent, CrossReferenced {
+public interface Genome extends Integr8ModelComponent, CrossReferenced {
+    
+    public String getName();
+    
+    public String getId();
 
-    public Collection<DataItem> getDataItems();
-
-    public void addDataItem(DataItem item);
+    public GenomeMetaData getMetaData();
 
     public List<GenomicComponent> getGenomicComponents();
 

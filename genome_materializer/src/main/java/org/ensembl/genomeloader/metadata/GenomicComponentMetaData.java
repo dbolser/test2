@@ -24,15 +24,9 @@ package org.ensembl.genomeloader.metadata;
 
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
 import org.ensembl.genomeloader.metadata.impl.DefaultGenomicComponentDescriptionHandler;
-import org.ensembl.genomeloader.metadata.impl.GenomicComponentSpecificationImpl;
-import org.ensembl.genomeloader.model.GenomeInfo;
-import org.ensembl.genomeloader.model.sequence.Sequence;
-import org.ensembl.genomeloader.model.sequence.SequenceMetaData;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -44,292 +38,237 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @author dstaines
  * 
  */
-public class GenomicComponentMetaData extends EntityMetaData implements
-		GenomicComponentSpecification {
+public class GenomicComponentMetaData {
 
-	/**
-	 * Comparator for comparing two instances of
-	 * {@link GenomicComponentMetaData} based on type and then rank
-	 */
-	public static final Comparator<GenomicComponentMetaData> COMPONENT_COMPARATOR = new Comparator<GenomicComponentMetaData>() {
+    public static enum GenomicComponentType {
+        CHROMOSOME(1), CONTIG(4), PLASMID(2), SUPERCONTIG(3);
+        int rank;
 
-		public int compare(GenomicComponentMetaData o1,
-				GenomicComponentMetaData o2) {
-			if (o1.getComponentType() != o2.getComponentType()) {
-				// compare type rank
-				return Integer
-						.valueOf(o1.getComponentType().getRank())
-						.compareTo(
-								Integer.valueOf(o2.getComponentType().getRank()));
-			} else {
-				// compare length
-				return Integer.valueOf(o1.getLength()).compareTo(
-						Integer.valueOf(o2.getLength()));
-			}
-		}
+        GenomicComponentType(int rank) {
+            this.rank = rank;
+        }
 
-	};
+        public int getRank() {
+            return rank;
+        }
+    }
 
-	public static enum GenomicComponentType {
-		CHROMOSOME(1), PLASMID(2), SUPERCONTIG(3), CONTIG(4);
-		GenomicComponentType(int rank) {
-			this.rank = rank;
-		}
+    /**
+     * Comparator for comparing two instances of
+     * {@link GenomicComponentMetaData} based on type and then rank
+     */
+    public static final Comparator<GenomicComponentMetaData> COMPONENT_COMPARATOR = new Comparator<GenomicComponentMetaData>() {
 
-		int rank;
+        public int compare(GenomicComponentMetaData o1, GenomicComponentMetaData o2) {
+            if (o1.getComponentType() != o2.getComponentType()) {
+                // compare type rank
+                return Integer.valueOf(o1.getComponentType().getRank())
+                        .compareTo(Integer.valueOf(o2.getComponentType().getRank()));
+            } else {
+                // compare length
+                return Integer.valueOf(o1.getLength()).compareTo(Integer.valueOf(o2.getLength()));
+            }
+        }
 
-		public int getRank() {
-			return rank;
-		}
-	};
+    };;
 
-	public static final int NULL_GENETIC_CODE = -1;
+    public static final int NULL_GENETIC_CODE = -1;
 
-	private static final long serialVersionUID = 1L;
+    public static final String PROTEIN_SOURCE_TYPE = "protSrc";
 
-	public GenomicComponentMetaData() {
-		this.spec = new GenomicComponentSpecificationImpl();
-	}
+    private static final long serialVersionUID = 1L;
 
-	public GenomicComponentMetaData(String src, String id, String accession,
-			GenomeInfo genome) {
-		super(src, id);
-		this.spec = new GenomicComponentSpecificationImpl();
-		this.spec.setAccession(accession);
-		this.spec.setGenomeInfo(genome);
-	}
+    private String accession;
+
+    private boolean circular = false;
+
+    private GenomicComponentType componentType;
+
+    private boolean con;
+
+    private Date creationDate;
+
+    private String description;
 
     @JsonIgnore
-	private GenomicComponentDescriptionHandler descriptionHandler = new DefaultGenomicComponentDescriptionHandler();
-	private final GenomicComponentSpecification spec;
-	private String version;
-	private Date creationDate;
-	private Date updateDate;
-	private GenomicComponentType componentType;
-	private String name;
-	private String masterAccession;
-	public static final String PROTEIN_SOURCE_TYPE = "protSrc";
-	private Set<String> synonyms;
-	private String versionedAccession;
-	private boolean con;
+    private GenomicComponentDescriptionHandler descriptionHandler = new DefaultGenomicComponentDescriptionHandler();
 
-	public static final String DNA_SOURCE_TYPE = "dnaSrc";
+    private int geneticCode = 1;
 
-	private SequenceMetaData seqMd = null;
+    private int length = 0;
 
-	public SequenceMetaData getSequenceMetaData() {
-		if (seqMd == null) {
-			for (DataItem item : getDataItems()) {
-				if (Sequence.DNA_SEQ_SOURCE_TYPE.equals(item.getSource()
-						.getType())) {
-					seqMd = new SequenceMetaData(item.getSource().getName(),
-							item.getIdentifier());
-					seqMd.addDataItem(item);
-					break;
-				}
-			}
-		}
-		return seqMd;
-	}
+    private String masterAccession;
 
-	public String getAccession() {
-		return spec.getAccession();
-	}
+    private String moleculeType;
 
-	public int getGeneticCode() {
-		return spec.getGeneticCode();
-	}
+    private String name;
 
-	public int getLength() {
-		return spec.getLength();
-	}
+    private String olnRegexp = null;
 
-	public String getOlnRegexp() {
-		return spec.getOlnRegexp();
-	}
+    private Set<String> synonyms;
 
-	public int getType() {
-		return spec.getType();
-	}
+    private int type;
 
-	public boolean isCircular() {
-		return spec.isCircular();
-	}
+    private Date updateDate;
 
-	public void setAccession(String accession) {
-		spec.setAccession(accession);
-	}
+    private String version;
 
-	public void setCircular(boolean circular) {
-		spec.setCircular(circular);
-	}
+    private String versionedAccession;
+    
+    @JsonIgnore
+    private GenomeMetaData genomeMetaData;
 
-	public void setGeneticCode(int geneticCode) {
-		spec.setGeneticCode(geneticCode);
-	}
+    public GenomicComponentMetaData(String accession, GenomeMetaData genomeMetaData) {
+        this.accession = accession;
+        this.genomeMetaData = genomeMetaData;
+    }
 
-	public void setLength(int length) {
-		spec.setLength(length);
-	}
+    public String getAccession() {
+        return accession;
+    }
 
-	public void setOlnRegexp(String olnRegexp) {
-		spec.setOlnRegexp(olnRegexp);
-	}
+    public GenomicComponentType getComponentType() {
+        return componentType;
+    }
 
-	public void setType(int type) {
-		spec.setType(type);
-	}
+    public Date getCreationDate() {
+        return creationDate;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ensembl.genomeloader.genomebuilder.metadata.GenomicComponentSpecification
-	 * #getGenomeInfo()
-	 */
-	public GenomeInfo getGenomeInfo() {
-		return spec.getGenomeInfo();
-	}
+    public String getDescription() {
+        return description;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ensembl.genomeloader.genomebuilder.metadata.GenomicComponentSpecification
-	 * #setGenomeInfo(org.ensembl.genomeloader.genomebuilder.model.GenomeInfo)
-	 */
-	public void setGenomeInfo(GenomeInfo genome) {
-		this.spec.setGenomeInfo(genome);
-	}
+    public GenomicComponentDescriptionHandler getDescriptionHandler() {
+        return descriptionHandler;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ensembl.genomeloader.genomebuilder.metadata.GenomicComponentSpecification
-	 * #getDescription()
-	 */
-	public String getDescription() {
-		return spec.getDescription();
-	}
+    public int getGeneticCode() {
+        return geneticCode;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ensembl.genomeloader.genomebuilder.metadata.GenomicComponentSpecification
-	 * #setDescription(java.lang.String)
-	 */
-	public void setDescription(String description) {
-		spec.setDescription(description);
-	}
+    public int getLength() {
+        return length;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ensembl.genomeloader.genomebuilder.metadata.GenomicComponentSpecification
-	 * #getMoleculeType()
-	 */
-	public String getMoleculeType() {
-		return spec.getMoleculeType();
-	}
+    public String getMasterAccession() {
+        return masterAccession;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ensembl.genomeloader.genomebuilder.metadata.GenomicComponentSpecification
-	 * #setMoleculeType(java.lang.String)
-	 */
-	public void setMoleculeType(String moleculeType) {
-		spec.setMoleculeType(moleculeType);
-	}
+    public String getMoleculeType() {
+        return moleculeType;
+    }
 
-	public Date getCreationDate() {
-		return creationDate;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setCreationDate(Date date) {
-		this.creationDate = date;
-	}
+    public String getOlnRegexp() {
+        return olnRegexp;
+    }
 
-	public Date getUpdateDate() {
-		return updateDate;
-	}
+    public Set<String> getSynonyms() {
+        return synonyms;
+    }
 
-	public void setUpdateDate(Date date) {
-		this.updateDate = date;
-	}
+    public int getType() {
+        return type;
+    }
 
-	public String getVersion() {
-		return version;
-	}
+    public Date getUpdateDate() {
+        return updateDate;
+    }
 
-	public void setVersion(String version) {
-		this.version = version;
-	}
+    public String getVersion() {
+        return version;
+    }
 
-	public String getVersionedAccession() {
-		if (StringUtils.isEmpty(this.versionedAccession)) {
-			this.versionedAccession = this.getAccession() + "."
-					+ this.getVersion();
-		}
-		return this.versionedAccession;
-	}
+    public String getVersionedAccession() {
+        return versionedAccession;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public boolean isCircular() {
+        return circular;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public boolean isCon() {
+        return con;
+    }
 
-	public GenomicComponentType getComponentType() {
-		return componentType;
-	}
+    public void setAccession(String accession) {
+        this.accession = accession;
+    }
 
-	public void setComponentType(GenomicComponentType componentType) {
-		this.componentType = componentType;
-	}
+    public void setCircular(boolean circular) {
+        this.circular = circular;
+    }
 
-	public String getMasterAccession() {
-		return masterAccession;
-	}
+    public void setComponentType(GenomicComponentType componentType) {
+        this.componentType = componentType;
+    }
 
-	public void setMasterAccession(String masterAccession) {
-		this.masterAccession = masterAccession;
-	}
+    public void setCon(boolean con) {
+        this.con = con;
+    }
 
-	public GenomicComponentDescriptionHandler getDescriptionHandler() {
-		return descriptionHandler;
-	}
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
+    }
 
-	public void setDescriptionHandler(
-			GenomicComponentDescriptionHandler descriptionHandler) {
-		this.descriptionHandler = descriptionHandler;
-	}
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-	public void parseComponentDescription() {
-		if (getDescriptionHandler() != null) {
-			getDescriptionHandler().parseComponentDescription(this);
-		}
-	}
+    public void setDescriptionHandler(GenomicComponentDescriptionHandler descriptionHandler) {
+        this.descriptionHandler = descriptionHandler;
+    }
 
-	public Set<String> getSynonyms() {
-		if (synonyms == null) {
-			synonyms = new HashSet<String>();
-		}
-		return synonyms;
-	}
+    public void setGeneticCode(int geneticCode) {
+        this.geneticCode = geneticCode;
+    }
 
-	public boolean isCon() {
-		return con;
-	}
+    public void setLength(int length) {
+        this.length = length;
+    }
 
-	public void setCon(boolean con) {
-		this.con = con;
-	}
-	
+    public void setMasterAccession(String masterAccession) {
+        this.masterAccession = masterAccession;
+    }
+
+    public void setMoleculeType(String moleculeType) {
+        this.moleculeType = moleculeType;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setOlnRegexp(String olnRegexp) {
+        this.olnRegexp = olnRegexp;
+    }
+
+    public void setSynonyms(Set<String> synonyms) {
+        this.synonyms = synonyms;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+
+    public void setUpdateDate(Date updateDate) {
+        this.updateDate = updateDate;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public void setVersionedAccession(String versionedAccession) {
+        this.versionedAccession = versionedAccession;
+    }
+
+    public GenomeMetaData getGenomeMetaData() {
+        return genomeMetaData;
+    }
+
 }

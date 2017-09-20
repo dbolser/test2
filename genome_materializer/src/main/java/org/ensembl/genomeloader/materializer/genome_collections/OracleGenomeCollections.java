@@ -25,6 +25,7 @@ package org.ensembl.genomeloader.materializer.genome_collections;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -32,9 +33,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ensembl.genomeloader.materializer.EnaGenomeConfig;
 import org.ensembl.genomeloader.metadata.GenomeMetaData;
+import org.ensembl.genomeloader.metadata.GenomeMetaData.OrganismNameType;
 import org.ensembl.genomeloader.metadata.GenomicComponentMetaData;
-import org.ensembl.genomeloader.model.GenomeInfo.OrganismNameType;
-import org.ensembl.genomeloader.model.impl.GenomeInfoImpl;
 import org.ensembl.genomeloader.services.sql.ROResultSet;
 import org.ensembl.genomeloader.services.sql.SqlService;
 import org.ensembl.genomeloader.util.collections.CollectionUtils;
@@ -60,8 +60,7 @@ public class OracleGenomeCollections implements GenomeCollections {
             if (!StringUtils.isEmpty(strain) && !scientificName.contains(strain)) {
                 scientificName = scientificName + " str. " + strain;
             }
-            final GenomeMetaData g = new GenomeMetaData(
-                    new GenomeInfoImpl(rs.getString(1), rs.getInt(5), scientificName, null));
+            final GenomeMetaData g = new GenomeMetaData(rs.getString(1), scientificName, rs.getInt(5));
             g.setVersion(rs.getString(2));
             g.setOrganismName(OrganismNameType.FULL, scientificName);
             final String commonName = rs.getString(4);
@@ -74,12 +73,19 @@ public class OracleGenomeCollections implements GenomeCollections {
         }
     };
 
-    private final RowMapper<GenomicComponentMetaData> genomeComponentMapper = new RowMapper<GenomicComponentMetaData>() {
+    private class GenomicComponentMapper implements RowMapper<GenomicComponentMetaData> {
+
+        private final GenomeMetaData genomeMetaData;
+
+        public GenomicComponentMapper(GenomeMetaData genomeMetaData) {
+            this.genomeMetaData = genomeMetaData;
+        }
+
         public GenomicComponentMetaData mapRow(ROResultSet rs, int arg1) throws SQLException {
             // acc.version
             final String vAcc = rs.getString(1);
             final String[] acc = vAcc.split("\\.");
-            final GenomicComponentMetaData md = new GenomicComponentMetaData(ENA_SRC, acc[0], acc[0], null);
+            final GenomicComponentMetaData md = new GenomicComponentMetaData(acc[0], genomeMetaData);
             md.setVersion(acc[1]);
             return md;
         }
@@ -104,7 +110,8 @@ public class OracleGenomeCollections implements GenomeCollections {
     private final GcWgsPolicy policy;
 
     public OracleGenomeCollections(EnaGenomeConfig config, SqlService srv) {
-        this(new SqlServiceTemplateImpl(config.getEtaUri(), srv), GcWgsPolicy.valueOf(config.getWgsPolicy().toUpperCase()));
+        this(new SqlServiceTemplateImpl(config.getEtaUri(), srv),
+                GcWgsPolicy.valueOf(config.getWgsPolicy().toUpperCase()));
     };
 
     public OracleGenomeCollections(SqlServiceTemplate gcServer, GcWgsPolicy policy) {
@@ -116,9 +123,8 @@ public class OracleGenomeCollections implements GenomeCollections {
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * org.ensembl.genomeloader.materializer.ena.genome_collections.GenomeCollections
-     * #getGenomeForSetChain(java.lang.String)
+     * @see org.ensembl.genomeloader.materializer.ena.genome_collections.
+     * GenomeCollections #getGenomeForSetChain(java.lang.String)
      */
     public GenomeMetaData getGenomeForSetChain(String setChain) {
         getLog().info("Fetching metadata for " + setChain);
@@ -126,7 +132,7 @@ public class OracleGenomeCollections implements GenomeCollections {
                 setChain);
         final GenomeMetaData md = CollectionUtils.getFirstElement(mds, null);
         if (md != null) {
-            md.getComponentMetaData().addAll(getComponentsForGenome(md));
+            addComponentsForGenome(md);
         }
         return md;
     }
@@ -134,9 +140,8 @@ public class OracleGenomeCollections implements GenomeCollections {
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * org.ensembl.genomeloader.materializer.ena.genome_collections.GenomeCollections
-     * #getGenomeForOrganism(java.lang.String)
+     * @see org.ensembl.genomeloader.materializer.ena.genome_collections.
+     * GenomeCollections #getGenomeForOrganism(java.lang.String)
      */
     public GenomeMetaData getGenomeForOrganism(String name) {
         return getGenomeForSetChain(getSetChainForOrganism(name));
@@ -145,85 +150,60 @@ public class OracleGenomeCollections implements GenomeCollections {
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * org.ensembl.genomeloader.materializer.ena.genome_collections.GenomeCollections
-     * #getGenomeForTaxId(int)
+     * @see org.ensembl.genomeloader.materializer.ena.genome_collections.
+     * GenomeCollections #getGenomeForTaxId(int)
      */
     public GenomeMetaData getGenomeForTaxId(int taxId) {
         return getGenomeForSetChain(getSetChainForTaxId(taxId));
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.ensembl.genomeloader.materializer.ena.genome_collections.GenomeCollections
-     * #getGenomeForEnaAccession(java.lang.String)
-     */
     public GenomeMetaData getGenomeForEnaAccession(String accession) {
         return getGenomeForSetChain(getSetChainForEnaAccession(accession));
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.ensembl.genomeloader.materializer.ena.genome_collections.GenomeCollections
-     * #getComponentsForGenome
-     * (org.ensembl.genomeloader.genomebuilder.metadata.GenomeMetaData)
-     */
-    public List<GenomicComponentMetaData> getComponentsForGenome(GenomeMetaData md) {
-        return getComponentsForGenome(md.getId(), md.getVersion());
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.ensembl.genomeloader.materializer.ena.genome_collections.GenomeCollections
-     * #getComponentsForGenome(java.lang.String, int)
-     */
-    public List<GenomicComponentMetaData> getComponentsForGenome(String setChain, String version) {
-        List<GenomicComponentMetaData> components = null;
+    public void addComponentsForGenome(GenomeMetaData md) {
+        Collection<GenomicComponentMetaData> components = null;
         switch (policy) {
         case WGS:
             getLog().info("Using WGS components only");
-            components = getWgs(setChain, version);
+            components = getWgs(md);
             break;
         case COMPONENTS:
             getLog().info("Using non-WGS components");
-            components = getComponents(setChain, version);
+            components = getComponents(md);
             break;
         case AUTOMATIC:
         default:
             getLog().info("Resolving non-WGS vs. WGS components automatically");
-            components = resolveComponents(getComponents(setChain, version), getWgs(setChain, version));
+            components = resolveComponents(getComponents(md), getWgs(md));
             break;
         }
-        getLog().info("Found " + components.size() + " components for " + setChain + "." + version);
-        return components;
+        getLog().info("Found " + components.size() + " components for " + md.getId());
+        md.getComponentMetaData().clear();
+        md.getComponentMetaData().addAll(components);
     }
 
-    protected List<GenomicComponentMetaData> getComponents(String setChain, String version) {
+    protected List<GenomicComponentMetaData> getComponents(GenomeMetaData md) {
         final List<GenomicComponentMetaData> components = new ArrayList<GenomicComponentMetaData>();
-        components.addAll(gcServer.queryForList(sqlLib.getQuery("getRepliconComponentsForGenome"),
-                genomeComponentMapper, setChain, version));
-        components.addAll(gcServer.queryForList(sqlLib.getQuery("getUnplacedComponentsForGenome"),
-                genomeComponentMapper, setChain, version));
-        components.addAll(gcServer.queryForList(sqlLib.getQuery("getUnlocalisedComponentsForGenome"),
-                genomeComponentMapper, setChain, version));
+        GenomicComponentMapper mapper = new GenomicComponentMapper(md);
+        components.addAll(gcServer.queryForList(sqlLib.getQuery("getRepliconComponentsForGenome"), mapper, md.getId(),
+                md.getVersion()));
+        components.addAll(gcServer.queryForList(sqlLib.getQuery("getUnplacedComponentsForGenome"), mapper, md.getId(),
+                md.getVersion()));
+        components.addAll(gcServer.queryForList(sqlLib.getQuery("getUnlocalisedComponentsForGenome"), mapper,
+                md.getId(), md.getVersion()));
         return components;
     }
 
-    protected List<GenomicComponentMetaData> getWgs(String setChain, String version) {
+    protected List<GenomicComponentMetaData> getWgs(GenomeMetaData md) {
+        GenomicComponentMapper mapper = new GenomicComponentMapper(md);
         final List<String> wgsPrefixes = gcServer.queryForDefaultObjectList(sqlLib.getQuery("getWgsPrefixForGenome"),
-                String.class, setChain, version);
+                String.class, md.getId(), md.getVersion());
         final String wgsPrefix = CollectionUtils.getFirstElement(wgsPrefixes, null);
         if (StringUtils.isEmpty(wgsPrefix)) {
             return new ArrayList<GenomicComponentMetaData>(0);
         } else {
-            return gcServer.queryForList(sqlLib.getQuery("getWgsComponentsForPrefix"), genomeComponentMapper,
-                    wgsPrefix);
+            return gcServer.queryForList(sqlLib.getQuery("getWgsComponentsForPrefix"), mapper, wgsPrefix);
         }
     }
 
@@ -279,9 +259,8 @@ public class OracleGenomeCollections implements GenomeCollections {
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * org.ensembl.genomeloader.materializer.ena.genome_collections.GenomeCollections
-     * #getSetChainForOrganism(java.lang.String)
+     * @see org.ensembl.genomeloader.materializer.ena.genome_collections.
+     * GenomeCollections #getSetChainForOrganism(java.lang.String)
      */
     public String getSetChainForOrganism(String name) {
         return gcServer.queryForDefaultObject("getSetChainForName", String.class, name);
@@ -290,9 +269,8 @@ public class OracleGenomeCollections implements GenomeCollections {
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * org.ensembl.genomeloader.materializer.ena.genome_collections.GenomeCollections
-     * #getSetChainForTaxId(int)
+     * @see org.ensembl.genomeloader.materializer.ena.genome_collections.
+     * GenomeCollections #getSetChainForTaxId(int)
      */
     public String getSetChainForTaxId(int taxId) {
         return gcServer.queryForDefaultObject("getSetChainForTaxId", String.class, taxId);
@@ -301,9 +279,8 @@ public class OracleGenomeCollections implements GenomeCollections {
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * org.ensembl.genomeloader.materializer.ena.genome_collections.GenomeCollections
-     * #getSetChainForEnaAccession(java.lang.String)
+     * @see org.ensembl.genomeloader.materializer.ena.genome_collections.
+     * GenomeCollections #getSetChainForEnaAccession(java.lang.String)
      */
     public String getSetChainForEnaAccession(String accession) {
         throw new UnsupportedOperationException("Not yet implemented");

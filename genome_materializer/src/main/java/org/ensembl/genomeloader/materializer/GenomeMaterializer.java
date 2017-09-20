@@ -22,17 +22,19 @@
  */
 package org.ensembl.genomeloader.materializer;
 
+import org.ensembl.genomeloader.metadata.GenomeMetaData;
 import org.ensembl.genomeloader.model.Genome;
-import org.ensembl.genomeloader.model.GenomeInfo;
 
 /**
  * @author dstaines
  *
  */
 public interface GenomeMaterializer {
-	
-	public Genome getGenome(GenomeInfo genome);
-	public Genome getGenome(String id);
-	public Genome getGenome(Long id);
-	
+
+    public Genome getGenome(GenomeMetaData genome);
+
+    public Genome getGenome(String id);
+
+    public Genome getGenome(Long id);
+
 }

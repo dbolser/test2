@@ -61,7 +61,7 @@ public class SimpleDuplicateIdProcessor extends DuplicateIdProcessor {
     }
 
     protected boolean isAllowDuplicates(Genome genome) {
-        return genome.getCreationDate().before(config.getStrictDate());
+        return genome.getMetaData().getCreationDate().before(config.getStrictDate());
     }
 
 }

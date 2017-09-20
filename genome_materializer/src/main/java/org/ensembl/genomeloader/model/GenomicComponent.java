@@ -104,4 +104,7 @@ public interface GenomicComponent extends Integr8ModelComponent, CrossReferenced
 
 	public String getVersionedAccession();
 
+	public void setGenome(Genome genome);
+	public void setMetaData(GenomicComponentMetaData metadata);
+	public void setTopLevel(boolean topLevel);
 }

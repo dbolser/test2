@@ -18,11 +18,11 @@ package org.ensembl.genomeloader.model;
 
 import static org.junit.Assert.assertEquals;
 
+import org.ensembl.genomeloader.metadata.GenomeMetaData;
 import org.ensembl.genomeloader.metadata.GenomicComponentDescriptionHandler;
 import org.ensembl.genomeloader.metadata.GenomicComponentMetaData;
 import org.ensembl.genomeloader.metadata.GenomicComponentMetaData.GenomicComponentType;
 import org.ensembl.genomeloader.metadata.impl.DefaultGenomicComponentDescriptionHandler;
-import org.ensembl.genomeloader.model.impl.GenomeInfoImpl;
 import org.junit.Test;
 
 public class DescriptionParsing {
@@ -32,10 +32,9 @@ public class DescriptionParsing {
 	public void testDescription(String taxon, String input,
 			GenomicComponentType expectedType, String expectedName) {
 		final DefaultGenomicComponentDescriptionHandler handler = new DefaultGenomicComponentDescriptionHandler();
-		final GenomicComponentMetaData md = new GenomicComponentMetaData();
-		md.setComponentType(null);
-		md.setAccession(DEFAULT_ACC);
-		md.setGenomeInfo(new GenomeInfoImpl("dummy", 1, "wah", taxon));
+		GenomeMetaData gmd = new GenomeMetaData("dummy", "wah", 0);
+		gmd.setSuperregnum(taxon);
+		final GenomicComponentMetaData md = new GenomicComponentMetaData(DEFAULT_ACC, gmd);
 		handler.parseComponentDescription(md, input);
 		assertEquals(expectedType, md.getComponentType());
 		assertEquals(expectedName, md.getName());

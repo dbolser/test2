@@ -16,31 +16,30 @@
 
 package org.ensembl.genomeloader.materializer.impl;
 
+import java.util.concurrent.Executor;
+
 import org.ensembl.genomeloader.materializer.EnaParser;
-import org.ensembl.genomeloader.materializer.EnaParsingException;
-import org.ensembl.genomeloader.model.GenomeInfo;
-import org.ensembl.genomeloader.model.impl.GenomeInfoImpl;
+import org.ensembl.genomeloader.model.impl.GenomicComponentImpl;
+import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 
-import nu.xom.Document;
 import nu.xom.Element;
-import nu.xom.Nodes;
 
-public class XmlEnaGenomeInfoParser extends AbstractXmlEnaParser<GenomeInfo>
-		implements EnaParser<GenomeInfo> {
+/**
+ * Minimal parser that only deals with parsing the sequence and CON of an entry
+ * @author dstaines
+ *
+ */
+public class EnaContigParser extends EnaParser {
 
-	private final SourceElementParser parser = new SourceElementParser();
+	public EnaContigParser(Executor executor,
+			DatabaseReferenceTypeRegistry registry) {
+		super(executor, registry);
+	}
 
 	@Override
-	public GenomeInfoImpl parse(Document doc) {
-		// get the source element
-		Nodes srcs = doc.query("//feature[@name='source']");
-		if (srcs.size() != 1) {
-			throw new EnaParsingException(
-					"Document should contain only one source feature");
-		}
-		Element src = (Element) srcs.get(0);
-		return parser.getGenomeInfo(src);
-
+	protected void parseFeatures(GenomicComponentImpl component,
+			Element entryElem) {
+		// do nothing with features
 	}
 
 }

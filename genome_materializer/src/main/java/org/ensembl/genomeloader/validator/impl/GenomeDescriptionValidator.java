@@ -37,13 +37,13 @@ public class GenomeDescriptionValidator implements GenomeValidator {
 			Pattern.compile(".*Partial Genome.*", Pattern.CASE_INSENSITIVE) };
 
 	public void validateGenome(Genome genome) throws GenomeValidationException {
-		if (!StringUtils.isEmpty(genome.getDescription())) {
+		if (!StringUtils.isEmpty(genome.getMetaData().getDescription())) {
 			for (Pattern p : PATTERNS) {
-				if (p.matcher(genome.getDescription()).matches()) {
+				if (p.matcher(genome.getMetaData().getDescription()).matches()) {
 					throw new GenomeValidationGeneCountException("Genome "
 							+ genome.getName()
 							+ " has blacklisted description \""
-							+ genome.getDescription() + "\" (matches /"
+							+ genome.getMetaData().getDescription() + "\" (matches /"
 							+ p.pattern() + "/)");
 				}
 			}

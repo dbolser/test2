@@ -29,14 +29,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ensembl.genomeloader.materializer.executor.SimpleExecutor;
 import org.ensembl.genomeloader.materializer.impl.MaterializationUncheckedException;
-import org.ensembl.genomeloader.materializer.impl.XmlEnaComponentParser;
 import org.ensembl.genomeloader.materializer.processors.GenomeProcessor;
 import org.ensembl.genomeloader.materializer.processors.LocationIdEnaGenomeProcessor;
 import org.ensembl.genomeloader.metadata.GenomeMetaData;
 import org.ensembl.genomeloader.metadata.GenomicComponentMetaData;
 import org.ensembl.genomeloader.model.Genome;
+import org.ensembl.genomeloader.model.GenomicComponent;
 import org.ensembl.genomeloader.model.impl.GenomeImpl;
-import org.ensembl.genomeloader.model.impl.GenomicComponentImpl;
 import org.ensembl.genomeloader.services.sql.SqlService;
 import org.ensembl.genomeloader.services.sql.impl.LocalSqlService;
 import org.ensembl.genomeloader.util.collections.CollectionUtils;
@@ -71,15 +70,15 @@ public class EnaGenomeMaterializer {
     }
 
     private final String enaXmlLoc;
-    private final EnaParser<GenomicComponentImpl> parser;
+    private final EnaParser parser;
     private final GenomeProcessor processor;
 
     public EnaGenomeMaterializer(EnaGenomeConfig config) {
-        this(config, new LocalSqlService(),new SimpleExecutor());
+        this(config, new LocalSqlService(), new SimpleExecutor());
     }
 
     public EnaGenomeMaterializer(EnaGenomeConfig config, SqlService srv, Executor executor) {
-        this(config, new XmlEnaComponentParser(executor, new XmlDatabaseReferenceTypeRegistry()),
+        this(config, new EnaParser(executor, new XmlDatabaseReferenceTypeRegistry()),
                 new LocationIdEnaGenomeProcessor(config, srv));
     }
 
@@ -88,19 +87,18 @@ public class EnaGenomeMaterializer {
     }
 
     public EnaGenomeMaterializer(EnaGenomeConfig config, GenomeProcessor processor, Executor executor) {
-        this(config, new XmlEnaComponentParser(executor, new XmlDatabaseReferenceTypeRegistry()), processor);
+        this(config, new EnaParser(executor, new XmlDatabaseReferenceTypeRegistry()), processor);
     }
 
-    public EnaGenomeMaterializer(EnaGenomeConfig config, EnaParser<GenomicComponentImpl> parser) {
+    public EnaGenomeMaterializer(EnaGenomeConfig config, EnaParser parser) {
         this(config.getEnaXmlUrl(), parser, null);
     }
 
-    public EnaGenomeMaterializer(EnaGenomeConfig config, EnaParser<GenomicComponentImpl> parser,
-            GenomeProcessor processor) {
+    public EnaGenomeMaterializer(EnaGenomeConfig config, EnaParser parser, GenomeProcessor processor) {
         this(config.getEnaXmlUrl(), parser, processor);
     }
 
-    public EnaGenomeMaterializer(String string, EnaParser<GenomicComponentImpl> parser, GenomeProcessor processor) {
+    public EnaGenomeMaterializer(String string, EnaParser parser, GenomeProcessor processor) {
         this.parser = parser;
         this.enaXmlLoc = string;
         this.processor = processor;
@@ -143,7 +141,7 @@ public class EnaGenomeMaterializer {
             boolean success = false;
             while (!success) {
                 try {
-                    GenomicComponentImpl c = getComponent(md.getAccession());
+                    GenomicComponent c = getComponent(md);
                     success = true;
                     addComponent(g, md, c);
                 } catch (Throwable e) {
@@ -162,13 +160,11 @@ public class EnaGenomeMaterializer {
                 }
             }
         }
-        genomeMetaData.setCreationDate(g.getCreationDate());
-        genomeMetaData.setUpdateDate(g.getUpdateDate());
         return g;
     }
 
-    public GenomicComponentImpl getComponent(String accession) {
-        return parser.parse(getUrl(accession));
+    public GenomicComponent getComponent(GenomicComponentMetaData md) {
+        return parser.parse(md, getUrl(md.getAccession()));
     }
 
     /**
@@ -181,7 +177,7 @@ public class EnaGenomeMaterializer {
      * @param c
      *            component and metadata as parsed
      */
-    protected void addComponent(Genome g, GenomicComponentMetaData md, GenomicComponentImpl c) {
+    protected void addComponent(Genome g, GenomicComponentMetaData md, GenomicComponent c) {
         md.setCreationDate(c.getMetaData().getCreationDate());
         md.setUpdateDate(c.getMetaData().getUpdateDate());
         md.setDescription(c.getMetaData().getDescription());
@@ -196,17 +192,17 @@ public class EnaGenomeMaterializer {
                 md.setGeneticCode(c.getMetaData().getGeneticCode());
             }
         }
-        if (g.getCreationDate() == null || md.getCreationDate().before(g.getCreationDate())) {
-            g.setCreationDate(md.getCreationDate());
+        if (g.getMetaData().getCreationDate() == null
+                || md.getCreationDate().before(g.getMetaData().getCreationDate())) {
+            g.getMetaData().setCreationDate(md.getCreationDate());
         }
-        if (g.getUpdateDate() == null || md.getUpdateDate().after(g.getUpdateDate())) {
-            g.setUpdateDate(md.getUpdateDate());
+        if (g.getMetaData().getUpdateDate() == null || md.getUpdateDate().after(g.getMetaData().getUpdateDate())) {
+            g.getMetaData().setUpdateDate(md.getUpdateDate());
         }
         c.setMetaData(md);
-        c.setId(md.getIdentifier());
         c.setGenome(g);
         md.setComponentType(null);
-        md.parseComponentDescription();
+        md.getDescriptionHandler().parseComponentDescription(md);
         g.addGenomicComponent(c);
     }
 
@@ -216,9 +212,9 @@ public class EnaGenomeMaterializer {
     protected void setDefaultGeneticCode(Genome g, GenomicComponentMetaData md) {
         // attempt to find a sensible default
         int code = DEFAULT_CODE;
-        if (GenomeMetaData.BAC_SUPERREGNUM.equalsIgnoreCase(g.getSuperregnum())
-                || GenomeMetaData.EUBAC_SUPERREGNUM.equalsIgnoreCase(g.getSuperregnum())
-                || GenomeMetaData.ARC_SUPERREGNUM.equalsIgnoreCase(g.getSuperregnum())) {
+        if (GenomeMetaData.BAC_SUPERREGNUM.equalsIgnoreCase(g.getMetaData().getSuperregnum())
+                || GenomeMetaData.EUBAC_SUPERREGNUM.equalsIgnoreCase(g.getMetaData().getSuperregnum())
+                || GenomeMetaData.ARC_SUPERREGNUM.equalsIgnoreCase(g.getMetaData().getSuperregnum())) {
             code = BACTERIA_CODE;
         }
         getLog().warn("No genetic code found for component " + md.getAccession() + " from genome " + g.getName()

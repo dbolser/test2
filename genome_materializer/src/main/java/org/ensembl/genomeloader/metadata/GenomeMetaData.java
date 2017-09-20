@@ -22,11 +22,11 @@
  */
 package org.ensembl.genomeloader.metadata;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
-
-import org.ensembl.genomeloader.model.GenomeInfo;
-import org.ensembl.genomeloader.util.collections.CollectionUtils;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -37,190 +37,123 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  * 
  */
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-public class GenomeMetaData extends EntityMetaData implements GenomeInfo {
+public class GenomeMetaData {
 
-    private static final long serialVersionUID = 1L;
+    public static final java.lang.String DEFAULT_SUPERREGNUM = "unknown";
+    public static final java.lang.String BAC_SUPERREGNUM = "bacteria";
+    public static final java.lang.String EUBAC_SUPERREGNUM = "eubacteria";
+    public static final java.lang.String EUK_SUPERREGNUM = "eukaryota";
+    public static final java.lang.String VIR_SUPERREGNUM = "viruses";
+    public static final java.lang.String ARC_SUPERREGNUM = "archaea";
 
-    private GenomeInfo info;
-
-    private List<GenomicComponentMetaData> componentMetaData;
-
-    // private String version;
-    // private Date creationDate;
-    // private Date updateDate;
-
-    /**
-     * @param id
-     */
-    public GenomeMetaData(String id) {
-        super(GenomeInfo.GENOME, id);
-        this.info = null;
+    public static enum OrganismNameType {
+        FULL, SHORT, FILE, SQL, GR, COMPARA, COMMON, STRAIN, SEROTYPE, SUBSTRAIN;
     }
 
-    /**
-     * @param info
-     */
-    public GenomeMetaData(GenomeInfo info) {
-        super(GenomeInfo.GENOME, info.getId());
-        this.info = info;
+    private final String id;
+    private final String name;
+    private final Map<OrganismNameType, String> organismNames = new HashMap<>();
+    private final int taxId;
+    private List<String> lineage;
+    private String version;
+    private String assemblyName;
+    private Date creationDate;
+    private Date updateDate;
+    private String description;
+    private String superregnum;
+    private List<GenomicComponentMetaData> componentMetaData = new ArrayList<>();
+
+    public GenomeMetaData(String id, String name, int taxId) {
+        this.id = id;
+        this.name = name;
+        this.taxId = taxId;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.ensembl.genomeloader.genomebuilder.model.GenomeInfo#getId()
-     */
-    public String getId() {
-        return info.getId();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.ensembl.genomeloader.genomebuilder.model.GenomeInfo#getLineage()
-     */
     public List<String> getLineage() {
-        return info.getLineage();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.ensembl.genomeloader.genomebuilder.model.GenomeInfo#getName()
-     */
-    public String getName() {
-        return info.getName();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.ensembl.genomeloader.genomebuilder.model.GenomeInfo#getOrganismName(uk.
-     * ac.ebi.proteome.genomebuilder.model.GenomeInfo.OrganismNameType)
-     */
-    public String getOrganismName(OrganismNameType nameType) {
-        return info.getOrganismName(nameType);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.ensembl.genomeloader.genomebuilder.model.GenomeInfo#getSuperregnum()
-     */
-    public String getSuperregnum() {
-        return info.getSuperregnum();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.ensembl.genomeloader.genomebuilder.model.GenomeInfo#getTaxId()
-     */
-    public int getTaxId() {
-        return info.getTaxId();
-    }
-
-    public List<GenomicComponentMetaData> getComponentMetaData() {
-        if (componentMetaData == null)
-            componentMetaData = CollectionUtils.createArrayList();
-        return componentMetaData;
-    }
-
-    public void setInfo(GenomeInfo info) {
-        this.info = info;
-    }
-
-    public void setOrganismName(OrganismNameType nameType, String name) {
-        info.setOrganismName(nameType, name);
-    }
-
-    /**
-     * @see org.ensembl.genomeloader.model.GenomeInfo#getVersion()
-     * @return version
-     */
-    public String getVersion() {
-        return info.getVersion();
-    }
-
-    /**
-     * @return creation date
-     * @see org.ensembl.genomeloader.model.GenomeInfo#getCreationDate()
-     */
-    public Date getCreationDate() {
-        return info.getCreationDate();
-    }
-
-    /**
-     * @return update date
-     * @see org.ensembl.genomeloader.model.GenomeInfo#getUpdateDate()
-     */
-    public Date getUpdateDate() {
-        return info.getUpdateDate();
-    }
-
-    /**
-     * @return assembly name
-     * @see org.ensembl.genomeloader.model.GenomeInfo#getAssemblyName()
-     */
-    public String getAssemblyName() {
-        return info.getAssemblyName();
-    }
-
-    /**
-     * @param v
-     * @see org.ensembl.genomeloader.model.GenomeInfo#setVersion(java.lang.String)
-     */
-    public void setVersion(String v) {
-        info.setVersion(v);
-    }
-
-    /**
-     * @param d
-     * @see org.ensembl.genomeloader.model.GenomeInfo#setCreationDate(java.util.Date)
-     */
-    public void setCreationDate(Date d) {
-        info.setCreationDate(d);
-    }
-
-    /**
-     * @param d
-     * @see org.ensembl.genomeloader.model.GenomeInfo#setUpdateDate(java.util.Date)
-     */
-    public void setUpdateDate(Date d) {
-        info.setUpdateDate(d);
-    }
-
-    /**
-     * @param assemblyName
-     * @see org.ensembl.genomeloader.model.GenomeInfo#setAssemblyName(java.lang.String)
-     */
-    public void setAssemblyName(String assemblyName) {
-        info.setAssemblyName(assemblyName);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.ensembl.genomeloader.genomebuilder.model.GenomeInfo#getDescription()
-     */
-    public String getDescription() {
-        return info.getDescription();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.ensembl.genomeloader.genomebuilder.model.GenomeInfo#setDescription(java.
-     * lang.String)
-     */
-    public void setDescription(String d) {
-        info.setDescription(d);
+        return lineage;
     }
 
     public void setLineage(List<String> lineage) {
-        info.setLineage(lineage);
+        this.lineage = lineage;
     }
 
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public String getAssemblyName() {
+        return assemblyName;
+    }
+
+    public void setAssemblyName(String assemblyName) {
+        this.assemblyName = assemblyName;
+    }
+
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public Date getUpdateDate() {
+        return updateDate;
+    }
+
+    public void setUpdateDate(Date updateDate) {
+        this.updateDate = updateDate;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public List<GenomicComponentMetaData> getComponentMetaData() {
+        return componentMetaData;
+    }
+
+    public void setComponentMetaData(List<GenomicComponentMetaData> componentMetaData) {
+        this.componentMetaData = componentMetaData;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Map<OrganismNameType, String> getOrganismNames() {
+        return organismNames;
+    }
+
+    public int getTaxId() {
+        return taxId;
+    }
+
+    public String getOrganismName(OrganismNameType type) {
+        return this.organismNames.get(type);
+    }
+
+    public void setOrganismName(OrganismNameType type, String name) {
+        this.organismNames.put(type, name);
+    }
+
+    public String getSuperregnum() {
+        return superregnum;
+    }
+
+    public void setSuperregnum(String superregnum) {
+        this.superregnum = superregnum;
+    }
 }

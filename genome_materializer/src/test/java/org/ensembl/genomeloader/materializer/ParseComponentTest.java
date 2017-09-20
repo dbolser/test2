@@ -29,11 +29,9 @@ import static junit.framework.Assert.assertNotNull;
 import java.io.InputStream;
 
 import org.ensembl.genomeloader.materializer.executor.SimpleExecutor;
-import org.ensembl.genomeloader.materializer.impl.XmlEnaComponentParser;
-import org.ensembl.genomeloader.materializer.impl.XmlEnaGenomeInfoParser;
-import org.ensembl.genomeloader.model.GenomeInfo;
+import org.ensembl.genomeloader.metadata.GenomeMetaData;
+import org.ensembl.genomeloader.metadata.GenomicComponentMetaData;
 import org.ensembl.genomeloader.model.GenomicComponent;
-import org.ensembl.genomeloader.model.impl.GenomicComponentImpl;
 import org.ensembl.genomeloader.util.InputOutputUtils;
 import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 import org.ensembl.genomeloader.xrefregistry.impl.XmlDatabaseReferenceTypeRegistry;
@@ -45,38 +43,30 @@ import org.junit.Test;
  */
 public class ParseComponentTest {
 
-	private final DatabaseReferenceTypeRegistry reg = new XmlDatabaseReferenceTypeRegistry();
+    private final DatabaseReferenceTypeRegistry reg = new XmlDatabaseReferenceTypeRegistry();
 
-	@Test
-	public void testAP001918() throws Exception {
-		InputStream is = InputOutputUtils
-				.openGzippedClasspathResource("/AP001918.xml.gz");
-		EnaParser<GenomicComponentImpl> parser = new XmlEnaComponentParser(new SimpleExecutor(),reg);
-		GenomicComponent gc = parser.parse(is);
-		assertNotNull(gc);
-		assertEquals("AP001918", gc.getAccession());
-		assertNotNull(gc.getMetaData());
-		System.out.println("Genes=>" + gc.getGenes().size());
-	}
+    @Test
+    public void testAP001918() throws Exception {
+        InputStream is = InputOutputUtils.openGzippedClasspathResource("/AP001918.xml.gz");
+        EnaParser parser = new EnaParser(new SimpleExecutor(), reg);
+        GenomeMetaData gmd = new GenomeMetaData("1", "", 0);
+        GenomicComponent gc = parser.parse(new GenomicComponentMetaData("AP001918", gmd), is);
+        assertNotNull(gc);
+        assertEquals("AP001918", gc.getAccession());
+        assertNotNull(gc.getMetaData());
+        System.out.println("Genes=>" + gc.getGenes().size());
+    }
 
-	@Test
-	public void testU00096() throws Exception {
-		InputStream is = InputOutputUtils
-				.openGzippedClasspathResource("/U00096.xml.gz");
-		EnaParser<GenomicComponentImpl> parser = new XmlEnaComponentParser(new SimpleExecutor(),reg);
-		GenomicComponent gc = parser.parse(is);
-		assertNotNull(gc);
-		assertEquals("U00096", gc.getAccession());
-		assertNotNull(gc.getMetaData());
-		System.out.println("Genes=>" + gc.getGenes().size());
-	}
-
-	@Test
-	public void testU00096Src() throws Exception {
-		InputStream is = InputOutputUtils
-				.openGzippedClasspathResource("/U00096.xml.gz");
-		EnaParser<GenomeInfo> parser = new XmlEnaGenomeInfoParser();
-		GenomeInfo md = parser.parse(is);
-	}
+    @Test
+    public void testU00096() throws Exception {
+        InputStream is = InputOutputUtils.openGzippedClasspathResource("/U00096.xml.gz");
+        EnaParser parser = new EnaParser(new SimpleExecutor(), reg);
+        GenomeMetaData gmd = new GenomeMetaData("1", "", 0);
+        GenomicComponent gc = parser.parse(new GenomicComponentMetaData("U00096", gmd), is);
+        assertNotNull(gc);
+        assertEquals("U00096", gc.getAccession());
+        assertNotNull(gc.getMetaData());
+        System.out.println("Genes=>" + gc.getGenes().size());
+    }
 
 }

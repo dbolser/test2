@@ -16,6 +16,7 @@ import org.apache.commons.logging.LogFactory;
 import org.ensembl.genomeloader.materializer.executor.FileLockExecutor;
 import org.ensembl.genomeloader.materializer.genome_collections.GenomeCollections;
 import org.ensembl.genomeloader.materializer.genome_collections.OracleGenomeCollections;
+import org.ensembl.genomeloader.materializer.impl.MaterializationUncheckedException;
 import org.ensembl.genomeloader.materializer.processors.EnaGenomeProcessor;
 import org.ensembl.genomeloader.metadata.GenomeMetaData;
 import org.ensembl.genomeloader.model.DatabaseReference;
@@ -89,6 +90,9 @@ public class DumpGenome {
         log.info("Retrieving metadata for " + setChain);
         GenomeCollections gc = new OracleGenomeCollections(config, srv);
         GenomeMetaData genomeMetaData = gc.getGenomeForSetChain(setChain);
+        if(genomeMetaData==null) {
+            throw new MaterializationUncheckedException("Could not find assembly for "+setChain);
+        }
         log.info("Retrieved metadata for " + setChain);
         return materializeGenome(genomeMetaData);
     }
@@ -104,7 +108,7 @@ public class DumpGenome {
     }
 
     public void dumpGenomeJson(Genome genome, File file) {
-        log.info("Writing json for " + genome.getId() + " to " + file.getPath());
+        log.info("Writing json for " + genome.getIdString() + " to " + file.getPath());
         ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(Include.NON_EMPTY);
         SimpleModule simpleModule = new SimpleModule("SimpleModule", new Version(1, 0, 0, null, null, null));
@@ -114,9 +118,9 @@ public class DumpGenome {
         mapper.registerModule(simpleModule);
         try {
             mapper.writeValue(file, genome);
-            log.info("Completed writing json for " + genome.getId());
+            log.info("Completed writing json for " + genome.getIdString());
         } catch (IOException e) {
-            throw new GenomeDumpException("Could not write JSON for " + genome.getId() + " to " + file.getPath(), e);
+            throw new GenomeDumpException("Could not write JSON for " + genome.getIdString() + " to " + file.getPath(), e);
         }
     }
 
