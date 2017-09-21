@@ -57,6 +57,7 @@ public class GenomeMetaData {
     private List<String> lineage;
     private String version;
     private String assemblyName;
+    private String assemblyDefault;
     private Date creationDate;
     private Date updateDate;
     private String description;
@@ -168,5 +169,13 @@ public class GenomeMetaData {
     
     public void setDbVersion(String name, String value) {
         getDbVersions().put(name, value);
+    }
+
+    public String getAssemblyDefault() {
+        return assemblyDefault;
+    }
+
+    public void setAssemblyDefault(String assemblyDefault) {
+        this.assemblyDefault = assemblyDefault;
     }
 }
