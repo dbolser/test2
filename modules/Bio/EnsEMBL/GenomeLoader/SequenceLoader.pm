@@ -43,19 +43,17 @@ sub new {
 
 sub get_coord_systems {
   my ( $self, $assembly ) = @_;
-  if(!defined $self->{coord_systems}) {
-  # Create plasmid coord system.
-  my $contig_cs = $self->get_coord_system( CS()->{CONTIG}, 1, 4, 1 );
-  my $supercontig_cs = $self->get_coord_system( CS()->{SUPERCONTIG},
-                                0, 3, 1, $assembly );
-  my $chr_cs = $self->get_coord_system( CS()->{CHROMOSOME},
-                                        0, 1, 1,
-                                       $assembly );
-  my $plasmid_cs =
-    $self->get_coord_system( CS()->{PLASMID}, 0, 2, 1,
-                             $assembly );
+  if ( !defined $self->{coord_systems} ) {
+    # Create plasmid coord system.
+    my $contig_cs = $self->get_coord_system( CS()->{CONTIG}, 1, 4, 1 );
+    my $supercontig_cs =
+      $self->get_coord_system( CS()->{SUPERCONTIG}, 0, 3, 1, $assembly );
+    my $chr_cs =
+      $self->get_coord_system( CS()->{CHROMOSOME}, 0, 1, 1, $assembly );
+    my $plasmid_cs =
+      $self->get_coord_system( CS()->{PLASMID}, 0, 2, 1, $assembly );
 
-   $self->{coord_systems} = { CS()->{CHROMOSOME}    => $chr_cs,
+    $self->{coord_systems} = { CS()->{CHROMOSOME}    => $chr_cs,
                                CS()->{MITOCHONDRION} => $chr_cs,
                                CS()->{CHLOROPLAST}   => $chr_cs,
                                CS()->{PLASMID}       => $plasmid_cs,
@@ -88,16 +86,13 @@ sub load_sequence {
   # Store coord system.
   my $csa = $self->dba()->get_CoordSystemAdaptor;
 
-my $coord_systems = $self->get_coord_systems($assembly);
+  my $coord_systems = $self->get_coord_systems($assembly);
 
   my ( $component_name_prefix, $component_name ) =
     $self->parse_description($icomponent);
-  $self->log()
-    ->info("Handling $component_name_prefix, $component_name");
-  my $slice_coord_system =
-    $coord_systems->{$component_name_prefix};
-  $self->log()
-    ->debug( "Using coord system " . $slice_coord_system->name() );
+  $self->log()->info("Handling $component_name_prefix, $component_name");
+  my $slice_coord_system = $coord_systems->{$component_name_prefix};
+  $self->log()->debug( "Using coord system " . $slice_coord_system->name() );
 
   # reformat troublesome characterspp
   $component_name =~ s/\+/plus/g;
@@ -105,20 +100,20 @@ my $coord_systems = $self->get_coord_systems($assembly);
   $component_name =~ s/_+/_/g;
 
   # Component slice.
-  my $slice =
-    Bio::EnsEMBL::Slice->new(-SEQ_REGION_NAME => $component_name,
-                             -COORD_SYSTEM    => $slice_coord_system,
-                             -START           => 1,
-                             -END             => $icomponent->{length},
-                             -SEQ_REGION_LENGTH => $icomponent->{length}
-    );
+  my $slice = Bio::EnsEMBL::Slice->new(
+                                     -SEQ_REGION_NAME => $component_name,
+                                     -COORD_SYSTEM    => $slice_coord_system,
+                                     -START           => 1,
+                                     -END             => $icomponent->{length},
+                                     -SEQ_REGION_LENGTH => $icomponent->{length}
+  );
 
   # Has the coord system been stored yet ? possible race condition
   if ( !defined $slice->coord_system()->dbID() ||
        $slice->coord_system()->dbID() == 0 )
   {
     $self->log()
-      ->info("Storing coord system " . $slice->coord_system()->name() );
+      ->info( "Storing coord system " . $slice->coord_system()->name() );
 
     # Store coord system.
     $csa->store( $slice->coord_system );
@@ -134,31 +129,28 @@ my $coord_systems = $self->get_coord_systems($assembly);
   }
 
   my @attributes = ();
-
   if ( $icomponent->{topLevel} ) {
     push @attributes,
       Bio::EnsEMBL::Attribute->new(
-                     -CODE        => 'toplevel',
-                     -NAME        => 'Top Level',
-                     -DESCRIPTION => 'Top Level Non-Redundant Sequence',
-                     -VALUE       => '1' );
+                             -CODE        => 'toplevel',
+                             -NAME        => 'Top Level',
+                             -DESCRIPTION => 'Top Level Non-Redundant Sequence',
+                             -VALUE       => '1' );
 
     my $long_name = $self->get_longname($icomponent);
     if ( defined $long_name && $long_name ne 'unknown' ) {
       push @attributes,
-        Bio::EnsEMBL::Attribute->new(
-                                   -CODE        => 'name',
-                                   -NAME        => 'Name',
-                                   -DESCRIPTION => 'User-friendly name',
-                                   -VALUE       => $long_name );
+        Bio::EnsEMBL::Attribute->new( -CODE        => 'name',
+                                      -NAME        => 'Name',
+                                      -DESCRIPTION => 'User-friendly name',
+                                      -VALUE       => $long_name );
     }
     if ( $icomponent->{metaData}{geneticCode} ne '1' ) {
       push @attributes,
-        Bio::EnsEMBL::Attribute->new(
-                                    -CODE        => 'codon_table',
-                                    -NAME        => 'Codon table ID',
-                                    -DESCRIPTION => 'Codon table ID',
-                                    -VALUE => $icomponent->{geneticCode}
+        Bio::EnsEMBL::Attribute->new( -CODE        => 'codon_table',
+                                      -NAME        => 'Codon table ID',
+                                      -DESCRIPTION => 'Codon table ID',
+                                      -VALUE       => $icomponent->{geneticCode}
         );
     }
   } ## end if ( $icomponent->{topLevel...})
@@ -179,11 +171,10 @@ my $coord_systems = $self->get_coord_systems($assembly);
   # Add circular sequence attribute to top-level seq_region.
   if ( $icomponent->{circular} ) {
     push( @attributes,
-          Bio::EnsEMBL::Attribute->new(
-                                    -CODE        => 'circular_seq',
-                                    -NAME        => 'Circular sequence',
-                                    -DESCRIPTION => 'Circular sequence',
-                                    -VALUE       => '1' ) );
+          Bio::EnsEMBL::Attribute->new( -CODE        => 'circular_seq',
+                                        -NAME        => 'Circular sequence',
+                                        -DESCRIPTION => 'Circular sequence',
+                                        -VALUE       => '1' ) );
   }
 
   # add any references
@@ -191,35 +182,35 @@ my $coord_systems = $self->get_coord_systems($assembly);
   for my $xref ( @{ $icomponent->{xrefs} } ) {
     my $dbentry =
       Bio::EnsEMBL::DBEntry->new(
-                 -DBNAME => $xref->{databaseReferenceType}{ensemblName},
-                 -PRIMARY_ID => $xref->{primaryIdentifier},
-                 -DISPLAY_ID => $xref->{secondaryIdentifier} ||
-                   $xref->{primaryIdentifier} );
+       -DBNAME     => $xref->{databaseReferenceType}{ensemblName},
+       -PRIMARY_ID => $xref->{primaryIdentifier},
+       -DISPLAY_ID => $xref->{secondaryIdentifier} || $xref->{primaryIdentifier}
+      );
     my $dbX = $xa->store($dbentry);
     push( @attributes,
           Bio::EnsEMBL::Attribute->new(
-                  -CODE        => 'xref_id',
-                  -NAME        => 'Xref ID',
-                  -DESCRIPTION => 'ID of associated database reference',
-                  -VALUE       => $dbX ) );
+                          -CODE        => 'xref_id',
+                          -NAME        => 'Xref ID',
+                          -DESCRIPTION => 'ID of associated database reference',
+                          -VALUE       => $dbX ) );
   }
 
   if ( defined $icomponent->{creationDate} ) {
     push( @attributes,
           Bio::EnsEMBL::Attribute->new(
-                          -CODE        => 'creation_date',
-                          -NAME        => 'Creation date',
-                          -DESCRIPTION => 'Creation date of annotation',
-                          -VALUE => $icomponent->{creationDate}{date} )
+                                  -CODE        => 'creation_date',
+                                  -NAME        => 'Creation date',
+                                  -DESCRIPTION => 'Creation date of annotation',
+                                  -VALUE => $icomponent->{creationDate}{date} )
     );
   }
   if ( defined $icomponent->{updateDate} ) {
     push( @attributes,
           Bio::EnsEMBL::Attribute->new(
-                       -CODE        => 'update_date',
-                       -NAME        => 'Update date',
-                       -DESCRIPTION => 'Last update date of annotation',
-                       -VALUE       => $icomponent->{updateDate}{date} )
+                               -CODE        => 'update_date',
+                               -NAME        => 'Update date',
+                               -DESCRIPTION => 'Last update date of annotation',
+                               -VALUE       => $icomponent->{updateDate}{date} )
     );
   }
 
@@ -232,18 +223,18 @@ my $coord_systems = $self->get_coord_systems($assembly);
   my $vacc = $icomponent->{accession} . '.' . $icomponent->{metaData}{version};
   if ( $vacc ne $component_name ) {
     $syna->store( Bio::EnsEMBL::SeqRegionSynonym->new(
-                           -synonym        => $vacc,
-                           -external_db_id => 50710,
-                           -seq_region_id => $slice->get_seq_region_id()
+                                   -synonym        => $vacc,
+                                   -external_db_id => 50710,
+                                   -seq_region_id => $slice->get_seq_region_id()
                   ) );
   }
   else {
     $aa->store_on_Slice( $slice, [
                            Bio::EnsEMBL::Attribute->new(
-                                    -CODE        => 'external_db',
-                                    -NAME        => 'External database',
-                                    -DESCRIPTION => 'External database',
-                                    -VALUE       => 'ENA' ) ] );
+                                            -CODE        => 'external_db',
+                                            -NAME        => 'External database',
+                                            -DESCRIPTION => 'External database',
+                                            -VALUE       => 'ENA' ) ] );
   }
 
   return $slice;
@@ -251,21 +242,18 @@ my $coord_systems = $self->get_coord_systems($assembly);
 
 sub parse_description {
   my ( $self, $icomponent ) = @_;
-  my $component_name        = $icomponent->{metaData}{name} || $icomponent->{metaData}{accession};
+  my $component_name = $icomponent->{metaData}{name} ||
+    $icomponent->{metaData}{accession};
   my $component_name_prefix = lc $icomponent->{metaData}{componentType};
-  print Dumper($icomponent->{metaData});
   return ( $component_name_prefix, $component_name );
 }
 
 sub get_longname {
   my ( $self, $icomponent ) = @_;
   my $longname;
-  if ( $icomponent->{genome}->{shortName} &&
-       $icomponent->{description} )
-  {
+  if ( $icomponent->{genome}->{shortName} && $icomponent->{description} ) {
     $longname =
-      $icomponent->{genome}->{shortName} . ' ' .
-      $icomponent->{description};
+      $icomponent->{genome}->{shortName} . ' ' . $icomponent->{description};
   }
   else {
     $longname = 'unknown';
