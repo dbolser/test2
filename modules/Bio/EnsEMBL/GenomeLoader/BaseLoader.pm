@@ -31,37 +31,25 @@ use Carp;
 use Bio::EnsEMBL::GenomeLoader::Constants qw(CS);
 use Data::Dumper;
 use Log::Log4perl qw(get_logger);
+use Bio::EnsEMBL::Utils::Argument qw( rearrange );
 
 sub new {
-  my ($class) = shift;
-  $class = ref($class) || $class;
-  my $self =
-    ( @_ && defined $_[0] && ( ref( $_[0] ) eq 'HASH' ) ) ? $_[0] :
-                                                            {@_};
-  bless( $self, $class );
+  my ( $caller, @args ) = @_;
+  my $class = ref($caller) || $caller;
+
+  my $self = bless( {}, $class );
+
+  ( $self->{dba} ) = rearrange( ['DBA'], @args );
+
   if ( !$self->log() ) {
     $self->log( get_logger() );
   }
-  $self->{analysisFinder} = $self->plugins()->get("analysisFinder");
   return $self;
 }
 
-sub genome_metadata {
-  my $self = shift;
-  $self->{genome_metadata} = shift if @_;
-  return $self->{genome_metadata};
-}
-
 sub use_transactions {
-  my $self   = shift;
-  my $engine = $self->config()->{ensembl}->{engine};
-  return 'InnoDB' eq $engine;
-}
-
-sub config {
   my $self = shift;
-  $self->{config} = shift if @_;
-  return $self->{config};
+  return $self->{engine} eq 'InnoDB';
 }
 
 sub dba {
@@ -74,18 +62,6 @@ sub log {
   my $self = shift;
   $self->{log} = shift if @_;
   return $self->{log};
-}
-
-sub plugins {
-  my $self = shift;
-  $self->{plugins} = shift if @_;
-  return $self->{plugins};
-}
-
-sub analysis_finder {
-  my $self = shift;
-  $self->{analysisFinder} = shift if @_;
-  return $self->{analysisFinder};
 }
 
 sub convert_dna_2_peptide_coords {
@@ -120,24 +96,22 @@ sub convert_dna_2_peptide_coords {
 
     # forward strand.
     my $seq_translated = 0;
-    foreach
-      my $ilocation ( sort { $a->{min} <=> $b->{min} } @{$ilocations} )
-    {
+    foreach my $ilocation ( sort { $a->{min} <=> $b->{min} } @{$ilocations} ) {
       if ( !$pep_start &&
            $seq_start >= $ilocation->{min} &&
            $seq_start <= $ilocation->{max} )
       {
-        $pep_start = int( (
-              $seq_start - $ilocation->{min} + $seq_translated + $offset
-            )/3 ) + 1;
+        $pep_start = int(
+            ( $seq_start - $ilocation->{min} + $seq_translated + $offset )/3 ) +
+          1;
       }
       if ( !$pep_end &&
            $seq_end >= $ilocation->{min} &&
            $seq_end <= $ilocation->{max} )
       {
-        $pep_end = int(
-           ( $seq_end - $ilocation->{min} + $seq_translated + $offset )/
-             3 ) + 1;
+        $pep_end =
+          int( ( $seq_end - $ilocation->{min} + $seq_translated + $offset )/3 )
+          + 1;
       }
       $seq_translated += location_length($ilocation);
       last if ( $pep_start && $pep_end );
@@ -150,8 +124,8 @@ sub convert_dna_2_peptide_coords {
     {
 
       # Adjustment which only works if $seq_start < $f->location->start.
-      $pep_start = int(
-            ( $seq_start - $iobject_location->{min} + 1 + $offset )/3 );
+      $pep_start =
+        int( ( $seq_start - $iobject_location->{min} + 1 + $offset )/3 );
     }
 
 # Peptide coord is outside coding region  But not in a gap between coding regions
@@ -159,34 +133,33 @@ sub convert_dna_2_peptide_coords {
          ( $seq_end < $iobject_location->{min} ||
            $seq_end > $iobject_location->{max} ) )
     {
-      $pep_end = int( ( $seq_end -
-                          $iobject_location->{min} +
-                          $seq_translated +
-                          $offset )/3 ) + 1;
+      $pep_end = int(
+         ( $seq_end - $iobject_location->{min} + $seq_translated + $offset )/3 )
+        + 1;
     }
   } ## end if ( $iobject_location...)
   else {
 
     # reverse strand.
     my $seq_translated = 0;
-    foreach my $ilocation ( reverse sort { $a->{min} <=> $b->{min} }
-                            @{$ilocations} )
+    foreach
+      my $ilocation ( reverse sort { $a->{min} <=> $b->{min} } @{$ilocations} )
     {
       if ( !$pep_start &&
            $seq_end >= $ilocation->{min} &&
            $seq_end <= $ilocation->{max} )
       {
-        $pep_start = int(
-           ( $ilocation->{max} - $seq_end + $seq_translated + $offset )/
-             3 ) + 1;
+        $pep_start =
+          int( ( $ilocation->{max} - $seq_end + $seq_translated + $offset )/3 )
+          + 1;
       }
       if ( !$pep_end &&
            $seq_start >= $ilocation->{min} &&
            $seq_start <= $ilocation->{max} )
       {
-        $pep_end = int( (
-              $ilocation->{max} - $seq_start + $seq_translated + $offset
-            )/3 ) + 1;
+        $pep_end = int(
+            ( $ilocation->{max} - $seq_start + $seq_translated + $offset )/3 ) +
+          1;
       }
       $seq_translated += location_length($ilocation);
       last if ( $pep_start && $pep_end );
@@ -208,10 +181,9 @@ sub convert_dna_2_peptide_coords {
          ( $seq_start < $iobject_location->{min} ||
            $seq_start > $iobject_location->{max} ) )
     {
-      $pep_end = int( ( $iobject_location->{max} -
-                          $seq_start +
-                          $seq_translated +
-                          $offset )/3 ) + 1;
+      $pep_end = int(
+          ( $iobject_location->{max} - $seq_start + $seq_translated + $offset )/
+            3 ) + 1;
     }
   } ## end else [ if ( $iobject_location...)]
   return ( $pep_start, $pep_end );
@@ -240,8 +212,7 @@ sub store_mapping_path {
              $seen_ranks{$rank}->name );
     $seen_ranks{$rank} = $_[0];
   };
-  @csystems =
-    sort { $a->rank <=> $b->rank } map { &{$validate}($_) } @csystems;
+  @csystems = sort { $a->rank <=> $b->rank } map { &{$validate}($_) } @csystems;
   my $meta = $self->dba()->get_MetaContainer();
   my @retlist;
 

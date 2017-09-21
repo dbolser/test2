@@ -18,7 +18,6 @@ limitations under the License.
 =cut
 
 # $Source$
-# $Revision$
 # $Date$
 # $Author$
 #

@@ -29,59 +29,62 @@ use warnings;
 use strict;
 use Carp;
 use Bio::EnsEMBL::GenomeLoader::Utils qw(flush_session);
+use Bio::EnsEMBL::GenomeLoader::SequenceLoader;
 use Bio::EnsEMBL::GenomeLoader::Constants qw(BIOTYPES NAMES);
 use Data::Dumper;
-use base qw(GenomeLoader::BaseLoader);
+use base qw(Bio::EnsEMBL::GenomeLoader::BaseLoader);
 
 sub new {
   my $caller = shift;
   my $class  = ref($caller) || $caller;
   my $self   = $class->SUPER::new(@_);
-  if ( !$self->genome_metadata() ) {
-    croak("Genome metadata not supplied");
-  }
   return $self;
 }
 
 my $batchN = 25;
 
 sub load_assembly {
-  my ( $self, $components ) = @_;
-  my $seq_loader = $self->{plugins}->get("sequence");
+  my ( $self, $genome ) = @_;
+  my $seq_loader = Bio::EnsEMBL::GenomeLoader::SequenceLoader->new(-DBA=>$self->dba());
   my $sa         = $self->dba()->get_SliceAdaptor;
   my $csa        = $self->dba()->get_CoordSystemAdaptor;
+  
+  $self->log()->info("Loading assembly for ".$genome->{name});
 
   # 1. iterate over components and store them
   my $components_by_acc = {};
-  for my $component ( @{$components} ) {
+  for my $component ( @{$genome->{genomicComponents}} ) {
+    
+    $component->{metaData}{name} ||= $component->{metaData}{accession};
+    
     $self->log()
       ->info(
-          "Storing sequence for component " . $component->{name} . "/" .
+          "Storing sequence for component " . $component->{metaData}{name} . "/" .
             $component->{accession} );
-    my $slice = $seq_loader->load_sequence($component);
+    my $slice = $seq_loader->load_sequence($component, $genome->{metaData}{assemblyDefault});
     $component->{slice} = $slice;
     if ( !$component->{topLevel} ) {
       # hash non-toplevel by accession to refer to in later assemblies
       $components_by_acc->{ $component->{accession} } = $component;
     }
-    flush_session( $self->dba(), $self->config() );
+    flush_session( $self->dba());
   }
   # 2. now store assembly
   my $mappings  = {};
   my $map_pairs = {};
   my $cs        = {};
-  for my $component ( @{$components} ) {
+  for my $component ( @{$genome->{genomicComponents}} ) {
     if ( defined $component->{assembly} &&
          scalar( @{ $component->{assembly} } ) > 0 )
     {
       $self->log()
         ->info(
-          "Storing assembly for component " . $component->{name} . "/" .
+          "Storing assembly for component " . $component->{metaData}{name} . "/" .
             $component->{accession} );
       for my $ass ( @{ $component->{assembly} } ) {
         my $ass_slice = $component->{slice};
         if ( !defined $ass_slice ) {
-          croak "Component " . $component->{name} . "/" .
+          croak "Component " . $component->{metaData}{name} . "/" .
             $component->{accession} . " does not have a slice";
         }
         my $ass_comp = $components_by_acc->{ $ass->{accession} };
@@ -91,7 +94,7 @@ sub load_assembly {
         }
         my $ass_comp_slice = $ass_comp->{slice};
         if ( !defined $ass_comp_slice ) {
-          croak "Assembly component " . $ass_comp->{name} . "/" .
+          croak "Assembly component " . $ass_comp->{metaData}{name} . "/" .
             $ass_comp->{accession} . " does not have a slice";
         }
         my $map_str =
@@ -150,7 +153,7 @@ sub load_assembly {
 
   $sa->_build_circular_slice_cache();
 
-  flush_session( $self->dba(), $self->config() );
+  flush_session( $self->dba() );
   return;
 } ## end sub load_assembly
 
@@ -187,10 +190,10 @@ sub store_repeatfeatures {
     $self->{plugins}->get("repeatfeature")
       ->load_feature( $irepeatfeature, $slice );
     if ( ( $cnt++ % $batchN ) == 0 ) {
-      flush_session( $self->dba(), $self->config() );
+      flush_session( $self->dba());
     }
   }
-  flush_session( $self->dba(), $self->config() );
+  flush_session( $self->dba() );
   return;
 }
 
@@ -202,10 +205,10 @@ sub store_simplefeatures {
     $self->{plugins}->get("simplefeature")
       ->load_feature( $isimplefeature, $slice );
     if ( ( $cnt++ % $batchN ) == 0 ) {
-      flush_session( $self->dba(), $self->config() );
+      flush_session( $self->dba());
     }
   }
-  flush_session( $self->dba(), $self->config() );
+  flush_session( $self->dba());
   return;
 }
 
@@ -253,10 +256,10 @@ sub store_genes {
       croak $msg;
     }
     if ( ( $geneN % $batchN ) == 0 ) {
-      flush_session( $self->dba(), $self->config() );
+      flush_session( $self->dba() );
     }
   } ## end foreach my $igene (@$igenes)
-  flush_session( $self->dba(), $self->config() );
+  flush_session( $self->dba()  );
   return \@hashes;
 } ## end sub store_genes
 1;
@@ -281,12 +284,6 @@ Dan Staines <dstaines@ebi.ac.uk>
   Description: Constructor. Invokes BaseLoader->new as well
   Args       : Hash of arguments
   Returns    : new instance
-
-=head2 genome_metadata
-  Title      : genome_metadata
-  Description: get/set hash containing general metadata about a genome e.g. names, versions, files etc.
-  Args       : metadata hash to set
-  Returns    : metadata hash
 
 =head2 load_component
   Title      : load_component

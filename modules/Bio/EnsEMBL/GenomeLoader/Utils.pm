@@ -58,38 +58,17 @@ sub get_ensembl_dba {
 }
 
 sub start_session {
-  my ( $dba, $config ) = @_;
-  if ( $config->{ensembl}{engine} eq 'InnoDB' ) {
+  my ( $dba ) = @_;
     $log->debug("Starting session");
     $dba->dbc()->db_handle()->{'AutoCommit'} = 0;
-  }
   return;
 }
 
 sub flush_session {
-  my ( $dba, $config ) = @_;
-  if ( $config->{ensembl}{engine} eq 'InnoDB' ) {
+  my ( $dba ) = @_;
     $log->debug("Flushing session");
     $dba->dbc()->db_handle()->commit();
-  }
   return;
-}
-
-sub get_database_connection {
-  my ($conf) = @_;
-  my $connstr;
-  if ( $conf->{driver} eq 'Oracle' ) {
-    $connstr =
-      "DBI:Oracle:host=" . $conf->{host} . ";sid=" . $conf->{sid} .
-      ";port=" . $conf->{port};
-  }
-  else {
-    $connstr =
-      'DBI:' . $conf->{driver} . ':' . $conf->{schema} . '@' .
-      $conf->{host} . ':' . $conf->{port};
-  }
-  return DBI->connect( $connstr, $conf->{user}, $conf->{pass} ) or
-    croak 'Could not connect to database';
 }
 
 sub from_json_file_default {
