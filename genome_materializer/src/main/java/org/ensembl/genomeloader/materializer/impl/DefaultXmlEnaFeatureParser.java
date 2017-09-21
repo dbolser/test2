@@ -49,6 +49,7 @@ public class DefaultXmlEnaFeatureParser extends XmlEnaFeatureParser {
 	    
         String name = element.getAttributeValue("name");
 	    if(ignore.contains(name)) {
+	        getLog().debug("Ignoring element "+name);
 	        return;
 	    }
 	    
