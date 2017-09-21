@@ -23,15 +23,18 @@ use Bio::EnsEMBL::Utils::CliHelper;
 use JSON;
 use File::Slurp qw/read_file/;
 use FindBin '$Bin';
+use Bio::EnsEMBL::GenomeLoader::GenomeLoader;
 
 my $cli_helper = Bio::EnsEMBL::Utils::CliHelper->new();
 my $optsd      = $cli_helper->get_dba_opts();
 push( @{$optsd}, "verbose|v" );
 push( @{$optsd}, "dump_file|f:s" );
+push( @{$optsd}, "genebuild:s" );
+push( @{$optsd}, "division:s" );
 
 my $usage = sub {
   print
-"Usage: $0 --user user [-password pass] --host host --port port --dbname dbname --species_id species_id --dump_file file [--verbose]\n";
+"Usage: $0 --user user [-password pass] --host host --port port --dbname dbname --species_id species_id --division division --dump_file file [--verbose]\n";
 };
 
 my $opts = $cli_helper->process_args( $optsd, $usage );
@@ -47,8 +50,32 @@ if ( !defined $opts->{dump_file} ) {
   exit 1;
 }
 
+if(!defined $opts->{division}) {
+  $usage->();
+  exit 1;  
+}
+
+
 $log->info( "Parsing genome from " . $opts->{dump_file} );
 my $genome = decode_json(read_file($opts->{dump_file}));
 
-#my ($dba) = @{ $cli_helper->get_dbas_for_opts($opts) };
+if(!defined $opts->{species}) {
+  $opts->{species} = lc $genome->{metaData}{name};
+  $opts->{species} =~ s/[^A-z0-9_]+/_/g;
+}
+if(!defined $opts->{genebuild}) {
+  $opts->{genebuild} = $genome->{metaData}{updateDate};
+  $opts->{genebuild} =~ s/[0-9]+$/ENA/;
+}
 
+
+$genome->{metaData}{productionName} = $opts->{species};
+$genome->{metaData}{genebuild} = $opts->{genebuild};
+$genome->{metaData}{division} = $opts->{division};
+$genome->{metaData}{provider} ||= 'European Nucleotide Archive';
+$genome->{metaData}{providerUrl} ||= 'http://www.ebi.ac.uk/ena/data/view/'.$genome->{metaData}{id};
+
+my ($dba) = @{ $cli_helper->get_dbas_for_opts($opts) };
+
+my $loader = Bio::EnsEMBL::GenomeLoader::GenomeLoader->new(-DBA=>$dba);
+$loader->load_genome($genome);
