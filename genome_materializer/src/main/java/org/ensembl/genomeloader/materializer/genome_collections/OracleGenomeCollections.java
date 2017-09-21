@@ -69,6 +69,7 @@ public class OracleGenomeCollections implements GenomeCollections {
             }
             g.setAssemblyName(rs.getString(6));
             g.setDescription(rs.getString(7));
+            g.setAssemblyDefault(g.getAssemblyName().replaceAll("[^A-z0-9_.-]+", "_"));
             return g;
         }
     };
