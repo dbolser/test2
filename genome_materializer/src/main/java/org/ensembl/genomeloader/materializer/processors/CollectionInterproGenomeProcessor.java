@@ -21,6 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,12 +42,14 @@ import org.ensembl.genomeloader.model.ProteinFeatureSource;
 import org.ensembl.genomeloader.model.ProteinFeatureType;
 import org.ensembl.genomeloader.model.impl.DatabaseReferenceImpl;
 import org.ensembl.genomeloader.model.impl.ProteinFeatureImpl;
+import org.ensembl.genomeloader.services.sql.ROResultSet;
 import org.ensembl.genomeloader.services.sql.SqlServiceException;
 import org.ensembl.genomeloader.services.sql.impl.LocalSqlService;
 import org.ensembl.genomeloader.util.collections.CollectionUtils;
 import org.ensembl.genomeloader.util.sql.DbUtils;
 import org.ensembl.genomeloader.util.sql.SqlLib;
 import org.ensembl.genomeloader.util.sql.SqlServiceTemplate;
+import org.ensembl.genomeloader.util.sql.defaultmappers.AbstractStringMapRowMapper;
 
 import oracle.sql.ARRAY;
 import oracle.sql.ArrayDescriptor;
@@ -138,7 +141,7 @@ public abstract class CollectionInterproGenomeProcessor implements GenomeProcess
                 rs.close();
                 start = end;
             }
-            // 3. execute the query
+
         } catch (final SqlServiceException e) {
             throw new MaterializationUncheckedException("Could not map InterPro domains to genome " + genome.getId(),
                     e);
@@ -150,6 +153,25 @@ public abstract class CollectionInterproGenomeProcessor implements GenomeProcess
             DbUtils.closeDbObject(ps);
             DbUtils.closeDbObject(con);
         }
+
+        getLog().info("Retrieving db versions");
+        genome.getMetaData().getDbVersions().putAll(
+                ipSrv.queryForMap(SQLLIB.getQuery("interProDbVersions"), new AbstractStringMapRowMapper<String>() {
+                    @Override
+                    public String mapRow(ROResultSet resultSet, int position) throws SQLException {
+                        return resultSet.getString(2);
+                    }
+                    @Override
+                    public Map<String, String> getMap() {
+                        return new HashMap<>();
+                    }
+                    @Override
+                    public void existingObject(String currentValue, ROResultSet resultSet, int position)
+                            throws SQLException {
+                    }
+                }));
+        genome.getMetaData().setDbVersion("interpro",
+                ipSrv.queryForDefaultObject(SQLLIB.getQuery("interProVersion"), String.class));
 
     }
 

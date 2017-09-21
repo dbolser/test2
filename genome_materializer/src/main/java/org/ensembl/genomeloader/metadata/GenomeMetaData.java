@@ -62,6 +62,7 @@ public class GenomeMetaData {
     private String description;
     private String superregnum;
     private List<GenomicComponentMetaData> componentMetaData = new ArrayList<>();
+    private Map<String,String> dbVersions = new HashMap<>(); 
 
     public GenomeMetaData(String id, String name, int taxId) {
         this.id = id;
@@ -155,5 +156,17 @@ public class GenomeMetaData {
 
     public void setSuperregnum(String superregnum) {
         this.superregnum = superregnum;
+    }
+
+    public Map<String,String> getDbVersions() {
+        return dbVersions;
+    }
+
+    public void setDbVersions(Map<String,String> dbVersions) {
+        this.dbVersions = dbVersions;
+    }
+    
+    public void setDbVersion(String name, String value) {
+        getDbVersions().put(name, value);
     }
 }

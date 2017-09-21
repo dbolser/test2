@@ -440,4 +440,13 @@ WHERE d.accession in ({0})
 		(DBCODE)
 		join table(?) t on (p.entry_ac=t.column_value)
 	</sql>
+	
+	<sql name="interProDbVersions">
+	select lower(d.dbshort),v.version from interpro.db_version v join interpro.cv_database d on (v.dbcode=d.dbcode)
+	</sql>
+	
+	 <sql name="interProVersion">
+	 select version from interpro.db_version where dbcode = 'I'
+  </sql>
+  
 </sqllib>
