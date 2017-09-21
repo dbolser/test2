@@ -43,7 +43,8 @@ public class EnaGenomeProcessor extends DelegatingGenomeProcessor {
 
     public EnaGenomeProcessor(EnaGenomeConfig config, SqlService srv, DatabaseReferenceTypeRegistry registry,
             Executor executor) {
-        super(new ComponentSortingProcessor(config), new ConXrefProcessor(config, srv, registry),
+        super(
+                new ComponentSortingProcessor(config), new ConXrefProcessor(config, srv, registry),
                 new PubMedCentralProcessor(registry), new LocationOverlapProcessor(config, registry),
                 new LocusTagMergeProcessor(config, registry), new AltTranslationProcessor(config, registry),
                 new UpiGenomeProcessor(config, srv, registry),
@@ -56,6 +57,10 @@ public class EnaGenomeProcessor extends DelegatingGenomeProcessor {
 
         if (config.isUseAccessionsForNames()) {
             addProcessor(new ComponentAccessionNamingProcessor());
+        }
+        
+        if(!config.isLoadTrackingReferences()) {
+            addProcessor(new TrackingRefRemovalProcessor());
         }
 
     }

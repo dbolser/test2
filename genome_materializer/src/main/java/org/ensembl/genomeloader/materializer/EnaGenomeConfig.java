@@ -112,6 +112,7 @@ public class EnaGenomeConfig {
 	private boolean useAccessionsForNames = false;
 	private int maxEnaConnections = 10;
 	private String lockFileDir = System.getProperty("user.dir");
+	private boolean loadTrackingReferences = true;
 
 	public String getEnaXmlUrl() {
 		return enaXmlUrl;
@@ -269,6 +270,14 @@ public class EnaGenomeConfig {
 
     public void setLockFileDir(String lockFileDir) {
         this.lockFileDir = lockFileDir;
+    }
+
+    public boolean isLoadTrackingReferences() {
+        return loadTrackingReferences;
+    }
+
+    public void setLoadTrackingReferences(boolean loadTrackingReferences) {
+        this.loadTrackingReferences = loadTrackingReferences;
     }
 
 }

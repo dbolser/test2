@@ -92,14 +92,16 @@ public abstract class CollectionInterproGenomeProcessor implements GenomeProcess
 
     public void processGenome(Genome genome) {
 
+        
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
 
+            getLog().info("Retrieving InterPro features for "+genome.getId());
             // 1. get the connection
             con = ((LocalSqlService) ipSrv.getSqlService()).openConnection(ipSrv.getUri());
-            getLog().info("Preparing statement");
+            getLog().debug("Preparing statement");
             ps = con.prepareStatement(featureQuery);
             // 2. build the array
             final ArrayDescriptor arrayDescriptor = ArrayDescriptor.createDescriptor("INTERPRO.STRING_LIST_T",
@@ -118,13 +120,14 @@ public abstract class CollectionInterproGenomeProcessor implements GenomeProcess
             final List<String> keys = new ArrayList<String>(proteinsByKey.keySet());
             int start = 0;
             final int size = keys.size();
+            int nFeatures = 0;
             while (start < size) {
                 int end = start + BATCH_SIZE;
                 if (end >= size) {
                     end = size;
                 }
                 final List<String> keySub = keys.subList(start, end);
-                getLog().info("Adding features for batch of " + keySub.size() + " (" + end + "/" + size + ")");
+                getLog().debug("Adding features for batch of " + keySub.size() + " (" + end + "/" + size + ")");
                 getLog().debug("Building array of " + keySub.size() + " keys");
                 final ARRAY arr = new ARRAY(arrayDescriptor, con.getMetaData().getConnection(),
                         keySub.toArray(new String[keySub.size()]));
@@ -138,9 +141,12 @@ public abstract class CollectionInterproGenomeProcessor implements GenomeProcess
                     addFeatures(proteinsByKey, features, goLessFeatures, rs);
                 }
                 getLog().debug("Got " + n + " results");
+                nFeatures += n;
                 rs.close();
                 start = end;
-            }
+            }           
+            getLog().info("Finished retrieving "+nFeatures+" InterPro features for "+size+" proteins "+genome.getId());
+
 
         } catch (final SqlServiceException e) {
             throw new MaterializationUncheckedException("Could not map InterPro domains to genome " + genome.getId(),
@@ -154,7 +160,7 @@ public abstract class CollectionInterproGenomeProcessor implements GenomeProcess
             DbUtils.closeDbObject(con);
         }
 
-        getLog().info("Retrieving db versions");
+        getLog().info("Retrieving InterPro db versions");
         genome.getMetaData().getDbVersions().putAll(
                 ipSrv.queryForMap(SQLLIB.getQuery("interProDbVersions"), new AbstractStringMapRowMapper<String>() {
                     @Override
@@ -178,7 +184,7 @@ public abstract class CollectionInterproGenomeProcessor implements GenomeProcess
     protected Map<String, List<Protein>> hashProteins(Genome genome) {
         final Map<String, List<Protein>> proteinsByKey = CollectionUtils.createHashMap();
         for (final GenomicComponent genomicComponent : genome.getGenomicComponents()) {
-            getLog().info("Hashing proteins for component " + genomicComponent.getAccession());
+            getLog().debug("Hashing proteins for component " + genomicComponent.getAccession());
             for (final Gene gene : genomicComponent.getGenes()) {
                 for (final Protein protein : gene.getProteins()) {
                     // remove preexisting interpro xrefs as they may be stale
