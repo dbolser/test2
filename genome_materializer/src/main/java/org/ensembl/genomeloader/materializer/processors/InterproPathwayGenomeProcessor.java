@@ -131,7 +131,7 @@ public class InterproPathwayGenomeProcessor implements GenomeProcessor {
         ResultSet rs = null;
         try {
             con = ((LocalSqlService) ipSrv.getSqlService()).openConnection(ipSrv.getUri());
-            getLog().info("Preparing statement");
+            getLog().debug("Preparing statement");
             ps = con.prepareStatement(pathwayQuery);
             ArrayDescriptor arrayDescriptor = ArrayDescriptor.createDescriptor("INTERPRO.STRING_LIST_T",
                     con.getMetaData().getConnection());
@@ -175,7 +175,7 @@ public class InterproPathwayGenomeProcessor implements GenomeProcessor {
 
     private Map<String, Collection<Protein>> hashProteinsByInterPro(Genome genome) {
         Map<String, Collection<Protein>> proteins = CollectionUtils.createHashMap();
-        getLog().info("Hashing proteins by InterPro accession for genome " + genome.getName());
+        getLog().debug("Hashing proteins by InterPro accession for genome " + genome.getName());
         for (GenomicComponent component : genome.getGenomicComponents()) {
             for (Gene gene : component.getGenes()) {
                 for (Protein protein : gene.getProteins()) {
@@ -190,7 +190,7 @@ public class InterproPathwayGenomeProcessor implements GenomeProcessor {
                 }
             }
         }
-        getLog().info("Hashed proteins by " + proteins.keySet().size() + " InterPro accessions for genome "
+        getLog().debug("Hashed proteins by " + proteins.keySet().size() + " InterPro accessions for genome "
                 + genome.getName());
         return proteins;
     }

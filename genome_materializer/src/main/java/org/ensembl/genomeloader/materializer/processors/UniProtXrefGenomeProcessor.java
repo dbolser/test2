@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -114,7 +115,7 @@ public class UniProtXrefGenomeProcessor implements GenomeProcessor {
         final Map<String, DatabaseReference> uniprotRefs = CollectionUtils.createHashMap();
         final Map<String, Collection<Gene>> genesByAc = CollectionUtils.createHashMap();
         for (final GenomicComponent genomicComponent : genome.getGenomicComponents()) {
-            getLog().info("Hashing proteins by UniProt accession for component " + genomicComponent.getAccession());
+            getLog().debug("Hashing proteins by UniProt accession for component " + genomicComponent.getAccession());
             for (final Gene gene : genomicComponent.getGenes()) {
                 for (final Protein protein : gene.getProteins()) {
                     for (final DatabaseReference ref : protein.getDatabaseReferences()) {
@@ -143,13 +144,14 @@ public class UniProtXrefGenomeProcessor implements GenomeProcessor {
         final List<String> acs = new ArrayList<String>(proteinsByAc.keySet());
         int start = 0;
         final int size = acs.size();
+        final AtomicInteger n = new AtomicInteger(0);
         while (start < size) {
             int end = start + BATCH_SIZE;
             if (end >= size) {
                 end = size;
             }
             final List<String> acSub = acs.subList(start, end);
-            getLog().info("Adding xrefs for batch of " + acSub.size() + " (" + end + "/" + size + ")");
+            getLog().debug("Adding xrefs for batch of " + acSub.size() + " (" + end + "/" + size + ")");
 
             final String pH = StringUtils.join(placeholders.subList(0, acSub.size()).iterator(), ',');
             final String sql = sqlLib.getQuery("uniProtXrefsBatch", new String[] { pH, dbList });
@@ -170,6 +172,7 @@ public class UniProtXrefGenomeProcessor implements GenomeProcessor {
                             goX.setSource(ref);
                             p.addDatabaseReference(goX);
                         }
+                        n.incrementAndGet();
                     } else {
                         final DatabaseReferenceType type = getType(dbName);
                         if (type == null) {
@@ -201,7 +204,7 @@ public class UniProtXrefGenomeProcessor implements GenomeProcessor {
             }, acSub.toArray());
             start = end;
         }
-        getLog().info("Finished adding UniProt transitive xrefs to genome " + genome.getId());
+        getLog().info("Finished adding "+n.get()+" UniProt transitive xrefs to genome " + genome.getId());
     }
 
 }

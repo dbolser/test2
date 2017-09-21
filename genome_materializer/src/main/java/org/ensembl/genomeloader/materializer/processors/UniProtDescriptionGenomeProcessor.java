@@ -85,11 +85,11 @@ public class UniProtDescriptionGenomeProcessor implements GenomeProcessor {
     }
 
     public void processGenome(final Genome genome) {
-        getLog().info("Adding GO terms to genome " + genome.getId());
+        getLog().info("Updating UniProt xrefs for genome " + genome.getId());
         // hash proteins by UPI
         final Map<String, Collection<DatabaseReference>> xrefsByAcc = CollectionUtils.createHashMap();
         for (final GenomicComponent genomicComponent : genome.getGenomicComponents()) {
-            getLog().info("Hashing xrefs by UniProt accession for component " + genomicComponent.getAccession());
+            getLog().debug("Hashing xrefs by UniProt accession for component " + genomicComponent.getAccession());
             for (final Gene gene : genomicComponent.getGenes()) {
                 for (final Protein protein : gene.getProteins()) {
                     for (final DatabaseReference ref : protein.getDatabaseReferences()) {
@@ -116,7 +116,7 @@ public class UniProtDescriptionGenomeProcessor implements GenomeProcessor {
                 end = size;
             }
             final List<String> pidSub = accs.subList(start, end);
-            getLog().info("Adding UniProt accessions for batch of " + pidSub.size() + " (" + end + "/" + size + ")");
+            getLog().debug("Adding UniProt accessions for batch of " + pidSub.size() + " (" + end + "/" + size + ")");
 
             final String pH = StringUtils.join(placeholders.subList(0, pidSub.size()).iterator(), ',');
             final String sql = sqlLib.getQuery("uniProtDescriptionBatch", new String[] { pH });
@@ -139,6 +139,6 @@ public class UniProtDescriptionGenomeProcessor implements GenomeProcessor {
             }, pidSub.toArray());
             start = end;
         }
-        getLog().info("Finished adding GO terms to genome " + genome.getId());
+        getLog().info("Finished updating UniProt xrefs for genome " + genome.getId());
     }
 }

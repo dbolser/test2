@@ -91,7 +91,7 @@ public class UniProtECGenomeProcessor implements GenomeProcessor {
         // hash proteins by uniprot accession
         final Map<String, Collection<Protein>> protsByAcc = CollectionUtils.createHashMap();
         for (final GenomicComponent genomicComponent : genome.getGenomicComponents()) {
-            getLog().info("Hashing proteins by UniProt accession for component " + genomicComponent.getAccession());
+            getLog().debug("Hashing proteins by UniProt accession for component " + genomicComponent.getAccession());
             for (final Gene gene : genomicComponent.getGenes()) {
                 for (final Protein protein : gene.getProteins()) {
                     for (final DatabaseReference ref : protein.getDatabaseReferences()) {
@@ -118,7 +118,7 @@ public class UniProtECGenomeProcessor implements GenomeProcessor {
                 end = size;
             }
             final List<String> pidSub = accs.subList(start, end);
-            getLog().info("Adding EC accessions for batch of " + pidSub.size() + " (" + end + "/" + size + ")");
+            getLog().debug("Adding EC accessions for batch of " + pidSub.size() + " (" + end + "/" + size + ")");
 
             final String pH = StringUtils.join(placeholders.subList(0, pidSub.size()).iterator(), ',');
             final String sql = sqlLib.getQuery("uniProtECBatch", new String[] { pH });
