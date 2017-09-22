@@ -146,6 +146,11 @@ public class CdsFeatureParser extends XmlEnaFeatureParser {
 							+ " has no locus_tag qualifier");
 		}
 		gene.addAnnotatedGene(geneName);
+		List<GeneName> noms = geneName.getNameMap().get(GeneNameType.NAME);
+        if(noms!=null && !noms.isEmpty()) {
+		    gene.setName(noms.get(0).getName());
+		}
+		
 		gene.setDescription(getDescription(qualifiers));
 		ProteinImpl protein = new ProteinImpl();
 		boolean isFrameshift = hasNote(qualifiers,"contains frameshift") || hasNote(qualifiers,".*sequencing error.*");

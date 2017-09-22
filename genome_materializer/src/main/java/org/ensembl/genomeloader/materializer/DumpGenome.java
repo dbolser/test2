@@ -21,6 +21,7 @@ import org.ensembl.genomeloader.materializer.processors.EnaGenomeProcessor;
 import org.ensembl.genomeloader.metadata.GenomeMetaData;
 import org.ensembl.genomeloader.model.DatabaseReference;
 import org.ensembl.genomeloader.model.EntityLocation;
+import org.ensembl.genomeloader.model.GeneName;
 import org.ensembl.genomeloader.model.Genome;
 import org.ensembl.genomeloader.services.sql.SqlService;
 import org.ensembl.genomeloader.services.sql.impl.LocalSqlService;
@@ -115,6 +116,7 @@ public class DumpGenome {
         simpleModule.addSerializer(EntityLocation.class, new EntityLocationSerializer());
         simpleModule.addSerializer(DatabaseReference.class, new DatabaseReferenceSerializer());
         simpleModule.addSerializer(Date.class, new DateSerializer());
+        simpleModule.addSerializer(GeneName.class, new GeneNameSerializer());
         mapper.registerModule(simpleModule);
         try {
             mapper.writeValue(file, genome);

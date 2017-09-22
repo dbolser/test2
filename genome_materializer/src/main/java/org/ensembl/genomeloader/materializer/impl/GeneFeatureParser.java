@@ -49,160 +49,150 @@ import nu.xom.Element;
  */
 public class GeneFeatureParser extends CdsFeatureParser {
 
-	public GeneFeatureParser(DatabaseReferenceTypeRegistry registry) {
-		super(registry);
-	}
+    public GeneFeatureParser(DatabaseReferenceTypeRegistry registry) {
+        super(registry);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ensembl.genomeloader.materializer.ena.impl.XmlEnaFeatureParser#dependsOn()
-	 */
-	public List<Class<? extends XmlEnaFeatureParser>> dependsOn() {
-		return new ArrayList<Class<? extends XmlEnaFeatureParser>>() {
-			{
-				add(CdsFeatureParser.class);
-				add(RnaFeatureParser.class);
-			}
-		};
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.ensembl.genomeloader.materializer.ena.impl.XmlEnaFeatureParser#
+     * dependsOn()
+     */
+    public List<Class<? extends XmlEnaFeatureParser>> dependsOn() {
+        return new ArrayList<Class<? extends XmlEnaFeatureParser>>() {
+            {
+                add(CdsFeatureParser.class);
+                add(RnaFeatureParser.class);
+            }
+        };
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.ensembl.genomeloader.materializer.ena.impl.XmlEnaFeatureParser#parseFeature
-	 * (org.ensembl.genomeloader.genomebuilder.model.impl.GenomicComponentImpl,
-	 * nu.xom.Element)
-	 */
-	public void parseFeature(GenomicComponentImpl component, Element element) {
-		// approach is to find genes that these genes enclose and then add
-		// additional information
-		// 1. xrefs
-		// 2. names
-		// 3. not sure what else?
-		EntityLocation loc = parseLocation(element);
-		Map<String, List<String>> qualifiers = getQualifiers(element);
-		List<DatabaseReference> xrefs = parseXrefs(element);
-		AnnotatedGene geneNames = getGeneName(qualifiers);
-		List<GeneName> locusTags = geneNames.getNameMap().get(
-				GeneNameType.ORDEREDLOCUSNAMES);
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.ensembl.genomeloader.materializer.ena.impl.XmlEnaFeatureParser#
+     * parseFeature
+     * (org.ensembl.genomeloader.genomebuilder.model.impl.GenomicComponentImpl,
+     * nu.xom.Element)
+     */
+    public void parseFeature(GenomicComponentImpl component, Element element) {
+        // approach is to find genes that these genes enclose and then add
+        // additional information
+        // 1. xrefs
+        // 2. names
+        // 3. not sure what else?
+        EntityLocation loc = parseLocation(element);
+        Map<String, List<String>> qualifiers = getQualifiers(element);
+        List<DatabaseReference> xrefs = parseXrefs(element);
+        AnnotatedGene geneNames = getGeneName(qualifiers);
 
-		Gene masterGene = null;
-		for (Gene gene : findGenesByName(component.getGenes(), locusTags)) {
-			if (masterGene == null) {
-				masterGene = gene;
-			} else if (locationsOverlap(masterGene.getLocation(),
-					gene.getLocation())) {
-				// merge location
-				masterGene.setLocation(ModelUtils.mergeLocations(
-						masterGene.getLocation(), gene.getLocation()));
-				// merge proteins
-				masterGene.getProteins().addAll(gene.getProteins());
-				// merge names
-				masterGene.addAnnotatedGene(gene);
-				masterGene.getDatabaseReferences().addAll(
-						gene.getDatabaseReferences());
-				// remove all genes
-				component.getGenes().remove(gene);
-			}
-		}
-		if (masterGene != null) {
-			masterGene.setLocation(ModelUtils.mergeLocations(
-					masterGene.getLocation(), loc));
-			masterGene.getDatabaseReferences().addAll(xrefs);
-			masterGene.addAnnotatedGene(geneNames);
-		} else {
-			getLog().debug("No protein coding gene found for " + locusTags);
-			// try to find an RNA gene instead
-			Rnagene masterRnaGene = null;
-			List<Rnagene> rnaGenes = findGenesByName(component.getRnagenes(),
-					locusTags);
-			for (Rnagene rnaGene : rnaGenes) {
-				if (masterRnaGene == null) {
-					masterRnaGene = rnaGene;
-				} else if (locationsOverlap(loc, rnaGene.getLocation())) {
-					// if it falls into the overall gene location, merge the
-					// sublocations
-					masterRnaGene
-							.setLocation(ModelUtils.mergeLocations(
-									masterRnaGene.getLocation(),
-									rnaGene.getLocation()));
-					for(RnaTranscript t: masterRnaGene.getTranscripts()) {
-						t.setLocation(masterRnaGene.getLocation());
-					}
-					// merge names
-					masterRnaGene.addAnnotatedGene(rnaGene);
-					masterRnaGene.getDatabaseReferences().addAll(
-							rnaGene.getDatabaseReferences());
-					// remove all genes
-					component.getRnagenes().remove(rnaGene);
-				}
-			}
-			if (masterRnaGene == null) {
-				
-				boolean isFrameshift = hasNote(qualifiers,"contains frameshift") || hasNote(qualifiers,".*sequencing error.*");
-				if (qualifiers.containsKey("pseudo") || qualifiers.containsKey("pseudogene") || isFrameshift) {
-					
-					// get a reference
-					DatabaseReference geneFeatureIdRef = getFeatureIdentifierRef(
-							component, element, "GENE");
+        List<GeneName> locusTags = geneNames.getNameMap().get(GeneNameType.ORDEREDLOCUSNAMES);
 
-					// create a Gene-Protein-Transcript set
-					GeneImpl gene = new GeneImpl();
-					gene.addAnnotatedGene(geneNames);
-					gene.setDescription(getDescription(qualifiers));
-					ProteinImpl protein = new ProteinImpl();
-					protein.setPseudo(qualifiers.containsKey("pseudo")||isFrameshift);
-					gene.addProtein(protein);
-					if(protein.isPseudo()) {
-					    gene.setBiotype("pseudogene");
-					} else {
-					    gene.setBiotype("protein_coding");
-					}
-					TranscriptImpl transcript = new TranscriptImpl();
-					protein.addTranscript(transcript);
-					transcript.addProtein(protein);
+        Gene masterGene = null;
+        for (Gene gene : findGenesByName(component.getGenes(), locusTags)) {
+            if (masterGene == null) {
+                masterGene = gene;
+            } else if (locationsOverlap(masterGene.getLocation(), gene.getLocation())) {
+                // merge location
+                masterGene.setLocation(ModelUtils.mergeLocations(masterGene.getLocation(), gene.getLocation()));
+                // merge proteins
+                masterGene.getProteins().addAll(gene.getProteins());
+                // merge names
+                masterGene.addAnnotatedGene(gene);
+                masterGene.getDatabaseReferences().addAll(gene.getDatabaseReferences());
+                // remove all genes
+                component.getGenes().remove(gene);
+            }
+        }
+        if (masterGene != null) {
+            masterGene.setLocation(ModelUtils.mergeLocations(masterGene.getLocation(), loc));
+            masterGene.getDatabaseReferences().addAll(xrefs);
+            masterGene.addAnnotatedGene(geneNames);
+            List<GeneName> noms = masterGene.getNameMap().get(GeneNameType.NAME);
+            if (noms != null && !noms.isEmpty()) {
+                masterGene.setName(noms.get(0).getName());
+            }
+        } else {
+            getLog().debug("No protein coding gene found for " + locusTags);
+            // try to find an RNA gene instead
+            Rnagene masterRnaGene = null;
+            List<Rnagene> rnaGenes = findGenesByName(component.getRnagenes(), locusTags);
+            for (Rnagene rnaGene : rnaGenes) {
+                if (masterRnaGene == null) {
+                    masterRnaGene = rnaGene;
+                } else if (locationsOverlap(loc, rnaGene.getLocation())) {
+                    // if it falls into the overall gene location, merge the
+                    // sublocations
+                    masterRnaGene
+                            .setLocation(ModelUtils.mergeLocations(masterRnaGene.getLocation(), rnaGene.getLocation()));
+                    for (RnaTranscript t : masterRnaGene.getTranscripts()) {
+                        t.setLocation(masterRnaGene.getLocation());
+                    }
+                    // merge names
+                    masterRnaGene.addAnnotatedGene(rnaGene);
+                    masterRnaGene.getDatabaseReferences().addAll(rnaGene.getDatabaseReferences());
+                    // remove all genes
+                    component.getRnagenes().remove(rnaGene);
+                }
+            }
+            if (masterRnaGene == null) {
 
-					gene.addDatabaseReference(geneFeatureIdRef);
-					protein.addDatabaseReference(getFeatureIdentifierRef(
-							component, element, "PROTEIN"));
-					transcript.addDatabaseReference(getFeatureIdentifierRef(
-							component, element, "TRANSCRIPT"));
+                boolean isFrameshift = hasNote(qualifiers, "contains frameshift")
+                        || hasNote(qualifiers, ".*sequencing error.*");
+                if (qualifiers.containsKey("pseudo") || qualifiers.containsKey("pseudogene") || isFrameshift) {
 
-					gene.setLocation(getLocation(element, qualifiers));
-					protein.setLocation(getLocation(element, qualifiers));
-					transcript.setLocation(getLocation(element, qualifiers));
+                    // get a reference
+                    DatabaseReference geneFeatureIdRef = getFeatureIdentifierRef(component, element, "GENE");
 
-					// attach xrefs
-					for (DatabaseReference xref : parseXrefs(element)) {
-						switch (xref.getDatabaseReferenceType().getType()) {
-						case GENE:
-							gene.addDatabaseReference(xref);
-							break;
-						case PROTEIN:
-							protein.addDatabaseReference(xref);
-							break;
-						case TRANSCRIPT:
-							transcript.addDatabaseReference(xref);
-							break;
-						}
-					}
-					
-				} else {
-					
-					getLog().warn(
-							"No existing genes found for " + locusTags
-									+ " from " + loc
-									+ " - handling as a simple feature");
-					getDefaultParser().parseFeature(component, element);
-					
-				}
-			}
-		}
-	}
+                    // create a Gene-Protein-Transcript set
+                    GeneImpl gene = new GeneImpl();
+                    gene.addAnnotatedGene(geneNames);
+                    gene.setDescription(getDescription(qualifiers));
+                    ProteinImpl protein = new ProteinImpl();
+                    protein.setPseudo(qualifiers.containsKey("pseudo") || isFrameshift);
+                    gene.addProtein(protein);
+                    if (protein.isPseudo()) {
+                        gene.setBiotype("pseudogene");
+                    } else {
+                        gene.setBiotype("protein_coding");
+                    }
+                    TranscriptImpl transcript = new TranscriptImpl();
+                    protein.addTranscript(transcript);
+                    transcript.addProtein(protein);
 
-	
+                    gene.addDatabaseReference(geneFeatureIdRef);
+                    protein.addDatabaseReference(getFeatureIdentifierRef(component, element, "PROTEIN"));
+                    transcript.addDatabaseReference(getFeatureIdentifierRef(component, element, "TRANSCRIPT"));
+
+                    gene.setLocation(getLocation(element, qualifiers));
+                    protein.setLocation(getLocation(element, qualifiers));
+                    transcript.setLocation(getLocation(element, qualifiers));
+
+                    // attach xrefs
+                    for (DatabaseReference xref : parseXrefs(element)) {
+                        switch (xref.getDatabaseReferenceType().getType()) {
+                        case GENE:
+                            gene.addDatabaseReference(xref);
+                            break;
+                        case PROTEIN:
+                            protein.addDatabaseReference(xref);
+                            break;
+                        case TRANSCRIPT:
+                            transcript.addDatabaseReference(xref);
+                            break;
+                        }
+                    }
+
+                } else {
+
+                    getLog().warn("No existing genes found for " + locusTags + " from " + loc
+                            + " - handling as a simple feature");
+                    getDefaultParser().parseFeature(component, element);
+
+                }
+            }
+        }
+    }
 
 }
