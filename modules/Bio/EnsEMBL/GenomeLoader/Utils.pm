@@ -28,34 +28,12 @@ package Bio::EnsEMBL::GenomeLoader::Utils;
 use warnings;
 use strict;
 use Carp;
-use English qw(-no_match_vars);
 use Log::Log4perl qw(get_logger);
-use JSON;
-use File::Spec;
-use JSON;
-use Bio::EnsEMBL::DBSQL::DBAdaptor;
-use Scalar::Util qw(openhandle blessed);
 use Exporter 'import';
 our @EXPORT_OK =
-  qw(get_ensembl_dba get_database_connection from_json_file slurp_file from_json_file_default start_session flush_session println slurp quote parse_json write_out process_dir);
+  qw(start_session flush_session);
 
 my $log = get_logger();
-
-sub get_ensembl_dba {
-  # Get Ensembl DB adaptor.
-  my ( $ens_config, $schema_name, $species_id ) = @_;
-  my %args = ( -DBNAME => $schema_name,
-               -HOST   => $ens_config->{host},
-               -USER   => $ens_config->{user},
-               -PASS   => $ens_config->{pass},
-               -PORT   => $ens_config->{port}, );
-  if ( defined($species_id) && $schema_name =~ m/_collection_core_/ ) {
-    $args{-MULTISPECIES_DB} = 1;
-    $args{-SPECIES_ID}      = $species_id;
-  }
-  return Bio::EnsEMBL::DBSQL::DBAdaptor->new(%args) or
-    croak "Could not connect to database for $schema_name";
-}
 
 sub start_session {
   my ( $dba ) = @_;
@@ -70,126 +48,6 @@ sub flush_session {
     $dba->dbc()->db_handle()->commit();
   return;
 }
-
-sub from_json_file_default {
-  my ( $filename, $default ) = @_;
-  if ( !$default ) { $default = {}; }
-  my $o = $default;
-  if ( -e $filename ) { $o = parse_json($filename); }
-  return $o;
-}
-
-sub println {
-  my $possible_fh = select();
-  my $handle;
-  {
-    ## no critic (ProhibitNoStrict)
-    no strict 'refs';
-    $handle = ( openhandle( $_[0] ) ) ? shift @_ : \*$possible_fh;
-    ## use critic
-  }
-
-  @_ = $_ unless @_;
-
-  if ( blessed($handle) ) {
-    return $handle->print( @_, $RS );
-  }
-  else {
-    return print {$handle} @_, $RS;
-  }
-}
-
-sub slurp {
-  my $in     = shift @_;
-  my $as_ref = shift @_;
-  my $return_ref;
-  if ( openhandle($in) ) {
-    $return_ref = _slurp_fh($in);
-  }
-  else {
-    open( my $fh, '<', $in ) or
-      confess "Cannot open '${in}' for reading: $!";
-    $return_ref = _slurp_fh($fh);
-    close($fh);
-  }
-
-  return $return_ref if ($as_ref);
-  return ${$return_ref};
-}
-
-sub write_out {
-  my ( $in, $closure ) = @_;
-  if ( openhandle($in) ) {
-    $closure->($in);
-  }
-  else {
-    open( my $fh, '>', $in ) or
-      confess "Cannot open '${in}' for writing: $!";
-    $closure->($fh);
-    close($fh);
-  }
-}
-
-sub _slurp_fh {
-  my $fh = shift @_;
-  {
-    local $/ = undef;
-    my $content = <$fh>;
-    return \$content;
-  }
-}
-
-sub quote {
-  return sprintf( '"%s"', shift @_ );
-}
-
-sub parse_json {
-  my ( $incoming, $relaxed_parsing ) = @_;
-  my $data_ref;
-  #If it looks like a file(_handle) then treat it as such
-  if ( !defined $incoming ) {
-    confess('Undefined reference given');
-  }
-  elsif ( openhandle($incoming) ||
-          ( $incoming !~ /\n/ && -f $incoming ) )
-  {
-    $data_ref = slurp( $incoming, 1 );
-  }
-  else {
-    $data_ref = \$incoming;
-  }
-
-  my $json = JSON->new();
-  $json->relaxed(1) if $relaxed_parsing;
-  return $json->decode( ${$data_ref} );
-}
-
-sub process_dir {
-  my ( $dir, $closure, $include_unix_relative ) = @_;
-
-  opendir my $dh, $dir or confess "Couldn't open dir '$dir': $!";
-
-  my @files = grep {
-    my ( $file, $ok ) = ( $_, 1 );
-    if ( !$include_unix_relative ) {
-      $ok = 0 if ( $file eq '.' || $file eq '..' );
-    }
-    $ok;
-  } readdir $dh;
-
-  closedir $dh or confess "Could not close dir '$dir' : $!";
-
-  if ($closure) {
-    foreach my $file (@files) {
-      if ($closure) {
-        $closure->($file);
-      }
-    }
-  }
-  else {
-    return @files;
-  }
-} ## end sub process_dir
 
 1;
 __END__

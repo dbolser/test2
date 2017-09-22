@@ -31,13 +31,72 @@ use strict;
 use Carp;
 use Data::Dumper;
 use Bio::EnsEMBL::Analysis;
-use Bio::EnsEMBL::DBSQL::BaseAdaptor;
-use Bio::EnsEMBL::GenomeLoader::Utils qw(get_ensembl_dba parse_json);
 
-my $sql =
-  q/select description, display_label, data from analysis_description 
-	left join web_data on (web_data_id=default_web_data_id) 
-	where logic_name=?/;
+ use Exporter 'import';
+ our @EXPORT_OK = qw(get_analysis_by_name);
+
+my $type_to_logicname = { "protein_coding"  => "ena",
+                          "eg_alignment"    => "eg_alignment",
+                          "repeat"          => "ena_repeat",
+                          "ncrna"           => "ncrna-ena",
+                          "ena_rna"         => "ena_rna",
+                          "pro_peptide"     => "prop",
+                          "transmem"        => "tmhmm",
+                          "transit_peptide" => "transitp",
+                          "other_protein"   => "other_protein",
+                          "chain"           => "chainp",
+                          "signal_peptide"  => "signalp",
+                          "superfamily"     => "superfamily",
+                          "ssf"             => "superfamily",
+                          "panther"         => "hmmpanther",
+                          "prodom"          => "blastprodom",
+                          "scanprosite"     => "scanprosite",
+                          "prosite"         => "scanprosite",
+                          "tigrfams"        => "tigrfam",
+                          "10_signal"       => "ena_10_signal",
+                          "35_signal"       => "ena_35_signal",
+                          "3utr"            => "ena_3utr",
+                          "5utr"            => "ena_5utr",
+                          "assembly_gap"    => "ena_assembly_gap",
+                          "attenuator"      => "ena_attenuator",
+                          "direct"          => "ena_repeat_direct",
+                          "dispersed"       => "ena_repeat_dispersed",
+                          "exon"            => "ena_exon",
+                          "flanking"        => "ena_repeat_flanking",
+                          "gap"             => "ena_gap",
+                          "gene"            => "ena_gene",
+                          "intron"          => "ena_intron",
+                          "inverted"        => "ena_inverted",
+                          "ltr"             => "ena_ltr",
+                          "misc_binding"    => "ena_misc_binding",
+                          "misc_difference" => "ena_misc_difference",
+                          "misc_feature"    => "ena_misc_feature",
+                          "misc_recomb"     => "ena_misc_recomb",
+                          "misc_rna"        => "ena_misc_rna",
+                          "misc_signal"     => "ena_misc_signal",
+                          "misc_structure"  => "ena_misc_structure",
+                          "mobile_element"  => "ena_mobile_element",
+                          "mrna"            => "ena_mrna",
+                          "old_sequence"    => "ena_old_sequence",
+                          "operon"          => "ena_operon",
+                          "orit"            => "ena_orit",
+                          "other"           => "ena_repeat",
+                          "primer_bind"     => "ena_primer_bind",
+                          "promoter"        => "ena_promoter",
+                          "protein_bind"    => "ena_protein_bind",
+                          "rbs"             => "ena_rbs",
+                          "rep_origin"      => "ena_rep_origin",
+                          "rfam"            => "rfam_genes",
+                          "rfam_genes"      => "rfam_genes",
+                          "rrna"            => "ena_rrna",
+                          "sig_peptide"     => "ena_sig_peptide",
+                          "stem_loop"       => "ena_stem_loop",
+                          "tandem"          => "ena_repeat_tandem",
+                          "terminator"      => "ena_terminator",
+                          "tmrna"           => "ena_tmrna",
+                          "trna"            => "ena_trna",
+                          "unsure"          => "ena_unsure",
+                          "variation"       => "ena_variation" };
 
 my $db_names = { 'prints'       => 'PRINTS',
                  'gene3d'       => 'Gene3D',
@@ -58,84 +117,14 @@ my $db_names = { 'prints'       => 'PRINTS',
                  'cdd'          => 'CDD',
                  'seg'          => 'Seq' };
 
-sub new {
-  my ( $caller, @args ) = @_;
-  my $class = ref($caller) || $caller;
-  my $self;
-  if ( $class =~ /GenomeLoader::DisplayXrefFinder::(\S+)/x ) {
-    $self = $class->SUPER::new(@args);
-    $self->_initialize(@args);
-  }
-  else {
-    $self = {};
-    bless( $self, $class );
-    $self->_initialize(@args);
-  }
-  return $self;
-}
-
-sub _initialize {
-  # gets
-  ## dba
-  ## division
-  ## log
-  ## genome_metadata
-  ## plugins
-  ## config
-
-  my ( $self, @args ) = @_;
-  my %args = @args;
-  $self->{config} = $args{config};
-  $self->log( $args{log} );
-
-  $self->{production_dba} =
-    get_ensembl_dba( $self->{config}{production},
-                     $self->{config}{production}{dbname} );
-  $self->{file} = $self->{config}{analysisFile};
-  return;
-}
-
-sub log {
-  my ( $self, $log ) = @_;
-  if ( defined $log ) {
-    $self->{log} = $log;
-  }
-  return $self->{log};
-}
-
-sub get_analysis_name_map {
-  my ($self) = @_;
-  if ( !defined $self->{anal_name_map} ) {
-    $self->{anal_name_map} = parse_json( $self->{file} );
-  }
-  return $self->{anal_name_map};
-}
+my $anal_hash = {};
 
 sub get_analysis_by_name {
-  my ( $self, $name, $type ) = @_;
+  my ( $name, $type ) = @_;
   $name = lc $name;
-  my $logic_name = $self->get_analysis_name_map()->{$name};
-  if ( !defined $logic_name ) {
-    croak "Could not find logic_name for $name";
-  }
-  my $anal = $self->{anal_hash}{$logic_name};
+  my $logic_name = $type_to_logicname->{$name} || $name;
+  my $anal = $anal_hash->{$logic_name};
   if ( !defined $anal ) {
-    # get from production_db
-    my $anal_slice =
-      $self->{production_dba}->dbc()->sql_helper()
-      ->execute( -SQL => $sql, -PARAMS => [$logic_name] );
-    if ( !defined $anal_slice || scalar(@$anal_slice) == 0 ) {
-      print "$sql $logic_name\n";
-      print Dumper($anal_slice);
-      print Dumper( $self->{production_dba}->dbc() );
-      croak "Could not find analysis with logic_name $logic_name";
-    }
-    my ( $description, $display_label, $web_data ) =
-      @{ $anal_slice->[0] };
-    if ( defined $web_data ) {
-      $web_data =
-        Bio::EnsEMBL::DBSQL::BaseAdaptor->get_dumped_data($web_data);
-    }
     my $db_name = $db_names->{$logic_name};
     if ( !$db_name ) {
       $db_name = $logic_name;
@@ -143,24 +132,14 @@ sub get_analysis_by_name {
     if ( $db_name =~ m/ena_.*/ ) {
       $db_name = 'ena';
     }
-    $anal =
-      Bio::EnsEMBL::Analysis->new(
-                         -LOGIC_NAME    => $logic_name,
-                         -DB            => $db_name,
-                         -DESCRIPTION   => $description,
-                         -DISPLAY_LABEL => $display_label,
-                         -DISPLAYABLE => defined $display_label ? 1 : 0,
-                         -GFF_SOURCE  => $logic_name,
-                         -GFF_FEATURE => $type,
-                         -WEB_DATA    => $web_data );
+    $anal = Bio::EnsEMBL::Analysis->new( -LOGIC_NAME  => $logic_name,
+                                         -DB          => $db_name,
+                                         -GFF_SOURCE  => $logic_name,
+                                         -GFF_FEATURE => $type );
 
-    $self->{anal_hash}{$logic_name} = $anal;
-  } ## end if ( !defined $anal )
-  if ( !defined $anal ) {
-    croak
-"Could not find analysis type for logic_name $logic_name (based on name $name)";
+    $anal_hash->{$logic_name} = $anal;
   }
   return $anal;
-} ## end sub get_analysis_by_name
+}
 
 1;

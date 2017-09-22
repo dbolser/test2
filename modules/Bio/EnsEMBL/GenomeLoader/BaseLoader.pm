@@ -28,10 +28,58 @@ package Bio::EnsEMBL::GenomeLoader::BaseLoader;
 use warnings;
 use strict;
 use Carp;
-use Bio::EnsEMBL::GenomeLoader::Constants qw(CS);
+use Bio::EnsEMBL::GenomeLoader::Constants qw(CS BIOTYPES);
 use Data::Dumper;
 use Log::Log4perl qw(get_logger);
 use Bio::EnsEMBL::Utils::Argument qw( rearrange );
+use Bio::EnsEMBL::Utils::ScriptUtils qw(inject);
+
+my $loader_names = {
+            sequence => "Bio::EnsEMBL::GenomeLoader::SequenceLoader",
+            simplefeature =>
+              "Bio::EnsEMBL::GenomeLoader::FeatureLoader::SimpleFeatureLoader",
+            repeatfeature =>
+              "Bio::EnsEMBL::GenomeLoader::FeatureLoader::RepeatFeatureLoader",
+            BIOTYPES()->{PROTEIN_CODING_GENE_TYPE} =>
+              "Bio::EnsEMBL::GenomeLoader::GeneLoader::ProteinCodingGeneLoader",
+            BIOTYPES()->{PSEUDOGENE_TYPE} =>
+              "Bio::EnsEMBL::GenomeLoader::GeneLoader::ProteinCodingGeneLoader",
+            BIOTYPES()->{NON_TRANSLATING_TYPE} =>
+              "Bio::EnsEMBL::GenomeLoader::GeneLoader::ProteinCodingGeneLoader",
+            BIOTYPES()->{NCRNA_TYPE} =>
+              "Bio::EnsEMBL::GenomeLoader::GeneLoader::RnaGeneLoader",
+            BIOTYPES()->{MISC_RNA_TYPE} =>
+              "Bio::EnsEMBL::GenomeLoader::GeneLoader::RnaGeneLoader",
+            BIOTYPES()->{ANTISENSE_TYPE} =>
+              "Bio::EnsEMBL::GenomeLoader::GeneLoader::RnaGeneLoader",
+            BIOTYPES()->{RNASEP_TYPE} =>
+              "Bio::EnsEMBL::GenomeLoader::GeneLoader::RnaGeneLoader",
+            BIOTYPES()->{RNASEMRP_TYPE} =>
+              "Bio::EnsEMBL::GenomeLoader::GeneLoader::RnaGeneLoader",
+            BIOTYPES()->{TMRNA_TYPE} =>
+              "Bio::EnsEMBL::GenomeLoader::GeneLoader::RnaGeneLoader",
+            BIOTYPES()->{SRP_RNA_TYPE} =>
+              "Bio::EnsEMBL::GenomeLoader::GeneLoader::RnaGeneLoader",
+            BIOTYPES()->{SN_RNA_TYPE} =>
+              "Bio::EnsEMBL::GenomeLoader::GeneLoader::RnaGeneLoader",
+            BIOTYPES()->{S_RNA_TYPE} =>
+              "Bio::EnsEMBL::GenomeLoader::GeneLoader::RnaGeneLoader",
+            BIOTYPES()->{SNO_RNA_TYPE} =>
+              "Bio::EnsEMBL::GenomeLoader::GeneLoader::RnaGeneLoader",
+            BIOTYPES()->{RRNA_TYPE} =>
+              "Bio::EnsEMBL::GenomeLoader::GeneLoader::RRNAGeneLoader",
+            BIOTYPES()->{MIRNA_TYPE} =>
+              "Bio::EnsEMBL::GenomeLoader::GeneLoader::RnaGeneLoader",
+            BIOTYPES()->{ANTITOXIN_TYPE} =>
+              "Bio::EnsEMBL::GenomeLoader::GeneLoader::RnaGeneLoader",
+            BIOTYPES()->{CRISPR_TYPE} =>
+              "Bio::EnsEMBL::GenomeLoader::GeneLoader::RnaGeneLoader",
+            BIOTYPES()->{TRNA_TYPE} =>
+              "Bio::EnsEMBL::GenomeLoader::GeneLoader::TRNAGeneLoader",
+            BIOTYPES()->{RIBOZYME_TYPE} =>
+              "Bio::EnsEMBL::GenomeLoader::GeneLoader::TRNAGeneLoader",
+            BIOTYPES()->{TRNA_PSEUDO_TYPE} =>
+              "Bio::EnsEMBL::GenomeLoader::GeneLoader::TRNAGeneLoader" };
 
 sub new {
   my ( $caller, @args ) = @_;
@@ -40,6 +88,8 @@ sub new {
   my $self = bless( {}, $class );
 
   ( $self->{dba} ) = rearrange( ['DBA'], @args );
+
+  $self->{engine} = 'InnoDB';
 
   if ( !$self->log() ) {
     $self->log( get_logger() );
@@ -62,6 +112,19 @@ sub log {
   my $self = shift;
   $self->{log} = shift if @_;
   return $self->{log};
+}
+
+sub get_loader {
+  my ( $self, $name, $dba ) = @_;
+  my $loader = $self->{loaders}->{$name};
+  if ( !defined $loader ) {
+    my $loader_name = $loader_names->{$name};
+    croak "Could not find loader for $name" unless defined $loader_name;
+    inject($loader_name);
+    $loader = $loader_name->new( -DBA => $dba );
+    $self->{loaders}->{$name} = $loader;
+  }
+  return $loader;
 }
 
 sub convert_dna_2_peptide_coords {
@@ -249,6 +312,19 @@ sub store_mapping_path {
   }
   return [@retlist];
 } ## end sub store_mapping_path
+
+sub is_prokaryote {
+  my ($self) = @_;
+  if ( !defined $self->{is_prokaryote} ) {
+    $self->{is_prokaryote} =
+      $self->dba()->dbc()->sql_helper()
+      ->execute_single_result(
+      -SQL =>
+"select count(*) from meta where species_id=? and meta_key='species.division' and meta_value='EnsemblBacteria'",
+      -PARAMS => [ $self->dba()->species_id() ] );
+  }
+  return $self->{is_prokaryote};
+}
 
 1;
 __END__

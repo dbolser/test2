@@ -45,42 +45,45 @@ my $batchN = 25;
 
 sub load_assembly {
   my ( $self, $genome ) = @_;
-  my $seq_loader = Bio::EnsEMBL::GenomeLoader::SequenceLoader->new(-DBA=>$self->dba());
-  my $sa         = $self->dba()->get_SliceAdaptor;
-  my $csa        = $self->dba()->get_CoordSystemAdaptor;
-  
-  $self->log()->info("Loading assembly for ".$genome->{name});
+  my $seq_loader =
+    Bio::EnsEMBL::GenomeLoader::SequenceLoader->new( -DBA => $self->dba() );
+  my $sa  = $self->dba()->get_SliceAdaptor;
+  my $csa = $self->dba()->get_CoordSystemAdaptor;
+
+  $self->log()->info( "Loading assembly for " . $genome->{name} );
 
   # 1. iterate over components and store them
   my $components_by_acc = {};
-  for my $component ( @{$genome->{genomicComponents}} ) {
-    
+  for my $component ( @{ $genome->{genomicComponents} } ) {
+
     $component->{metaData}{name} ||= $component->{metaData}{accession};
-    
+
     $self->log()
       ->info(
-          "Storing sequence for component " . $component->{metaData}{name} . "/" .
-            $component->{accession} );
-    my $slice = $seq_loader->load_sequence($component, $genome->{metaData}{assemblyDefault});
+        "Storing sequence for component " . $component->{metaData}{name} . "/" .
+          $component->{accession} );
+    my $slice =
+      $seq_loader->load_sequence( $component,
+                                  $genome->{metaData}{assemblyDefault} );
     $component->{slice} = $slice;
     if ( !$component->{topLevel} ) {
       # hash non-toplevel by accession to refer to in later assemblies
       $components_by_acc->{ $component->{accession} } = $component;
     }
-    flush_session( $self->dba());
+    flush_session( $self->dba() );
   }
   # 2. now store assembly
   my $mappings  = {};
   my $map_pairs = {};
   my $cs        = {};
-  for my $component ( @{$genome->{genomicComponents}} ) {
+  for my $component ( @{ $genome->{genomicComponents} } ) {
     if ( defined $component->{assembly} &&
          scalar( @{ $component->{assembly} } ) > 0 )
     {
       $self->log()
         ->info(
-          "Storing assembly for component " . $component->{metaData}{name} . "/" .
-            $component->{accession} );
+        "Storing assembly for component " . $component->{metaData}{name} . "/" .
+          $component->{accession} );
       for my $ass ( @{ $component->{assembly} } ) {
         my $ass_slice = $component->{slice};
         if ( !defined $ass_slice ) {
@@ -89,8 +92,7 @@ sub load_assembly {
         }
         my $ass_comp = $components_by_acc->{ $ass->{accession} };
         if ( !defined $ass_comp ) {
-          croak "Assembly component " . $ass->{accession} .
-            " not stored";
+          croak "Assembly component " . $ass->{accession} . " not stored";
         }
         my $ass_comp_slice = $ass_comp->{slice};
         if ( !defined $ass_comp_slice ) {
@@ -105,19 +107,16 @@ sub load_assembly {
           $self->store_mapping_path( $ass_slice->coord_system(),
                                      $ass_comp_slice->coord_system() );
           $mappings->{$map_str} = 1;
-          $cs->{ $ass_slice->coord_system_name() } =
-            $ass_slice->coord_system();
+          $cs->{ $ass_slice->coord_system_name() } = $ass_slice->coord_system();
           $cs->{ $ass_comp_slice->coord_system_name() } =
             $ass_comp_slice->coord_system();
           push @{ $map_pairs->{ $ass_slice->coord_system_name() } },
             $ass_comp_slice->coord_system_name();
         }
         # now create slices for both
-        my $slice =
-          $sa->fetch_by_region( $ass_slice->coord_system_name(),
-                                $ass_slice->seq_region_name(),
-                                $ass->{start},
-                                $ass->{end} );
+        my $slice = $sa->fetch_by_region( $ass_slice->coord_system_name(),
+                                          $ass_slice->seq_region_name(),
+                                          $ass->{start}, $ass->{end} );
         # may need to iterate over locations
         my $ctg_slice =
           $sa->fetch_by_region( $ass_comp_slice->coord_system_name(),
@@ -131,7 +130,7 @@ sub load_assembly {
         $sa->store_assembly( $slice, $ctg_slice );
       } ## end for my $ass ( @{ $component...})
     } ## end if ( defined $component...)
-  } ## end for my $component ( @{$components...})
+  } ## end for my $component ( @{ ...})
 
   # join 3 tier assemblies together
   while ( my ( $ass, $comps ) = each %$map_pairs ) {
@@ -158,28 +157,28 @@ sub load_assembly {
 } ## end sub load_assembly
 
 sub load_features {
-  my ( $self, $icomponent ) = @_;
+  my ( $self, $component ) = @_;
 
   $self->log()
-    ->info( "Storing genes for component " . $icomponent->{id} );
-  my $hash =
-    $self->store_genes( $icomponent->{genes}, $icomponent->{slice} );
+    ->info( "Storing genes for component " . $component->{accession} );
+  my $hash = $self->store_genes( $component->{genes}, $component->{slice} );
   $self->log()
-    ->info( "Finished genes for component " . $icomponent->{id} );
+    ->info( "Finished genes for component " . $component->{accession} );
 
-  # Store all types of repeat feature.
-  $self->log()
-    ->info(
-         "Storing repeat features for component " . $icomponent->{id} );
-  $self->store_repeatfeatures( $icomponent->{repeatfeatures},
-                               $icomponent->{slice} );
+  #  # Store all types of repeat feature.
+  #  $self->log()
+  #    ->info(
+  #         "Storing repeat features for component " . $icomponent->{id} );
+  #  $self->store_repeatfeatures( $icomponent->{repeatfeatures},
+  #                               $icomponent->{slice} );
+  #
+  #  # Store simple features.
+  #  $self->log()
+  #    ->info(
+  #         "Storing simple features for component " . $icomponent->{id} );
+  #  $self->store_simplefeatures( $icomponent->{simplefeatures},
+  #                               $icomponent->{slice} );
 
-  # Store simple features.
-  $self->log()
-    ->info(
-         "Storing simple features for component " . $icomponent->{id} );
-  $self->store_simplefeatures( $icomponent->{simplefeatures},
-                               $icomponent->{slice} );
   return $hash;
 } ## end sub load_features
 
@@ -190,7 +189,7 @@ sub store_repeatfeatures {
     $self->{plugins}->get("repeatfeature")
       ->load_feature( $irepeatfeature, $slice );
     if ( ( $cnt++ % $batchN ) == 0 ) {
-      flush_session( $self->dba());
+      flush_session( $self->dba() );
     }
   }
   flush_session( $self->dba() );
@@ -205,10 +204,10 @@ sub store_simplefeatures {
     $self->{plugins}->get("simplefeature")
       ->load_feature( $isimplefeature, $slice );
     if ( ( $cnt++ % $batchN ) == 0 ) {
-      flush_session( $self->dba());
+      flush_session( $self->dba() );
     }
   }
-  flush_session( $self->dba());
+  flush_session( $self->dba() );
   return;
 }
 
@@ -223,43 +222,34 @@ sub store_genes {
   }
   $self->log()->info( "Processing " . scalar @$igenes . " genes" );
   foreach my $igene (@$igenes) {
-    eval {
-      $geneN++;
-      my $loader = $self->{plugins}->get( $igene->{biotype} );
-      if ($loader) {
-        $self->log->debug( "Loading gene with loader " . ref $loader );
+    $geneN++;
+    my $loader = $self->get_loader( $igene->{biotype}, $self->dba() );
+    if ($loader) {
+      $self->log->debug( "Loading gene with loader " . ref $loader );
 
-        my $hash;
-        my $load = sub {
-          $hash = $loader->load_gene( $igene, $slice );
-        };
-        if ( $self->use_transactions() ) {
-          $self->dba()->dbc()->sql_helper()->transaction($load);
-        }
-        else {
-          &$load();
-        }
-        if ($hash) {
-          push @hashes, $hash;
-        }
+      my $hash;
+      my $load = sub {
+        $hash = $loader->load_gene( $igene, $slice );
+      };
+      if ( $self->use_transactions() ) {
+        $self->dba()->dbc()->sql_helper()->transaction($load);
       }
       else {
-        croak( "Do not know how to load a gene of type " .
-               $igene->{biotype} );
+        $load->();
       }
-    };
-    if ($@) {
-      my $msg =
-        'Could not store ' . $igene->{biotype} . ':' .
-        $igene->{ NAMES()->{PERSISTABLE_ID} } . ": $@";
-      $self->log()->warn($msg);
-      croak $msg;
+      if ($hash) {
+        push @hashes, $hash;
+      }
     }
+    else {
+      croak( "Do not know how to load a gene of type " . $igene->{biotype} );
+    }
+
     if ( ( $geneN % $batchN ) == 0 ) {
       flush_session( $self->dba() );
     }
   } ## end foreach my $igene (@$igenes)
-  flush_session( $self->dba()  );
+  flush_session( $self->dba() );
   return \@hashes;
 } ## end sub store_genes
 1;

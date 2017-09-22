@@ -33,33 +33,25 @@ use Bio::EnsEMBL::OntologyXref;
 use Bio::EnsEMBL::IdentityXref;
 use Bio::EnsEMBL::GenomeLoader::Constants qw(XREFS NAMES);
 use Bio::EnsEMBL::GenomeLoader::DisplayXrefFinder;
-use Bio::EnsEMBL::GenomeLoader::StableIdFinder;
+use Bio::EnsEMBL::GenomeLoader::StableIdFinder qw/get_stable_id/;
+use Bio::EnsEMBL::GenomeLoader::AnalysisFinder qw/get_analysis_by_name/;
+
 use Data::Dumper;
 use Scalar::Util qw(looks_like_number);
-use base qw(GenomeLoader::BaseLoader);
+use base qw(Bio::EnsEMBL::GenomeLoader::BaseLoader);
 
 sub new {
   my $caller = shift;
   my $class  = ref($caller) || $caller;
   my $self   = $class->SUPER::new(@_);
-  if ( !$self->{division} ) {
-    croak("Division not supplied");
-  }
   $self->{displayXrefFinder} =
-    $self->plugins()->get("displayXrefFinder");
-  $self->{stableIdFinder} = $self->plugins()->get("stableIdFinder");
+    Bio::EnsEMBL::GenomeLoader::DisplayXrefFinder->new( -DBA => $self->dba() );
 
-  my $emblanal =
-    $self->analysis_finder()
-    ->get_analysis_by_name( 'protein_coding', 'gene' );
-  $self->{location2analysis}{ANNOTATED}              = $emblanal;
-  $self->{location2analysis}{ANNOTATED_DISAGREEMENT} = $emblanal;
-  $self->{location2analysis}{MAPPED_FAILURE}         = $emblanal;
-  $self->{location2analysis}{MAPPED} = $self->get_alignment_analysis();
-  $self->{xrefanalysis} =
-    $self->analysis_finder()->get_analysis_by_name('gl_xref');
-  $self->{gl_name_xref} =
-    $self->analysis_finder()->get_analysis_by_name('gl_name_xref');
+  $self->{gene_analysis} = get_analysis_by_name( 'protein_coding', 'gene' );
+  $self->{xrefanalysis}  = get_analysis_by_name('gl_xref');
+  $self->{gl_name_xref}  = get_analysis_by_name('gl_name_xref');
+  $self->{source} = 'ena';
+
   return $self;
 }
 
@@ -68,37 +60,24 @@ sub load_gene {
   croak("store_gene cannot be invoked on the base class");
 }
 
-sub get_analysis_for_location {
-  my ( $self, $type ) = @_;
-  my $anal = $self->{location2analysis}{$type};
-  if ( !defined $anal ) {
-    $self->log()
-      ->warn("Could not find analysis type for location type $type");
-  }
-  return $anal;
-}
-
 sub get_alignment_analysis {
   my $self    = shift;
   my $aliname = 'eg_alignment';
-  return $self->analysis_finder()
-    ->get_analysis_by_name( $aliname, 'gene' );
+  return get_analysis_by_name( $aliname, 'gene' );
 }
 
 sub get_go_xref {
   my ( $self, $xref ) = @_;
   my $ensembl_dbname = $xref->{databaseReferenceType}{ensemblName};
   my $dbentry =
-    Bio::EnsEMBL::OntologyXref->new(
-                              -DBNAME     => $ensembl_dbname,
-                              -PRIMARY_ID => $xref->{primaryIdentifier},
-                              -DISPLAY_ID => $xref->{primaryIdentifier},
-                              -ANALYSIS   => $self->{xrefanalysis} );
+    Bio::EnsEMBL::OntologyXref->new( -DBNAME     => $ensembl_dbname,
+                                     -PRIMARY_ID => $xref->{primaryIdentifier},
+                                     -DISPLAY_ID => $xref->{primaryIdentifier},
+                                     -ANALYSIS   => $self->{xrefanalysis} );
   my $linkage_type = $xref->{secondaryIdentifier};
   if ($linkage_type) {
     $dbentry->add_linkage_type( $linkage_type,
-                                $self->get_src_dbentry( $xref->{source}
-                                ) );
+                                $self->get_src_dbentry( $xref->{source} ) );
   }
 
 # TODO can also add source as well - this should end up in quaternaryIdentifier - however, need to modify go_xref table and OntologyXref object and also adaptor
@@ -109,13 +88,12 @@ sub get_src_dbentry {
   my ( $self, $xref ) = @_;
   my $dbentry =
     Bio::EnsEMBL::DBEntry->new(
-                 -DBNAME => $xref->{databaseReferenceType}{ensemblName},
-                 -PRIMARY_ID => $xref->{primaryIdentifier},
-                 -DISPLAY_ID => $xref->{secondaryIdentifier} ||
-                   $xref->{primaryIdentifier},
-                 -DESCRIPTION => $xref->{description},
-                 -ANALYSIS    => $self->{xrefanalysis},
-                 -VERSION     => $xref->{version} );
+      -DBNAME     => $xref->{databaseReferenceType}{ensemblName},
+      -PRIMARY_ID => $xref->{primaryIdentifier},
+      -DISPLAY_ID => $xref->{secondaryIdentifier} || $xref->{primaryIdentifier},
+      -DESCRIPTION => $xref->{description},
+      -ANALYSIS    => $self->{xrefanalysis},
+      -VERSION     => $xref->{version} );
   return $dbentry;
 }
 
@@ -130,8 +108,8 @@ sub get_generic_xref {
   my $description    = $xref->{description};
 
   # TODO make this much neater, maybe with a dispatch map
-  croak( "Ensembl dbname not set for " .
-         Dumper( $xref->{databaseReferenceType} ) )
+  croak(
+      "Ensembl dbname not set for " . Dumper( $xref->{databaseReferenceType} ) )
     if ( !$ensembl_dbname );
 
   if ( $ensembl_dbname eq XREFS()->{PROTEIN_ID} &&
@@ -140,22 +118,18 @@ sub get_generic_xref {
 
     # PROTEIN_ID && GENOMIC_DNA.
     $primary_id = $xref->{secondaryIdentifier};
-    $display_id = $xref->{secondaryIdentifier} ||
-      $xref->{primaryIdentifier};
+    $display_id = $xref->{secondaryIdentifier} || $xref->{primaryIdentifier};
   }
   elsif ( $ensembl_dbname eq XREFS()->{PROTEIN_ID} ) {
 
     # PROTEIN_ID && NOT GENOMIC_DNA
-    $display_id = $xref->{secondaryIdentifier} ||
-      $xref->{primaryIdentifier};
+    $display_id = $xref->{secondaryIdentifier} || $xref->{primaryIdentifier};
 
   }
   elsif ( $ensembl_dbname eq XREFS()->{RFAM} ) {
     $display_id = $xref->{secondaryIdentifier};
   }
-  elsif ( $ensembl_dbname eq XREFS()->{INTACT} &&
-          defined $xref->{source} )
-  {
+  elsif ( $ensembl_dbname eq XREFS()->{INTACT} && defined $xref->{source} ) {
     $primary_id = $xref->{source}{primaryIdentifier};
   }
   elsif ( uc $ensembl_dbname eq uc XREFS()->{INTERPRO} ) {
@@ -208,9 +182,8 @@ sub get_generic_xref {
       -ENSEMBL_START => $eobject->start,
       -ENSEMBL_END   => $eobject->end,
       -DESCRIPTION   => $description,
-      -ANALYSIS =>
-        $self->analysis_finder()->get_analysis_by_name('gl_xref'),
-      -VERSION => $version );
+      -ANALYSIS      => $self->{xrefanalysis},
+      -VERSION       => $version );
   } ## end if ( defined $xref->{identityXref...})
   else {
     if ( !defined $primary_id ) {
@@ -226,8 +199,7 @@ sub get_generic_xref {
   }
 
   if ( defined $dbentry->{version} ) {
-    if ( looks_like_number( $dbentry->{version} ) &&
-         $dbentry->{version} == 0 )
+    if ( looks_like_number( $dbentry->{version} ) && $dbentry->{version} == 0 )
     {
       $dbentry->{version} = undef;
     }
@@ -261,8 +233,8 @@ sub add_xref {
     carp( "primary_id not set for " . Dumper($dbentry) )
       if ( !$dbentry->primary_id() || $dbentry->primary_id() eq '' );
   }
-  croak( "Ensembl dbname not set for " .
-         Dumper( $xref->{databaseReferenceType} ) )
+  croak(
+      "Ensembl dbname not set for " . Dumper( $xref->{databaseReferenceType} ) )
     if ( !$ensembl_dbname || $ensembl_dbname eq '' );
   croak( "dbname not set for " . Dumper($dbentry) )
     if ( !$dbentry->dbname() || $dbentry->dbname() eq '' );
@@ -304,8 +276,7 @@ sub set_xrefs {
 sub set_stable_id {
   my ( $self, $iobj, $eobj, $parent, $index ) = @_;
   my $stable_id =
-    $self->{stableIdFinder}
-    ->get_stable_id( $iobj, $eobj, $parent, $index );
+    get_stable_id( $iobj, $eobj, $parent, $index );
   if ($stable_id) {
     $eobj->stable_id($stable_id);
   }
@@ -320,12 +291,9 @@ sub set_display_xref {
   my $display_xref =
     $self->{displayXrefFinder}
     ->get_display_xref( $iobj, $eobj, $parent, $index );
-  if ( !$display_xref ) {
-#$self->log()->debug("Could not set display xref for ensembl object " . ref($eobj));
-  }
-  elsif ( $display_xref->dbname() &&
+  if ( defined $display_xref  && ( $display_xref->dbname() &&
           $display_xref->primary_id() &&
-          $display_xref->display_id() )
+          $display_xref->display_id() ))
   {
 
     # Set the display xref for gene/transcript.
@@ -334,18 +302,16 @@ sub set_display_xref {
   else {
     $self->log()
       ->warn(
-      "Could not store display_xref as primary ID or display ID missing"
-      );
+           "Could not store display_xref as primary ID or display ID missing" );
   }
   return;
 }
 
 sub store_gene_error_handler {
   my ( $self, $igene, $egene ) = @_;
-  my $err =
-    sprintf( "Failed storing %s %s in sequence region name %s\n%s\n",
-             $igene->{biotype}, $egene->stable_id,
-             $egene->slice()->seq_region_name, $@ );
+  my $err = sprintf( "Failed storing %s %s in sequence region name %s\n%s\n",
+                     $igene->{biotype}, $egene->stable_id,
+                     $egene->slice()->seq_region_name, $@ );
   croak($err);
   exit;
 }

@@ -52,15 +52,13 @@ sub load_genome {
                          -PARAMS => [ $self->dba()->species_id() ] ) > 0 )
   {
     croak "Database " . $self->dba->dbc()->dbname() .
-      " already contains metadata for species_id " .
-      $self->dba()->species_id();
+      " already contains metadata for species_id " . $self->dba()->species_id();
   }
 
   # 1. store metadata
   start_session( $self->dba() );
   if ( !defined $add ) {
     $self->load_metadata($genome);
-    flush_session( $self->dba() );
   }
 
   # 2. store components
@@ -69,6 +67,24 @@ sub load_genome {
 
   $component_loader->load_assembly($genome);
 
+  # 3. store features
+  my @hashes = ();
+  for my $component ( @{ $genome->{genomicComponents} } ) {
+    if ( $component->{topLevel} ) {
+      push @hashes, $component_loader->load_features($component);
+    }
+  }
+
+  my $ctx = Digest::MD5->new();
+#  if ( $self->config()->{addComponents} == 1 ) {
+#    $ctx->add(
+#        $self->dba()->get_MetaContainer()->single_value_by_key('genebuild.hash')
+#    );
+#  }
+  $ctx->add( sort @hashes );
+  $genome->{metaData}->{genome_hash} = $ctx->hexdigest();
+
+  return;
 } ## end sub load_genome
 
 sub load_metadata {
@@ -172,7 +188,7 @@ sub load_metadata {
   if ( $genome_metadata->{providerUrl} ) {
     $meta->store_key_value( 'provider.url', $genome_metadata->{providerUrl} );
   }
-
+  flush_session( $self->dba() );
   return;
 } ## end sub load_metadata
 

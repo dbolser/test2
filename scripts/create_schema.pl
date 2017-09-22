@@ -99,3 +99,8 @@ while ( my ( $table, $columns ) = each %$tables ) {
   $sth->finish();
   $upd_sth->finish();
 }
+
+# load analyses
+
+
+$log->info("Schema ".$opts->{dbname}." ready for use");

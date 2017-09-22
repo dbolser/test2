@@ -31,9 +31,10 @@ use Bio::EnsEMBL::Gene;
 use Bio::EnsEMBL::Exon;
 use Bio::EnsEMBL::Transcript;
 use Bio::EnsEMBL::GenomeLoader::Constants qw(XREFS NAMES BIOTYPES);
+use Bio::EnsEMBL::GenomeLoader::AnalysisFinder qw/get_analysis_by_name/;
 use Carp;
 use Data::Dumper;
-use base qw(GenomeLoader::GeneLoader);
+use base qw(Bio::EnsEMBL::GenomeLoader::GeneLoader);
 
 sub new {
   my $caller = shift;
@@ -53,7 +54,7 @@ sub load_gene {
     $biotype = "tRNA_pseudogene";
   }
 
-  my $src = $self->config()->{source};
+  my $src = $self->{source};
   if ( $igene->{analysis} eq 'RFAM_GENES' ) {
     $src = 'Rfam';
   }
@@ -63,8 +64,7 @@ sub load_gene {
                  -SLICE    => $slice,
                  -BIOTYPE  => $biotype,
                  -SOURCE   => $src,
-                 -ANALYSIS => $self->analysis_finder()
-                   ->get_analysis_by_name( $igene->{analysis}, "gene" ),
+                 -ANALYSIS => get_analysis_by_name( $igene->{analysis}, "gene" ),
                  -CREATED_DATE  => $time,
                  -MODIFIED_DATE => $time );
 

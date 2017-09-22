@@ -32,7 +32,7 @@ use Bio::EnsEMBL::Exon;
 use Bio::EnsEMBL::Transcript;
 use Bio::EnsEMBL::GenomeLoader::Constants qw(XREFS NAMES BIOTYPES);
 use Carp;
-use base qw(GenomeLoader::GeneLoader::RnaGeneLoader);
+use base qw(Bio::EnsEMBL::GenomeLoader::GeneLoader::RnaGeneLoader);
 
 sub new {
   my $caller = shift;
@@ -58,8 +58,7 @@ sub get_rna_display_xref {
     }
     else {
       $display_xref =
-        $self->get_xref_for_name( $egene, XREFS()->{TRNASCAN},
-                                  $igene->{name} );
+        $self->get_xref_for_name( $egene, XREFS()->{TRNASCAN}, $igene->{name} );
     }
 
   }

@@ -23,9 +23,12 @@ limitations under the License.
 #
 # Object for loading data into an ensembl database
 #
-package Bio::EnsEMBL::GenomeLoader::GeneLoader::ProteinCodingGeneLoader;
 use warnings;
 use strict;
+
+package Bio::EnsEMBL::GenomeLoader::GeneLoader::ProteinCodingGeneLoader;
+use base qw(Bio::EnsEMBL::GenomeLoader::GeneLoader);
+
 use Carp;
 use Data::Dumper;
 use Bio::EnsEMBL::GenomeLoader::Constants
@@ -41,9 +44,9 @@ use Bio::EnsEMBL::DBEntry;
 use Bio::EnsEMBL::Operon;
 use Bio::EnsEMBL::OperonTranscript;
 use Bio::EnsEMBL::Utils::Exception qw(throw);
+use Bio::EnsEMBL::GenomeLoader::AnalysisFinder qw/get_analysis_by_name/;
 use Digest::MD5;
 use IPC::Open2;
-use base qw(GenomeLoader::GeneLoader);
 
 sub new {
   my $caller = shift;
@@ -51,22 +54,22 @@ sub new {
   my $self   = $class->SUPER::new(@_);
   $self->{attrs}{INIT_MET} =
     Bio::EnsEMBL::Attribute->new(
-       -CODE        => 'initial_met',
-       -NAME        => 'Starts with methionine',
-       -DESCRIPTION => 'Start codon encodes methionine (bacteria only)',
-       -VALUE       => '1 1 M' );
+               -CODE        => 'initial_met',
+               -NAME        => 'Starts with methionine',
+               -DESCRIPTION => 'Start codon encodes methionine (bacteria only)',
+               -VALUE       => '1 1 M' );
   $self->{attrs}{HAS_START_CODON} =
     Bio::EnsEMBL::Attribute->new(
-                   -CODE        => 'has_start_codon',
-                   -NAME        => 'Contains start codon',
-                   -DESCRIPTION => "Contains start codon (5' complete)",
-                   -VALUE       => '1 1 M' );
+                           -CODE        => 'has_start_codon',
+                           -NAME        => 'Contains start codon',
+                           -DESCRIPTION => "Contains start codon (5' complete)",
+                           -VALUE       => '1 1 M' );
   $self->{attrs}{HAS_STOP_CODON} =
     Bio::EnsEMBL::Attribute->new(
-                    -CODE        => 'has_stop_codon',
-                    -NAME        => "Contains stop codon",
-                    -DESCRIPTION => "Contains stop codon (3' complete)",
-                    -VALUE       => 1 );
+                            -CODE        => 'has_stop_codon',
+                            -NAME        => "Contains stop codon",
+                            -DESCRIPTION => "Contains stop codon (3' complete)",
+                            -VALUE       => 1 );
 
   # create an operon cache
   $self->{_operons}            = {};
@@ -92,16 +95,6 @@ sub load_gene {
     }
   }
 
-  # Choose analysis track based upon the gene location mapping type.
-  my $igene_location_status = $igene->{locations}->[0]->{state};
-  my $gene_analysis =
-    $self->get_analysis_for_location($igene_location_status);
-  if ( !defined $gene_analysis ) {
-    croak(
-"Could not find analysis type for location with status $igene_location_status"
-    );
-  }
-
   # Create gene.
   $time = time();
 
@@ -112,13 +105,12 @@ sub load_gene {
     ( $nPseudo == $nProteins ) ? BIOTYPES()->{PSEUDOGENE_TYPE} :
                                  BIOTYPES()->{PROTEIN_CODING_GENE_TYPE};
 
-  my $egene =
-    Bio::EnsEMBL::Gene->new( -SLICE        => $slice,
-                             -BIOTYPE      => $biotype,
-                             -SOURCE       => $self->config()->{source},
-                             -ANALYSIS     => $gene_analysis,
-                             -CREATED_DATE => $time,
-                             -MODIFIED_DATE => $time );
+  my $egene = Bio::EnsEMBL::Gene->new( -SLICE         => $slice,
+                                       -BIOTYPE       => $biotype,
+                                       -SOURCE        => $self->{source},
+                                       -ANALYSIS      => $self->{gene_analysis},
+                                       -CREATED_DATE  => $time,
+                                       -MODIFIED_DATE => $time );
 
   $self->set_stable_id( $igene, $egene );
 
@@ -140,15 +132,14 @@ sub load_gene {
   if ( $ts && @{$ts} ) {
     eval {
       $self->log()
-        ->debug(
-             "Storing protein_coding gene " . $igene->{persistableId} );
+        ->debug( "Storing protein_coding gene " . $igene->{identifyingId} );
 
       # store gene
       my $transcriptN = 0;
       for my $t (@$ts) {
         if ( !defined $t->display_xref() ) {
           $self->log->debug(
-"Attempting to set transcript.display_xref now translation added" );
+             "Attempting to set transcript.display_xref now translation added");
 
           # may wish to use protein ID again
           $self->set_display_xref( {}, $t, $egene, ++$transcriptN );
@@ -165,16 +156,14 @@ sub load_gene {
             my $seq = $tt->seq();
             $ctx->add($seq);
             if ( $seq =~ /\*/ ) {
-              throw(
-                 "Translation " . $tt->stable_id() . "(" . $tt->dbID() .
-                   ") contains a stop codon" );
+              throw( "Translation " . $tt->stable_id() . "(" . $tt->dbID() .
+                     ") contains a stop codon" );
             }
           };
           if ($@) {
             $self->log()
               ->warn(
-               "Could not translate protein " . $tt->stable_id() . ":" .
-                 $@ );
+                 "Could not translate protein " . $tt->stable_id() . ":" . $@ );
 
             # change biotype to nontranslating_cds
             $self->dba()->dbc()->sql_helper()
@@ -183,25 +172,23 @@ sub load_gene {
                 . $t->dbID() );
             $translationFailCnt++;
           }
-        } ## end if ($tt)
+        }
         for my $altt ( @{ $t->get_all_alternative_translations() } ) {
           my $seq = $altt->seq();
           $ctx->add($seq);
           if ( $seq =~ /\*/ ) {
             $self->log()
-              ->warn( "Translation " . $altt->dbID() .
-                      " contains a stop codon" );
+              ->warn(
+                    "Translation " . $altt->dbID() . " contains a stop codon" );
           }
         }
 
       } ## end foreach my $t ( @{$ts} )
-      if ( $translationFailCnt > 0 &&
-           $translationFailCnt == $translationCnt )
-      {
+      if ( $translationFailCnt > 0 && $translationFailCnt == $translationCnt ) {
         $self->dba()->dbc()->sql_helper()
           ->execute_update(
-           "update gene set biotype='nontranslating_cds' where gene_id="
-             . $egene->dbID() );
+                 "update gene set biotype='nontranslating_cds' where gene_id=" .
+                   $egene->dbID() );
       }
     };
     if ($@) {
@@ -210,12 +197,10 @@ sub load_gene {
     }
     for my $operon_transcript ( values %$operon_transcripts ) {
       $self->log()
-        ->debug(
-           "Storing gene " . $egene->dbID() . " on operon-transcript " .
-             $operon_transcript->dbID() );
+        ->debug( "Storing gene " . $egene->dbID() . " on operon-transcript " .
+                 $operon_transcript->dbID() );
       $self->dba()->get_OperonTranscriptAdaptor()
-        ->store_genes_on_OperonTranscript( $operon_transcript,
-                                           [$egene] );
+        ->store_genes_on_OperonTranscript( $operon_transcript, [$egene] );
     }
   } ## end if ( $ts && @{$ts} )
   else {
@@ -230,9 +215,8 @@ sub set_description {
 
   # Gene description.
   if ( $igene->{description} ) {
-    $egene->description(
-                      $igene->{description} . $self->{displayXrefFinder}
-                        ->get_description_source( $egene, $igene ) );
+    $egene->description( $igene->{description} .
+         $self->{displayXrefFinder}->get_description_source( $egene, $igene ) );
   }
 }
 
@@ -242,14 +226,13 @@ sub get_operon {
   # look up operon in cache
   my $operon = $self->{_operons}{ $ioperon->{name} };
   if ( !defined $operon ) {
-    my $loc = $ioperon->{locations}->[0];
-    $operon =
-      Bio::EnsEMBL::Operon->new( -START         => $loc->{min},
-                                 -END           => $loc->{max},
-                                 -STRAND        => $loc->{strand},
-                                 -SLICE         => $slice,
-                                 -DISPLAY_LABEL => $ioperon->{name},
-                                 -ANALYSIS      => $analysis );
+    $operon = Bio::EnsEMBL::Operon->new(
+                                      -START  => $ioperon->{location}->{min},
+                                      -END    => $ioperon->{location}->{max},
+                                      -STRAND => $ioperon->{location}->{strand},
+                                      -SLICE  => $slice,
+                                      -DISPLAY_LABEL => $ioperon->{name},
+                                      -ANALYSIS      => $analysis );
     $self->set_xrefs( $ioperon, $operon );
     $self->dba()->get_OperonAdaptor()->store($operon);
     $self->{_operons}{ $ioperon->{name} } = $operon;
@@ -259,23 +242,20 @@ sub get_operon {
 
 sub get_operon_transcript {
   my ( $self, $operon, $itranscript, $analysis ) = @_;
-  my $loc = $itranscript->{locations}->[0];
-  my $operon_transcript =
-    $self->{_operon_transcripts}{ $itranscript->{name} };
+  my $operon_transcript = $self->{_operon_transcripts}{ $itranscript->{name} };
   if ( !defined $operon_transcript ) {
     $operon_transcript =
       Bio::EnsEMBL::OperonTranscript->new(
-                                 -START         => $loc->{min},
-                                 -END           => $loc->{max},
-                                 -STRAND        => $loc->{strand},
-                                 -SLICE         => $operon->slice(),
-                                 -DISPLAY_LABEL => $itranscript->{name},
-                                 -ANALYSIS      => $analysis );
+                                  -START  => $itranscript->{location}->{min},
+                                  -END    => $itranscript->{location}->{max},
+                                  -STRAND => $itranscript->{location}->{strand},
+                                  -SLICE  => $operon->slice(),
+                                  -DISPLAY_LABEL => $itranscript->{name},
+                                  -ANALYSIS      => $analysis );
     my $operon_refs    = [];
     my $nonoperon_refs = [];
     for my $xref ( @{ $itranscript->{xrefs} } ) {
-      if ( $xref->{databaseReferenceType}{ensemblName} =~ m/Regulon.*/ )
-      {
+      if ( $xref->{databaseReferenceType}{ensemblName} =~ m/Regulon.*/ ) {
         push @$operon_refs, $xref;
       }
       else {
@@ -287,8 +267,7 @@ sub get_operon_transcript {
     $self->dba()->get_OperonTranscriptAdaptor()
       ->store( $operon_transcript, $operon->dbID() );
     $operon->add_OperonTranscript($operon_transcript);
-    $self->{_operon_transcripts}{ $itranscript->{name} } =
-      $operon_transcript;
+    $self->{_operon_transcripts}{ $itranscript->{name} } = $operon_transcript;
   } ## end if ( !defined $operon_transcript)
   return $operon_transcript;
 } ## end sub get_operon_transcript
@@ -301,64 +280,60 @@ sub get_transcript {
   my @eexons = $self->get_exons( $iprotein, $egene->slice() );
   $self->log()
     ->debug( "Got " .
-             scalar @eexons . " exons for protein " .
-             $iprotein->{persistableId} );
+          scalar @eexons . " exons for protein " . $iprotein->{identifyingId} );
 
   # Don't store the gene unless we have some exons.
   croak "No exons found for gene " . $egene->stable_id() unless @eexons;
 
 # If necessary, stretch the first and last exon to fit the boundary of the Integr8 transcript.
 # Adjust the translation seq start and end accordingly to allow for any UTRs created.
-  my @itranscript_locations = @{ $itranscript->{locations} };
-  my $itranscript_start     = $itranscript_locations[0]->{min};
-  my $eexon_s               = $eexons[0];
-  my $diff_start            = $eexon_s->start() - $itranscript_start;
+  my $itranscript_start = $itranscript->{location}->{min};
+  my $eexon_s           = $eexons[0];
+  my $diff_start        = $eexon_s->start() - $itranscript_start;
   if ( $diff_start > 0 ) {
     $self->log()->debug( "exon ($eexon_s) = " . $egene->stable_id() .
                            ' start changed from ' . $eexon_s->start() .
-                           ' to itranscript_start=' .
-                           $itranscript_start . ', diff_start=',
+                           ' to itranscript_start=' . $itranscript_start .
+                           ', diff_start=',
                          $diff_start );
     $eexon_s->start($itranscript_start);
   }
   my $eexon_e         = $eexons[-1];
-  my $itranscript_end = $itranscript_locations[-1]->{max};
+  my $itranscript_end = $itranscript->{location}->{max};
   my $diff_end        = $itranscript_end - $eexon_e->end();
   if ( $diff_end > 0 ) {
     $self->log()
-      ->debug(
-       "exon ($eexon_e) " . $egene->stable_id() . ' end changed from ' .
-         $eexon_e->end() . ' to itranscript_end = ' . $itranscript_end .
-         ' diff_end = ' . $diff_end );
+      ->debug( "exon ($eexon_e) " . $egene->stable_id() . ' end changed from ' .
+               $eexon_e->end() . ' to itranscript_end = ' . $itranscript_end .
+               ' diff_end = ' . $diff_end );
     $eexon_e->end($itranscript_end);
   }
 
   # Create transcript.
   my $time = time();
+  my $biotype =
+    ( $iprotein->{pseudo} ) ? BIOTYPES()->{PSEUDOGENE_TYPE} :
+                              BIOTYPES()->{PROTEIN_CODE_GENE_TYPE};
   my $etranscript =
-    Bio::EnsEMBL::Transcript->new(
-                                 -BIOTYPE => ( $iprotein->{pseudo} ) ?
-                                   BIOTYPES()->{PSEUDOGENE_TYPE} :
-                                   BIOTYPES()->{PROTEIN_CODE_GENE_TYPE},
-                                 -SLICE    => $egene->slice(),
-                                 -ANALYSIS => $egene->analysis(),
-                                 -SOURCE   => $self->config()->{source},
-                                 -CREATED_DATE  => $time,
-                                 -MODIFIED_DATE => $time );
+    Bio::EnsEMBL::Transcript->new( -BIOTYPE       => $biotype,
+                                   -VERSION       => undef,
+                                   -SLICE         => $egene->slice(),
+                                   -ANALYSIS      => $egene->analysis(),
+                                   -SOURCE        => $self->{source},
+                                   -CREATED_DATE  => $time,
+                                   -MODIFIED_DATE => $time );
 
   # Set transcript xrefs (including GO xrefs).
   $self->set_xrefs( $itranscript, $etranscript );
 
   # Set transcript display xref.
-  $self->set_stable_id( $itranscript, $etranscript,
-                        $egene,       $transcriptN );
-  $self->set_display_xref( $itranscript, $etranscript,
-                           $egene,       $transcriptN );
+  $self->set_stable_id( $itranscript, $etranscript, $egene, $transcriptN );
+  $self->set_display_xref( $itranscript, $etranscript, $egene, $transcriptN );
 
   # If reverse strand then reverse the exons
   # so that the ensembl rank is applied instead of the Integr8 rank.
   my @sorted_eexons = @eexons;
-  my $strand        = $itranscript->{locations}->[0]->{strand};
+  my $strand        = $itranscript->{location}->{strand};
   if ( $strand == -1 ) {
     @sorted_eexons = reverse @sorted_eexons;
   }
@@ -411,8 +386,8 @@ sub recalculate_coordinates {
          $exon->slice() &&
          $exon->slice()->name() ne $slice->name() )
     {
-      throw( "Exons with different slices " .
-             "are not allowed on one Transcript" );
+      throw(
+         "Exons with different slices " . "are not allowed on one Transcript" );
     }
   }
   $transcript->strand($strand);
@@ -440,53 +415,47 @@ sub recalculate_coordinates {
 sub store_proteins {
   my ( $self, $egene, $igene, $operon_transcripts ) = @_;
   $self->log()
-    ->debug( "Storing proteins for gene '" .
-             ( $egene->stable_id() || "unknown" ) . "'" );
+    ->debug(
+          "Storing proteins for gene '" . ( $egene->stable_id() || "unknown" ) .
+            "'" );
 
-# - need to flip the relationship around so we get transcript->protein map
-  my $transcript2protein = {};
+  # - need to flip the relationship around so we get transcript->protein map
+  my $transcripts = {};
   foreach my $iprotein ( @{ $igene->{proteins} } ) {
     foreach my $itranscript ( @{ $iprotein->{transcripts} } ) {
-      $transcript2protein->{ $itranscript->{persistableId} }
-        ->{transcript} = $itranscript;
-      $transcript2protein->{ $itranscript->{persistableId} }->{proteins}
-        ->{ $iprotein->{persistableId} } = $iprotein;
+      push @{ $itranscript->{proteins} }, $iprotein;
+      $transcripts->{ $itranscript->{identifyingId} } = $itranscript;
     }
   }
 
   # work over each set of transcript-proteins
   my $transcriptN = 0;
-  foreach my $ith ( values %$transcript2protein ) {
-    my $itranscript = $ith->{transcript};
+  foreach my $itranscript ( values $transcripts ) {
     my @iproteins =
       sort { $self->get_cds_length($b) <=> $self->get_cds_length($a) }
-      values %{ $ith->{proteins} };
+      @{ $itranscript->{proteins} };
     $self->log->debug(
-              "Processing transcript " . $itranscript->{persistableId} .
-                " with " .
-                scalar(@iproteins) . " proteins" );
+           "Processing transcript " . $itranscript->{identifyingId} . " with " .
+             scalar(@iproteins) . " proteins" );
     my $can_iprotein = shift(@iproteins);
 
     # deal with operons
     my $ioperon = $itranscript->{operon};
     if ( defined $ioperon ) {
       $self->log()
-        ->debug(
-         "Attaching transcript to operon " . $ioperon->{persistableId} .
-           " for " . $egene->stable_id() );
+        ->debug( "Attaching transcript to operon " . $ioperon->{identifyingId} .
+                 " for " . $egene->stable_id() );
 
       # create an operon
       my $operon;
       eval {
         $operon =
-          $self->get_operon( $ioperon, $egene->slice(),
-                             $egene->analysis() );
+          $self->get_operon( $ioperon, $egene->slice(), $egene->analysis() );
       };
       if ($@) {
         $self->log()
           ->warn(
-          "Could not create operon " . $ioperon->{persistableId} . ":" .
-            $@ );
+            "Could not create operon " . $ioperon->{identifyingId} . ":" . $@ );
       }
       else {
 
@@ -495,86 +464,77 @@ sub store_proteins {
           $self->get_operon_transcript( $operon, $itranscript,
                                         $egene->analysis() );
         $self->log()
-          ->debug(
-                "Got operon transcript " . $operon_transcript->dbID() );
+          ->debug( "Got operon transcript " . $operon_transcript->dbID() );
 
         # add the operon transcript to the list to store this gene on
         $operon_transcripts->{ $operon_transcript->dbID() } =
           $operon_transcript;
 
         # reset the transcript locations to those of the canonical
-        $itranscript->{locations}->[0] =
-          $can_iprotein->{locations}->[0];
+        $itranscript->{location} = $can_iprotein->{location};
       }
     } ## end if ( defined $ioperon )
 
-    my $strand = $can_iprotein->{locations}->[0]->{strand};
+    my $strand = $can_iprotein->{location}->{strand};
 
     # get exons and transcript based on canonical protein
     $self->log()
-      ->debug( "Handling transcript " . $itranscript->{persistableId} .
-               " for gene " . $igene->{persistableId} );
+      ->debug(
+         "Handling transcript " . $itranscript->{identifyingId} . " for gene " .
+           $igene->{identifyingId} );
     my $et = $self->get_transcript( $egene,        $itranscript,
                                     $can_iprotein, ++$transcriptN );
     my $etranscript = $et->{transcript};
-    if ( !$can_iprotein->{pseudo} ||
-         $self->config()->{createPseudoTranslations} == 1 )
-    {
 
-      # need to modify this to do differential stuff too
-      my $etranslation =
-        $self->get_translation( $can_iprotein, $et->{eexons},
-                                $etranscript,  $itranscript );
-      $etranscript->translation($etranslation);
-    }
+    $etranscript->translation(
+                      $self->get_translation(
+                        $can_iprotein, $et->{eexons}, $etranscript, $itranscript
+                      ) );
 
     foreach my $iprotein (@iproteins) {
-      if ( !$iprotein->{pseudo} ||
-           $self->config()->{createPseudoTranslations} == 1 )
-      {
+      if ( !$iprotein->{pseudo} ) {
         $self->log->debug(
-           "Processing alt translation " . $iprotein->{persistableId} );
+                   "Processing alt translation " . $iprotein->{identifyingId} );
 
-        # deal with alternative translations
-        my $etranslation =
-          $self->get_translation( $iprotein,    $et->{eexons},
-                                  $etranscript, $itranscript );
-        $etranscript->add_alternative_translation($etranslation);
+        $etranscript->add_alternative_translation(
+                              $self->get_translation( $iprotein, $et->{eexons},
+                                                      $etranscript, $itranscript
+                              ) );
       }
     }
-  } ## end foreach my $ith ( values %$transcript2protein)
+  } ## end foreach my $itranscript ( values...)
   return;
 } ## end sub store_proteins
 
 sub get_cds_length {
   my ( $self, $iprotein ) = @_;
   my $plen = 0;
-  foreach my $iprotein_location ( @{ $iprotein->{locations} } ) {
 
 # If a location has sublocations then use them to create exons, otherwise use the location.
-    my $ilocations;
-    if ( @{ $iprotein_location->{sublocations} } > 0 ) {
-      $ilocations = $iprotein_location->{sublocations};
+  my $ilocations;
+  if ( defined $iprotein->{location}->{sublocations} &&
+       @{ $iprotein->{location}->{sublocations} } > 0 )
+  {
+    $ilocations = $iprotein->{location}->{sublocations};
 
 # Sort by Integr8 (EMBL) rank.
 # This means that exons are ordered by location ascending value, regardless of strand.
 # Note: ensembl rank is the order in which exons are used in the translation.
 # (ie. ensembl rank is opposite to Integr8 rank for reverse strand).
-      my @sorted = sort { $a->{rank} <=> $b->{rank} } @{$ilocations};
-      $ilocations = \@sorted;
+    my @sorted = sort { $a->{rank} <=> $b->{rank} } @{$ilocations};
+    $ilocations = \@sorted;
+  }
+  else {
+    $ilocations = [ $iprotein->{location} ];
+  }
+  foreach my $ilocation ( @{$ilocations} ) {
+    $plen += $ilocation->{max} - $ilocation->{min} + 1;
+  }
+  foreach my $imod ( @{ $iprotein->{location}->{mods} } ) {
+    if ( $imod->{stop} == $imod->{start} ) {
+      $plen += length $imod->{proteinSeq};
     }
-    else {
-      $ilocations = [$iprotein_location];
-    }
-    foreach my $ilocation ( @{$ilocations} ) {
-      $plen += $ilocation->{max} - $ilocation->{min} + 1;
-    }
-    foreach my $imod ( @{ $iprotein_location->{mods} } ) {
-      if ( $imod->{stop} == $imod->{start} ) {
-        $plen += length $imod->{proteinSeq};
-      }
-    }
-  } ## end foreach my $iprotein_location...
+  }
   return $plen;
 } ## end sub get_cds_length
 
@@ -582,49 +542,41 @@ sub get_translation {
   my ( $self, $iprotein, $eexons, $etranscript, $itranscript ) = @_;
   $self->log()
     ->debug(
-       "Getting translation for protein " . $iprotein->{persistableId} .
-         "/" . $iprotein->{uniprotKbId} . " (pseudo " .
-         $iprotein->{pseudo} . ")" );
+         "Getting translation for protein " . $iprotein->{identifyingId} . " (pseudo " . $iprotein->{pseudo} . ")" );
 
-  my $strand = $iprotein->{locations}[0]->{strand};
+  my $strand = $iprotein->{location}->{strand};
   my $frame  = $iprotein->{codonStart} - 1;
 
-# Create translation, one per transcript.
-# For translation, choose start, end exon, seq_start and seq_end accordingly !
+  # Create translation, one per transcript.
+  # For translation, choose start, end exon, seq_start and seq_end accordingly !
   my $start_exon;
   my $end_exon;
   my $seq_start;
   my $seq_end;
 
-  my $protein_start = $iprotein->{locations}[0]{min};
-  my $protein_end   = $iprotein->{locations}[-1]{max};
+  my $protein_start = $iprotein->{location}{min};
+  my $protein_end   = $iprotein->{location}{max};
 
   for my $exon (@$eexons) {
     if ( $exon->start() > $exon->end() ) {
-      if ( $exon->start() >= $protein_start &&
-           $exon->end() <= $protein_start )
+      if ( $exon->start() >= $protein_start && $exon->end() <= $protein_start )
       {
         $start_exon = $exon;
       }
-      if ( $exon->start() >= $protein_end &&
-           $exon->end() <= $protein_end )
-      {
+      if ( $exon->start() >= $protein_end && $exon->end() <= $protein_end ) {
         $end_exon = $exon;
       }
     }
     else {
-      if ( $exon->start() <= $protein_start &&
-           $exon->end() >= $protein_start )
+      if ( $exon->start() <= $protein_start && $exon->end() >= $protein_start )
       {
         $start_exon = $exon;
       }
-      if ( $exon->start() <= $protein_end &&
-           $exon->end() >= $protein_end )
-      {
+      if ( $exon->start() <= $protein_end && $exon->end() >= $protein_end ) {
         $end_exon = $exon;
       }
     }
-  } ## end for my $exon (@$eexons)
+  }
 
   if ( $strand == -1 ) {
 
@@ -635,23 +587,22 @@ sub get_translation {
     $start_exon = $tmp;
 
     $seq_start = $start_exon->end() - $protein_end + 1;
-    $seq_end =
-      $end_exon->length() - ( $protein_start - $end_exon->start() );
+    $seq_end = $end_exon->length() - ( $protein_start - $end_exon->start() );
 
   }
   else {
 
     $seq_start = $protein_start - $start_exon->start() + 1;
-    $seq_end =
-      $end_exon->length() - ( $end_exon->end() - $protein_end );
+    $seq_end = $end_exon->length() - ( $end_exon->end() - $protein_end );
 
   }
   $self->log()
     ->debug( "start exon ($start_exon) = " . $start_exon->start . '-' .
              $start_exon->end . ':' . $start_exon->strand );
   $self->log()
-    ->debug( "end exon ($end_exon) = " . $end_exon->start . '-' .
-             $end_exon->end . ':' . $end_exon->strand );
+    ->debug(
+     "end exon ($end_exon) = " . $end_exon->start . '-' . $end_exon->end . ':' .
+       $end_exon->strand );
   $seq_start += $frame;
   $self->log()->debug("seq_start = $seq_start");
   $self->log()->debug("seq_end   = $seq_end");
@@ -665,34 +616,30 @@ sub get_translation {
 
 # the $seq_start and $seq_end values are relative to the exon (start of exon = 1).
   my $etranslation =
-    Bio::EnsEMBL::Translation->new(
-                               -STABLE_ID => $iprotein->{persistableId},
-                               -START_EXON    => $start_exon,
-                               -SEQ_START     => $seq_start,
-                               -END_EXON      => $end_exon,
-                               -SEQ_END       => $seq_end,
-                               -CREATED_DATE  => $time,
-                               -MODIFIED_DATE => $time );
+    Bio::EnsEMBL::Translation->new( -STABLE_ID    => $iprotein->{persistableId},
+                                    -START_EXON   => $start_exon,
+                                    -SEQ_START    => $seq_start,
+                                    -END_EXON     => $end_exon,
+                                    -SEQ_END      => $seq_end,
+                                    -CREATED_DATE => $time,
+                                    -MODIFIED_DATE => $time );
   $self->set_stable_id( $iprotein, $etranslation );
 
   # Set exon phases.  Exons must be in Integr8 rank order.
   $self->set_exon_phases( $etranslation, $eexons );
 
-  foreach my $attrib (
-    @{ $self->get_translation_attribs( $iprotein->{locations}->[0] ) } )
+  foreach
+    my $attrib ( @{ $self->get_translation_attribs( $iprotein->{location} ) } )
   {
     if ( defined $attrib ) {
       $etranslation->add_Attributes($attrib);
     }
   }
-  foreach my $iprotein_location ( @{ $iprotein->{locations} } ) {
-    foreach my $iprotein_locationmod ( @{ $iprotein_location->{mods} } )
-    {
-      $etranslation->add_Attributes(
-                            $self->location_mod_to_attribute(
-                              $iprotein_location, $iprotein_locationmod,
-                              $iprotein->{codonStart} ) );
-    }
+  foreach my $iprotein_locationmod ( @{ $iprotein->{location}->{mods} } ) {
+    $etranslation->add_Attributes(
+                                 $self->location_mod_to_attribute(
+                                   $iprotein->{location}, $iprotein_locationmod,
+                                   $iprotein->{codonStart} ) );
   }
 
   # Set translation xrefs (including GO xrefs).
@@ -706,32 +653,31 @@ sub get_translation {
   my $tlen = $self->get_cds_length($iprotein)/3;
 
   # TODO ALT_INIT set as canonical if longer than canonical
-  foreach my $iprotein_feature ( @{ $iprotein->{features} } ) {
+  foreach my $iprotein_feature ( @{ $iprotein->{proteinFeatures} } ) {
     my $feature_type =
-      $self->analysis_finder()
-      ->get_analysis_by_name( $iprotein_feature->{type}, "domain" );
+      get_analysis_by_name( $iprotein_feature->{type}, "domain" );
     if ($feature_type) {
       if ( $iprotein_feature->{end} > $tlen ) {
         $self->log()
-          ->warn( 'Could not create protein feature ' .
-             $iprotein_feature->{id} . '/' . $iprotein_feature->{type} .
-             ' as it ends (' . $iprotein_feature->{end} .
-             ') beyond the end of the translation (' . $tlen . ') of ' .
-             $iprotein->{uniprotKbId} . ' (' .
-             $iprotein->{persistableId} . ')' );
+          ->warn(
+          'Could not create protein feature ' . $iprotein_feature->{id} . '/' .
+            $iprotein_feature->{type} . ' as it ends (' .
+            $iprotein_feature->{end} . ') beyond the end of the translation (' .
+            $tlen . ') of ' . $iprotein->{identifyingId} . ' (' .
+            $iprotein->{persistableId} . ')' );
       }
       else {
         my $eprotein_feature =
           Bio::EnsEMBL::ProteinFeature->new(
-                             -START    => $iprotein_feature->{start},
-                             -END      => $iprotein_feature->{end},
-                             -HSTART   => $iprotein_feature->{start},
-                             -HEND     => $iprotein_feature->{end},
-                             -HSEQNAME => $iprotein_feature->{id},
-                             -SCORE    => 100,
-                             -SLICE    => $etranscript->slice(),
-                             -HDESCRIPTION => $iprotein_feature->{name},
-                             -ANALYSIS     => $feature_type );
+                                     -START    => $iprotein_feature->{start},
+                                     -END      => $iprotein_feature->{end},
+                                     -HSTART   => $iprotein_feature->{start},
+                                     -HEND     => $iprotein_feature->{end},
+                                     -HSEQNAME => $iprotein_feature->{id},
+                                     -SCORE    => 100,
+                                     -SLICE    => $etranscript->slice(),
+                                     -HDESCRIPTION => $iprotein_feature->{name},
+                                     -ANALYSIS     => $feature_type );
 
         $etranslation->add_ProteinFeature($eprotein_feature);
       }
@@ -809,7 +755,7 @@ sub get_translation_attribs {
     push @attrs, $has_start_codon;
 
     # if bacterial, also has init met
-    if ( $self->genome_metadata()->{superregnum} ne 'eukaryota' ) {
+    if ( $self->is_prokaryote()==1) {
       push @attrs, $self->{attrs}{INIT_MET};
     }
   }
@@ -843,37 +789,36 @@ sub calc_pepstats {
     chomp;
     if (m/^Molecular weight = (\S+)(\s+)Residues = (\d+).*/) {
       $translation->add_Attributes(
-                  Bio::EnsEMBL::Attribute->new(
-                    '-code' => PEPSTATS_CODES()->{'Number of residues'},
-                    '-name' => 'Number of residues',
-                    '-value' => $3 ) );
+                          Bio::EnsEMBL::Attribute->new(
+                            '-code' => PEPSTATS_CODES()->{'Number of residues'},
+                            '-name' => 'Number of residues',
+                            '-value' => $3 ) );
       $translation->add_Attributes(
-                    Bio::EnsEMBL::Attribute->new(
-                      '-code' => PEPSTATS_CODES()->{'Molecular weight'},
-                      '-name' => 'Molecular weight',
-                      '-value' => $1 ) );
+                            Bio::EnsEMBL::Attribute->new(
+                              '-code' => PEPSTATS_CODES()->{'Molecular weight'},
+                              '-name' => 'Molecular weight',
+                              '-value' => $1 ) );
     }
     elsif (
-m/^Average(\s+)(\S+)(\s+)(\S+)(\s+)=(\s+)(\S+)(\s+)(\S+)(\s+)=(\s+)(\S+)/
+       m/^Average(\s+)(\S+)(\s+)(\S+)(\s+)=(\s+)(\S+)(\s+)(\S+)(\s+)=(\s+)(\S+)/
       )
     {
       $translation->add_Attributes(
-                 Bio::EnsEMBL::Attribute->new(
-                   '-code' => PEPSTATS_CODES()->{'Ave. residue weight'},
-                   '-name' => 'Ave. residue weight',
-                   '-value' => $7 ) );
-      $translation->add_Attributes(
-                              Bio::EnsEMBL::Attribute->new(
-                                '-code' => PEPSTATS_CODES()->{'Charge'},
-                                '-name' => 'Charge',
-                                '-value' => $12 ) );
+                         Bio::EnsEMBL::Attribute->new(
+                           '-code' => PEPSTATS_CODES()->{'Ave. residue weight'},
+                           '-name' => 'Ave. residue weight',
+                           '-value' => $7 ) );
+      $translation->add_Attributes( Bio::EnsEMBL::Attribute->new(
+                                        '-code' => PEPSTATS_CODES()->{'Charge'},
+                                        '-name' => 'Charge',
+                                        '-value' => $12 ) );
     }
     elsif (m/^Isoelectric(\s+)(\S+)(\s+)=(\s+)(\S+)/) {
       $translation->add_Attributes(
-                   Bio::EnsEMBL::Attribute->new(
-                     '-code' => PEPSTATS_CODES()->{'Isoelectric point'},
-                     '-name' => 'Isoelectric point',
-                     '-value' => $5 ) );
+                           Bio::EnsEMBL::Attribute->new(
+                             '-code' => PEPSTATS_CODES()->{'Isoelectric point'},
+                             '-name' => 'Isoelectric point',
+                             '-value' => $5 ) );
     }
     elsif (m/FATAL/) {
       $self->log()->warn("pepstats: $_");
@@ -887,17 +832,14 @@ m/^Average(\s+)(\S+)(\s+)(\S+)(\s+)=(\s+)(\S+)(\s+)(\S+)(\s+)=(\s+)(\S+)/
 } ## end sub calc_pepstats
 
 sub location_mod_to_attribute {
-  my ( $self, $iprotein_location, $iprotein_location_mod, $offset ) =
-    @_;
+  my ( $self, $iprotein_location, $iprotein_location_mod, $offset ) = @_;
   $self->log()
     ->debug( "Mod coords: " . $iprotein_location_mod->{start} . ", " .
              $iprotein_location_mod->{stop} );
   my ( $pep_start, $pep_end ) =
-    $self->convert_dna_2_peptide_coords(
-                                 $iprotein_location,
-                                 $iprotein_location_mod->{start},
-                                 $iprotein_location_mod->{stop}, $offset
-    );
+    $self->convert_dna_2_peptide_coords( $iprotein_location,
+                                      $iprotein_location_mod->{start},
+                                      $iprotein_location_mod->{stop}, $offset );
   my $attr;
   $self->log()->debug("Edit coords: $pep_start, $pep_end");
 
@@ -922,9 +864,9 @@ sub location_mod_to_attribute {
     }
     else {
 
-# Insertion (zero-to-many to zero-to-many).
-# Calculate $seq_edit_start.  Use $pep_start if defined or $pep_end otherwise
-# (undefined pep coord means that it is not within a coding region)
+   # Insertion (zero-to-many to zero-to-many).
+   # Calculate $seq_edit_start.  Use $pep_start if defined or $pep_end otherwise
+   # (undefined pep coord means that it is not within a coding region)
       if ( defined($pep_start) ) {
         $seq_edit_start = $pep_start + 1;
       }
@@ -934,17 +876,17 @@ sub location_mod_to_attribute {
       $seq_edit_end = $seq_edit_start - 1;
     }
     if ( !$seq_edit_start || !$seq_edit_end ) {
-      croak( "Location mod has no start or end: " .
-             Dumper($iprotein_location_mod) );
+      croak(
+        "Location mod has no start or end: " . Dumper($iprotein_location_mod) );
     }
     my $seq_edit =
       Bio::EnsEMBL::SeqEdit->new(
-                       -CODE        => NAMES()->{AMINO_ACID_SUB},
-                       -NAME        => NAMES()->{AMINO_ACID_SUB},
-                       -DESCRIPTION => NAMES()->{AMINO_ACID_SUB},
-                       -ALT_SEQ => $iprotein_location_mod->{proteinSeq},
-                       -START   => $seq_edit_start,
-                       -END     => $seq_edit_end );
+                               -CODE        => NAMES()->{AMINO_ACID_SUB},
+                               -NAME        => NAMES()->{AMINO_ACID_SUB},
+                               -DESCRIPTION => NAMES()->{AMINO_ACID_SUB},
+                               -ALT_SEQ => $iprotein_location_mod->{proteinSeq},
+                               -START   => $seq_edit_start,
+                               -END     => $seq_edit_end );
     if ( defined( $seq_edit->code ) &&
          defined( $seq_edit->name ) &&
          defined( $seq_edit->description ) &&
@@ -960,9 +902,8 @@ sub location_mod_to_attribute {
   } ## end if ( defined($pep_start...))
   if ( !defined $attr ) {
     $self->log()
-      ->warn(
-         " Could not convert location mod into seq edit attribute  : " .
-           Dumper($iprotein_location_mod) );
+      ->warn( " Could not convert location mod into seq edit attribute  : " .
+              Dumper($iprotein_location_mod) );
   }
   return $attr;
 } ## end sub location_mod_to_attribute
@@ -971,40 +912,39 @@ sub get_exons {
   my ( $self, $iprotein, $slice ) = @_;
   my @eexons = ();
   my $exonN  = 0;
-  foreach my $iprotein_location ( @{ $iprotein->{locations} } ) {
 
 # If a location has sublocations then use them to create exons, otherwise use the location.
-    my $ilocations;
-    if ( @{ $iprotein_location->{sublocations} } > 0 ) {
-      $ilocations = $iprotein_location->{sublocations};
+  my $ilocations;
+  if ( defined $iprotein->{location}->{sublocations} &&
+       @{ $iprotein->{location}->{sublocations} } > 0 )
+  {
+    $ilocations = $iprotein->{location}->{sublocations};
 
 # Sort by Integr8 (EMBL) rank.
 # This means that exons are ordered by location ascending value, regardless of strand.
 # Note: ensembl rank is the order in which exons are used in the translation.
 # (ie. ensembl rank is opposite to Integr8 rank for reverse strand).
-      my @sorted = sort { $a->{rank} <=> $b->{rank} } @{$ilocations};
-      $ilocations = \@sorted;
-    }
-    else {
-      $ilocations = [$iprotein_location];
-    }
-    foreach my $ilocation ( @{$ilocations} ) {
-      my $time = time();
-      my $eexon =
-        Bio::EnsEMBL::Exon->new( -SLICE         => $slice,
-                                 -START         => $ilocation->{min},
-                                 -END           => $ilocation->{max},
-                                 -STRAND        => $ilocation->{strand},
-                                 -CREATED_DATE  => $time,
-                                 -MODIFIED_DATE => $time,
-                                 -PHASE         => 0,
-                                 -END_PHASE     => 0, );
+    my @sorted = sort { $a->{rank} <=> $b->{rank} } @{$ilocations};
+    $ilocations = \@sorted;
+  }
+  else {
+    $ilocations = [ $iprotein->{location} ];
+  }
+  foreach my $ilocation ( @{$ilocations} ) {
+    my $time = time();
+    my $eexon = Bio::EnsEMBL::Exon->new( -SLICE         => $slice,
+                                         -START         => $ilocation->{min},
+                                         -END           => $ilocation->{max},
+                                         -STRAND        => $ilocation->{strand},
+                                         -CREATED_DATE  => $time,
+                                         -MODIFIED_DATE => $time,
+                                         -PHASE         => 0,
+                                         -END_PHASE     => 0, );
 
-      push( @eexons, $eexon );
-    }
-  } ## end foreach my $iprotein_location...
+    push( @eexons, $eexon );
+  }
 
-# Handle the case of a circular genome where a feature crosses the origin.
+  # Handle the case of a circular genome where a feature crosses the origin.
   @eexons = @{ $self->check_exons( $slice, \@eexons ) };
 
   return @eexons;
@@ -1030,17 +970,17 @@ sub check_exons {
     {
       $self->log()
         ->warn(
-         'Exons ' . $eexons[$i]->start() . '-' . $eexons[$i]->end() .
-           ':' . $eexons[$i]->strand() . ' and ' .
-           $eexons[ $i + 1 ]->start() . '-' . $eexons[ $i + 1 ]->end() .
-           ':' . $eexons[ $i + 1 ]->strand() .
-           'are a single exon which crosses the origin' );
+          'Exons ' . $eexons[$i]->start() . '-' . $eexons[$i]->end() . ':' .
+            $eexons[$i]->strand() . ' and ' . $eexons[ $i + 1 ]->start() . '-' .
+            $eexons[ $i + 1 ]->end() . ':' . $eexons[ $i + 1 ]->strand() .
+            'are a single exon which crosses the origin' );
       if ($handleCircular) {
         $eexons[$i]->end( $eexons[ $i + 1 ]->end() );
         $eexons[$i]->start( $eexons[$i]->start() );
         $self->log()
-          ->warn( "Merging exons together into reversed form: " .
-                  $eexons[$i]->start() . "-" . $eexons[$i]->end() );
+          ->warn(
+          "Merging exons together into reversed form: " . $eexons[$i]->start() .
+            "-" . $eexons[$i]->end() );
         push @new_exons, $eexons[$i];
         $lastOk = 0;
       }
@@ -1055,8 +995,8 @@ sub check_exons {
         push @new_exons, $eexons[$i];
       }
       else {
-        $self->log->warn("Skipping exon " . $eexons[$i]->start() . "-" .
-                           $eexons[$i]->end() );
+        $self->log->warn(
+           "Skipping exon " . $eexons[$i]->start() . "-" . $eexons[$i]->end() );
         $lastOk = 1;
       }
     }
@@ -1073,11 +1013,11 @@ sub set_frameshift_attributes {
     # only interested in the short ones
     if ( $intron->length() < 6 && $intron->length() != 3 ) {
       $etranscript->add_Attributes(
-                      Bio::EnsEMBL::Attribute->new(
-                        -CODE        => 'Frameshift',
-                        -NAME        => 'Frameshift',
-                        -DESCRIPTION => 'Frameshift modelled as intron',
-                        -VALUE       => $intron_number ) );
+                              Bio::EnsEMBL::Attribute->new(
+                                -CODE        => 'Frameshift',
+                                -NAME        => 'Frameshift',
+                                -DESCRIPTION => 'Frameshift modelled as intron',
+                                -VALUE       => $intron_number ) );
     }
   }
   return $intron_number;
@@ -1095,8 +1035,7 @@ sub set_transcript_stats {
     my $status_key = 'fail' . $fuzzy_label;
     $self->{translation_stats}{$status_key}++;
     $self->log()->warn( '[' . $egene->stable_id() .
-                          "] translate() - $status_key: " .
-                          $etranscript->start,
+                          "] translate() - $status_key: " . $etranscript->start,
                         '-',
                         $etranscript->end,
                         '(' . $etranscript->strand . '):' . $@ );
@@ -1105,8 +1044,7 @@ sub set_transcript_stats {
     my $status_key = 'cannot' . $fuzzy_label;
     $self->{translation_stats}{$status_key}++;
     $self->log()->warn( '[' . $egene->stable_id() .
-                          "] translate() - $status_key: " .
-                          $etranscript->start,
+                          "] translate() - $status_key: " . $etranscript->start,
                         '-',
                         $etranscript->end,
                         '(' . $etranscript->strand . '):' . $@ );
@@ -1120,12 +1058,11 @@ sub set_transcript_stats {
     my $status_key = 'fail' . $fuzzy_label;
     $self->{translation_stats}{$status_key}++;
     $self->log()->warn( '[' . $egene->stable_id() .
-                          "] translate() - $status_key: " .
-                          $etranscript->start,
+                          "] translate() - $status_key: " . $etranscript->start,
                         '-',
                         $etranscript->end,
-                        '(' . $etranscript->strand .
-                          '):translateable_seq' . $aa_seq );
+                        '(' . $etranscript->strand . '):translateable_seq' .
+                          $aa_seq );
   }
   else {
     my $status_key = 'ok' . $fuzzy_label;
