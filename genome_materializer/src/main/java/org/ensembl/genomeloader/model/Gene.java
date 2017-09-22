@@ -32,6 +32,9 @@ import java.util.Set;
  */
 public interface Gene extends AnnotatedGene, Locatable, CrossReferenced, Identifiable {
 
+    public final static String PSEUDOGENE = "pseudogene";
+    public final static String PROTEIN_CODING = "protein_coding";
+    
 	/**
 	 * @return agreed gene name used for convenience in identifying it
 	 */
@@ -69,8 +72,12 @@ public interface Gene extends AnnotatedGene, Locatable, CrossReferenced, Identif
 	public String getDescription();
 	
 	/**
-	 * @return true if gene is a pseudogene
+	 * @return type of gene
 	 */
-	public boolean isPseudogene();
+	public String getBiotype();
+	
+	public default boolean isPseudo() {
+	    return PSEUDOGENE.equals(getBiotype());
+	}
 
 }

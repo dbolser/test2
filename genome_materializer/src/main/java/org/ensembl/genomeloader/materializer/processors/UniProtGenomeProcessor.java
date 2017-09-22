@@ -94,7 +94,7 @@ public class UniProtGenomeProcessor implements GenomeProcessor {
             getLog().debug(
                     "Hashing UniProt-less proteins by protein_id for component " + genomicComponent.getAccession());
             for (final Gene gene : genomicComponent.getGenes()) {
-                if (!gene.isPseudogene()) {
+                if (!gene.isPseudo()) {
                     for (final Protein protein : gene.getProteins()) {
                         // does it already have uniprot xrefs?
                         if (!ModelUtils.hasReferenceForType(protein, swType)

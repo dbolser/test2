@@ -52,7 +52,7 @@ public class GeneImpl extends AbstractModelComponent implements Gene {
 
 	private String uniprotKbAc;
 
-	private boolean pseudogene;
+	private String bioType;;
 
 	private AnnotatedGeneImpl annotatedGene = new AnnotatedGeneImpl();
 
@@ -142,14 +142,7 @@ public class GeneImpl extends AbstractModelComponent implements Gene {
 		return this.uniprotKbAc;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see org.ensembl.genomeloader.genomebuilder.Gene#isPseudogene()
-	 */
-	public boolean isPseudogene() {
-		return this.pseudogene;
-	}
+
 
 	/**
 	 * @param databaseReferences
@@ -179,14 +172,6 @@ public class GeneImpl extends AbstractModelComponent implements Gene {
 
 	public void setProteins(Set<Protein> proteins) {
 		this.proteins = proteins;
-	}
-
-	/**
-	 * @param pseudogene
-	 *            true if gene is a pseudogene
-	 */
-	public void setPseudogene(boolean pseudogene) {
-		this.pseudogene = pseudogene;
 	}
 
 	public void setUniprotKbAc(String uniprotKbAc) {
@@ -264,7 +249,16 @@ public class GeneImpl extends AbstractModelComponent implements Gene {
 	public void setDescription(String description) {
 		this.description = description;
 	}
+
+    @Override
+    public String getBiotype() {
+        return this.bioType;
+    }
 	
+    public void setBiotype(String biotype) {
+        this.bioType = biotype;
+    }
+    
 	
 	
 }

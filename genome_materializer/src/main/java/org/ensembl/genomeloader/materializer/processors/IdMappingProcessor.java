@@ -76,7 +76,7 @@ public class IdMappingProcessor implements GenomeProcessor {
             Map<String, Integer> mapped) {
         String key = id.getClass().getSimpleName();
         if (Gene.class.isAssignableFrom(id.getClass())) {
-            if (((Gene) id).isPseudogene()) {
+            if (((Gene) id).isPseudo()) {
                 key += "_pseudo";
             }
         }

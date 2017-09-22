@@ -156,7 +156,11 @@ public class GeneFeatureParser extends CdsFeatureParser {
 					ProteinImpl protein = new ProteinImpl();
 					protein.setPseudo(qualifiers.containsKey("pseudo")||isFrameshift);
 					gene.addProtein(protein);
-					gene.setPseudogene(protein.isPseudo());
+					if(protein.isPseudo()) {
+					    gene.setBiotype("pseudogene");
+					} else {
+					    gene.setBiotype("protein_coding");
+					}
 					TranscriptImpl transcript = new TranscriptImpl();
 					protein.addTranscript(transcript);
 					transcript.addProtein(protein);

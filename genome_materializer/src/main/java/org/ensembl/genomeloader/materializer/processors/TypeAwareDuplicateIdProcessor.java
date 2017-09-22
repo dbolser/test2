@@ -21,6 +21,7 @@ import java.util.Set;
 
 import org.ensembl.genomeloader.materializer.DuplicateIdException;
 import org.ensembl.genomeloader.materializer.EnaGenomeConfig;
+import org.ensembl.genomeloader.model.Gene;
 import org.ensembl.genomeloader.model.Genome;
 import org.ensembl.genomeloader.model.Identifiable;
 import org.ensembl.genomeloader.model.Protein;
@@ -85,7 +86,7 @@ public class TypeAwareDuplicateIdProcessor extends DuplicateIdProcessor {
             return true;
         }
         // allow pseudogenes
-        if (GeneImpl.class.isAssignableFrom(id.getClass()) && ((GeneImpl) id).isPseudogene()) {
+        if (GeneImpl.class.isAssignableFrom(id.getClass()) && ((GeneImpl) id).isPseudo()) {
             return true;
         }
         // allow pseudo-proteins

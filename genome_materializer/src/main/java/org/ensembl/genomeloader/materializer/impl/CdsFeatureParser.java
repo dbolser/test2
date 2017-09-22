@@ -151,7 +151,11 @@ public class CdsFeatureParser extends XmlEnaFeatureParser {
 		boolean isFrameshift = hasNote(qualifiers,"contains frameshift") || hasNote(qualifiers,".*sequencing error.*");
 		protein.setPseudo(qualifiers.containsKey("pseudo") || qualifiers.containsKey("pseudogene") || isFrameshift);
 		gene.addProtein(protein);
-		gene.setPseudogene(protein.isPseudo());
+        if(protein.isPseudo()) {
+            gene.setBiotype("pseudogene");
+        } else {
+            gene.setBiotype("protein_coding");
+        }
 		TranscriptImpl transcript = new TranscriptImpl();
 		protein.addTranscript(transcript);
 		transcript.addProtein(protein);
