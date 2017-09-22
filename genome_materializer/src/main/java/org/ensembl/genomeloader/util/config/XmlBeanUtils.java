@@ -98,7 +98,7 @@ public class XmlBeanUtils {
 				node = set.item(i);
 				if (node != null) {
 					if (objDes.containsKey(node.getNodeName())) {
-						map.put(node.getNodeName(), node.getTextContent());
+						map.put(node.getNodeName(), node.getFirstChild().getNodeValue());
 					} else {
 						throw new ConfigException("Unknown element "
 								+ node.getNodeName() + " in configuration file");
