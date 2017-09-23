@@ -29,8 +29,9 @@ use warnings;
 use strict;
 use Bio::EnsEMBL::RepeatConsensus;
 use Bio::EnsEMBL::RepeatFeature;
+use Bio::EnsEMBL::GenomeLoader::AnalysisFinder qw/get_analysis_by_name/;
 use Data::Dumper;
-use base qw(GenomeLoader::FeatureLoader);
+use base qw(Bio::EnsEMBL::GenomeLoader::FeatureLoader);
 
 sub new {
   my $caller = shift;
@@ -38,6 +39,7 @@ sub new {
   my $self   = $class->SUPER::new(@_);
   $self->{aa}  = $self->dba()->get_AnalysisAdaptor();
   $self->{rfa} = $self->dba()->get_RepeatFeatureAdaptor();
+  $self->{rca} = $self->dba()->get_RepeatConsensusAdaptor();
   return $self;
 }
 
@@ -53,17 +55,18 @@ sub load_feature {
   my $type;
   eval {
     $type =
-      $self->analysis_finder()
-      ->get_analysis_by_name( $analysis, "repeat" );
+      get_analysis_by_name( $analysis, "repeat" );
   };
-  if ($@) {
+  if ($@ || !defined $type) {
     $self->log()
       ->debug(
        "Could not find repeat type with name $name - using ena_repeat");
     $type =
-      $self->analysis_finder()
-      ->get_analysis_by_name( "repeat", "repeat" );
+      get_analysis_by_name( "repeat", "repeat" );
   }
+
+ # set a default consensus
+  $irepeatUnit->{repeatConsensus} ||= 'N';
 
   my $econsensus =
     Bio::EnsEMBL::RepeatConsensus->new(
@@ -72,6 +75,9 @@ sub load_feature {
                    -REPEAT_CLASS     => $irepeatUnit->{repeatClass},
                    -REPEAT_CONSENSUS => $irepeatUnit->{repeatConsensus},
                    -REPEAT_TYPE      => $irepeatUnit->{repeatType} );
+  $self->{rca}->store($econsensus);                   
+  
+                   
 # store analysis track if not yet stored (not necessary for other features)
   if ( !$type->dbID() ) {
     $self->{aa}->store($type);

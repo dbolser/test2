@@ -115,13 +115,13 @@ sub log {
 }
 
 sub get_loader {
-  my ( $self, $name, $dba ) = @_;
+  my ( $self, $name ) = @_;
   my $loader = $self->{loaders}->{$name};
   if ( !defined $loader ) {
     my $loader_name = $loader_names->{$name};
     croak "Could not find loader for $name" unless defined $loader_name;
     inject($loader_name);
-    $loader = $loader_name->new( -DBA => $dba );
+    $loader = $loader_name->new( -DBA => $self->dba() );
     $self->{loaders}->{$name} = $loader;
   }
   return $loader;

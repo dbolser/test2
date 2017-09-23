@@ -165,48 +165,53 @@ sub load_features {
   $self->log()
     ->info( "Finished genes for component " . $component->{accession} );
 
-  #  # Store all types of repeat feature.
-  #  $self->log()
-  #    ->info(
-  #         "Storing repeat features for component " . $icomponent->{id} );
-  #  $self->store_repeatfeatures( $icomponent->{repeatfeatures},
-  #                               $icomponent->{slice} );
-  #
-  #  # Store simple features.
-  #  $self->log()
-  #    ->info(
-  #         "Storing simple features for component " . $icomponent->{id} );
-  #  $self->store_simplefeatures( $icomponent->{simplefeatures},
-  #                               $icomponent->{slice} );
+  $self->log()
+    ->info( "Storing RNA genes for component " . $component->{accession} );
+  my $hash2 = $self->store_genes( $component->{rnagenes}, $component->{slice} );
+  $self->log()
+    ->info( "Finished RNA genes for component " . $component->{accession} );
 
-  return $hash;
+  # Store all types of repeat feature.
+  $self->log()
+    ->info("Storing repeat features for component " . $component->{accession} );
+  $self->store_repeatfeatures( $component->{repeats}, $component->{slice} );
+
+  # Store simple features.
+  $self->log()
+    ->info("Storing simple features for component " . $component->{accession} );
+  $self->store_simplefeatures( $component->{features}, $component->{slice} );
+
+  #return [@$hash, @$hash2];
 } ## end sub load_features
 
 sub store_repeatfeatures {
   my ( $self, $irepeatfeatures, $slice ) = @_;
-  my $cnt = 0;
+  my $cnt    = 0;
+  my $loader = $self->get_loader("repeatfeature");
   foreach my $irepeatfeature ( @{$irepeatfeatures} ) {
-    $self->{plugins}->get("repeatfeature")
-      ->load_feature( $irepeatfeature, $slice );
+
+    $loader->load_feature( $irepeatfeature, $slice );
     if ( ( $cnt++ % $batchN ) == 0 ) {
       flush_session( $self->dba() );
     }
   }
+  $self->log()->info("Stored $cnt repeat features");
   flush_session( $self->dba() );
   return;
 }
 
 sub store_simplefeatures {
   my ( $self, $isimplefeatures, $slice ) = @_;
-  my $sfa = $self->dba()->get_SimpleFeatureAdaptor();
-  my $cnt = 0;
+  my $sfa    = $self->dba()->get_SimpleFeatureAdaptor();
+  my $cnt    = 0;
+  my $loader = $self->get_loader("simplefeature");
   foreach my $isimplefeature ( @{$isimplefeatures} ) {
-    $self->{plugins}->get("simplefeature")
-      ->load_feature( $isimplefeature, $slice );
+    $loader->load_feature( $isimplefeature, $slice );
     if ( ( $cnt++ % $batchN ) == 0 ) {
       flush_session( $self->dba() );
     }
   }
+  $self->log()->info("Stored $cnt simple features");
   flush_session( $self->dba() );
   return;
 }
@@ -223,7 +228,7 @@ sub store_genes {
   $self->log()->info( "Processing " . scalar @$igenes . " genes" );
   foreach my $igene (@$igenes) {
     $geneN++;
-    my $loader = $self->get_loader( $igene->{biotype}, $self->dba() );
+    my $loader = $self->get_loader( $igene->{biotype} );
     if ($loader) {
       $self->log->debug( "Loading gene with loader " . ref $loader );
 

@@ -28,7 +28,8 @@ package Bio::EnsEMBL::GenomeLoader::FeatureLoader::SimpleFeatureLoader;
 use warnings;
 use strict;
 use Bio::EnsEMBL::SimpleFeature;
-use base qw(GenomeLoader::FeatureLoader);
+use Bio::EnsEMBL::GenomeLoader::AnalysisFinder qw/get_analysis_by_name/;
+use base qw(Bio::EnsEMBL::GenomeLoader::FeatureLoader);
 
 sub new {
   my $caller = shift;
@@ -46,8 +47,7 @@ sub load_feature {
 
   my $name = lc( $isimplefeature->{analysis} );
   $name =~ s/[^0-9a-z_]+//g;
-  my $eanalysis =
-    $self->analysis_finder()->get_analysis_by_name( $name, 'feature' );
+  my $eanalysis = get_analysis_by_name( $name, 'feature' );
 
   my $ilocation = $isimplefeature->{location};
   my $label     = $isimplefeature->{displayLabel};

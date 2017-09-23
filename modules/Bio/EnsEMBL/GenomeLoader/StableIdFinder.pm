@@ -58,7 +58,7 @@ my $get_parent_id = sub {
 my $id_search = {
            NAMES()->{GENE} => [ $get_identifying_id, $get_public_id ],
            NAMES()->{TRANSCRIPT} =>
-             [ $get_identifying_id, $get_public_id ],
+             [ $get_identifying_id, $get_public_id, $get_parent_id ],
            NAMES()->{TRANSLATION} =>
              [ $get_identifying_id, $get_public_id, $get_parent_id ],
            NAMES()->{EXON} => [ $get_parent_id ] };

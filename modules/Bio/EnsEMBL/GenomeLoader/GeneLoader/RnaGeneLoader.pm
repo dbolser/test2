@@ -100,21 +100,19 @@ sub load_gene {
   # Create transcripts.
   my $transcriptN = 0;
   foreach my $itranscript ( @{ $igene->{transcripts} } ) {
-    foreach my $itranscript_location ( @{ $itranscript->{locations} } )
-    {
-
+    
       # Create exons
       my @eexons;
       my $seqedits = [];
       my $exonN    = 0;
 
-      my $inserts = $itranscript_location->{insertions};
+      my $inserts = $itranscript->{location}->{insertions};
 
       my $ilocations;
-      if ( defined $itranscript_location->{sublocations} &&
-           @{ $itranscript_location->{sublocations} } > 0 )
+      if ( defined $itranscript->{location}->{sublocations} &&
+           @{ $itranscript->{location}->{sublocations} } > 0 )
       {
-        $ilocations = $itranscript_location->{sublocations};
+        $ilocations = $itranscript->{location}->{sublocations};
 
 # Sort by Integr8 (EMBL) rank.
 # This means that exons are ordered by location ascending value, regardless of strand.
@@ -124,7 +122,7 @@ sub load_gene {
         $ilocations = \@sorted;
       }
       else {
-        $ilocations = [$itranscript_location];
+        $ilocations = [$itranscript->{location}];
       }
       my $offset = 0;
       foreach my $itranscript_location ( @{$ilocations} ) {
@@ -238,7 +236,6 @@ sub load_gene {
 # for all ncRNAs should be:   1796 | snoRNA11        | RF00614       |
 # Add transcript to gene.
       $egene->add_Transcript($etranscript);
-    } ## end foreach my $itranscript_location...
   } ## end foreach my $itranscript ( @...)
 
   $self->set_rna_display_xref( $egene, $igene );

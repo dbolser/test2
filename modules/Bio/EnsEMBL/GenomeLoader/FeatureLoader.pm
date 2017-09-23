@@ -29,7 +29,7 @@ use warnings;
 use strict;
 use Carp;
 use Data::Dumper;
-use base qw(GenomeLoader::BaseLoader);
+use base qw(Bio::EnsEMBL::GenomeLoader::BaseLoader);
 
 sub new {
   my $caller = shift;
