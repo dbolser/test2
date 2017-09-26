@@ -37,131 +37,133 @@ import org.ensembl.genomeloader.model.GenomicComponent;
  */
 public class ComponentSortingProcessor implements GenomeProcessor {
 
-	public static enum ComponentSorter {
-		AUTOMATIC("automatic", automaticComponentComparator), ALPHABETICAL(
-				"alphabetical", alphabeticalComponentComparator), NUMERICAL(
-				"numerical", numericalComponentComparator), LENGTH("length",
-				lengthComponentComparator);
-		final Comparator<GenomicComponent> comparator;
-		private final String name;
+    public static enum ComponentSorter {
+        AUTOMATIC("automatic", automaticComponentComparator), ALPHABETICAL("alphabetical",
+                alphabeticalComponentComparator), NUMERICAL("numerical",
+                        numericalComponentComparator), LENGTH("length", lengthComponentComparator);
+        final Comparator<GenomicComponent> comparator;
+        private final String name;
 
-		private ComponentSorter(String name,
-				Comparator<GenomicComponent> comparator) {
-			this.comparator = comparator;
-			this.name = name;
-		}
+        private ComponentSorter(String name, Comparator<GenomicComponent> comparator) {
+            this.comparator = comparator;
+            this.name = name;
+        }
 
-		public static ComponentSorter getComponentSorter(String name) {
-			ComponentSorter cs = null;
-			for (final ComponentSorter c : ComponentSorter.values()) {
-				if (c.name.equalsIgnoreCase(name)) {
-					cs = c;
-					break;
-				}
-			}
-			return cs;
-		}
-	}
+        public static ComponentSorter getComponentSorter(String name) {
+            ComponentSorter cs = null;
+            for (final ComponentSorter c : ComponentSorter.values()) {
+                if (c.name.equalsIgnoreCase(name)) {
+                    cs = c;
+                    break;
+                }
+            }
+            return cs;
+        }
+    }
 
-	public static Comparator<GenomicComponent> alphabeticalComponentComparator = new Comparator<GenomicComponent>() {
-		public int compare(GenomicComponent o1, GenomicComponent o2) {
-			return o1.getMetaData().getName()
-					.compareToIgnoreCase(o2.getMetaData().getName());
-		}
-	};
+    public static Comparator<GenomicComponent> alphabeticalComponentComparator = new Comparator<GenomicComponent>() {
+        public int compare(GenomicComponent o1, GenomicComponent o2) {
+            return o1.getMetaData().getName().compareToIgnoreCase(o2.getMetaData().getName());
+        }
+    };
 
-	public static Comparator<GenomicComponent> numericalComponentComparator = new Comparator<GenomicComponent>() {
-		public int compare(GenomicComponent o1, GenomicComponent o2) {
-			return Integer.valueOf(o1.getMetaData().getName()).compareTo(
-					Integer.valueOf(o2.getMetaData().getName()));
-		}
-	};
+    public static Comparator<GenomicComponent> numericalComponentComparator = new Comparator<GenomicComponent>() {
+        public int compare(GenomicComponent o1, GenomicComponent o2) {
+            return Integer.valueOf(o1.getMetaData().getName()).compareTo(Integer.valueOf(o2.getMetaData().getName()));
+        }
+    };
 
-	public static Comparator<GenomicComponent> lengthComponentComparator = new Comparator<GenomicComponent>() {
-		public int compare(GenomicComponent o1, GenomicComponent o2) {
-			return Integer.valueOf(o1.getMetaData().getLength()).compareTo(
-					Integer.valueOf(o2.getMetaData().getLength()));
-		}
-	};
+    public static Comparator<GenomicComponent> lengthComponentComparator = new Comparator<GenomicComponent>() {
+        public int compare(GenomicComponent o1, GenomicComponent o2) {
+            return Integer.valueOf(o1.getMetaData().getLength())
+                    .compareTo(Integer.valueOf(o2.getMetaData().getLength()));
+        }
+    };
 
-	public static Comparator<GenomicComponent> automaticComponentComparator = new Comparator<GenomicComponent>() {
-		public int compare(GenomicComponent o1, GenomicComponent o2) {
-			int cmp = 0;
-			final GenomicComponentType t1 = o1.getMetaData().getComponentType();
-			final GenomicComponentType t2 = o2.getMetaData().getComponentType();
-			final String n1 = o1.getMetaData().getName();
-			final String n2 = o2.getMetaData().getName();
-			if (t1.equals(t2)) {
-				// is one of them a mitochondrion?
-				if (n1.equals(GenomicComponentDescriptionHandler.MITOCHONDRION)
-						&& n2.equals(GenomicComponentDescriptionHandler.PLASTID)) {
-					cmp = n2.equals(GenomicComponentDescriptionHandler.PLASTID) ? 1
-							: -1;
-				} else if (n2
-						.equals(GenomicComponentDescriptionHandler.MITOCHONDRION)) {
-					cmp = n1.equals(GenomicComponentDescriptionHandler.PLASTID) ? -1
-							: 1;
-				} else if (n1
-						.equals(GenomicComponentDescriptionHandler.PLASTID)) {
-					cmp = n2.equals(GenomicComponentDescriptionHandler.MITOCHONDRION) ? -1
-							: 1;
-				} else if (n2
-						.equals(GenomicComponentDescriptionHandler.PLASTID)) {
-					cmp = n2.equals(GenomicComponentDescriptionHandler.MITOCHONDRION) ? 1
-							: -1;
-				} else if (t1.equals(GenomicComponentType.CHROMOSOME)
-						&& (StringUtils.isNumeric(n1) && StringUtils
-								.isNumeric(n2))) {
-					cmp = Integer.valueOf(n1).compareTo(Integer.valueOf(n2));
-				} else {
-					return n1.compareToIgnoreCase(n2);
-				}
-			} else if (t1.equals(GenomicComponentType.CHROMOSOME)) {
-				// trumps t2
-				cmp = 1;
-			} else if (t2.equals(GenomicComponentType.CHROMOSOME)) {
-				// trumps t1
-				cmp = -1;
-			} else if (t1.equals(GenomicComponentType.PLASMID)) {
-				cmp = 1;
-				// trumps t2
-			} else if (t2.equals(GenomicComponentType.PLASMID)) {
-				// trumps t1
-				cmp = -1;
-			} else {
-				return n1.compareToIgnoreCase(n2);
-			}
-			return cmp;
-		}
-	};
+    public static Comparator<GenomicComponent> automaticComponentComparator = new Comparator<GenomicComponent>() {
+        public int compare(GenomicComponent o1, GenomicComponent o2) {
+            int cmp = 0;
+            final GenomicComponentType t1 = o1.getMetaData().getComponentType();
+            final GenomicComponentType t2 = o2.getMetaData().getComponentType();
+            final String n1 = o1.getMetaData().getName();
+            final String n2 = o2.getMetaData().getName();
+            if (t1.equals(t2)) {
+                // is one of them a mitochondrion?
+                if (n1.equals(GenomicComponentDescriptionHandler.MITOCHONDRION)
+                        && n2.equals(GenomicComponentDescriptionHandler.PLASTID)) {
+                    cmp = n2.equals(GenomicComponentDescriptionHandler.PLASTID) ? 1 : -1;
+                } else if (n2.equals(GenomicComponentDescriptionHandler.MITOCHONDRION)) {
+                    cmp = n1.equals(GenomicComponentDescriptionHandler.PLASTID) ? -1 : 1;
+                } else if (n1.equals(GenomicComponentDescriptionHandler.PLASTID)) {
+                    cmp = n2.equals(GenomicComponentDescriptionHandler.MITOCHONDRION) ? -1 : 1;
+                } else if (n2.equals(GenomicComponentDescriptionHandler.PLASTID)) {
+                    cmp = n2.equals(GenomicComponentDescriptionHandler.MITOCHONDRION) ? 1 : -1;
+                } else if (t1.equals(GenomicComponentType.CHROMOSOME)
+                        && (StringUtils.isNumeric(n1) && StringUtils.isNumeric(n2))) {
+                    cmp = Integer.valueOf(n1).compareTo(Integer.valueOf(n2));
+                } else {
+                    return n1.compareToIgnoreCase(n2);
+                }
+            } else if (t1.equals(GenomicComponentType.CHROMOSOME)) {
+                // trumps t2
+                cmp = 1;
+            } else if (t2.equals(GenomicComponentType.CHROMOSOME)) {
+                // trumps t1
+                cmp = -1;
+            } else if (t1.equals(GenomicComponentType.PLASMID)) {
+                cmp = 1;
+                // trumps t2
+            } else if (t2.equals(GenomicComponentType.PLASMID)) {
+                // trumps t1
+                cmp = -1;
+            } else {
+                return n1.compareToIgnoreCase(n2);
+            }
+            return cmp;
+        }
+    };
 
-	private Log log;
+    private Log log;
 
-	protected Log getLog() {
-		if (log == null) {
-			log = LogFactory.getLog(this.getClass());
-		}
-		return log;
-	}
+    protected Log getLog() {
+        if (log == null) {
+            log = LogFactory.getLog(this.getClass());
+        }
+        return log;
+    }
 
-	private final EnaGenomeConfig config;
+    private final EnaGenomeConfig config;
 
-	public ComponentSortingProcessor(EnaGenomeConfig config) {
-		this.config = config;
-	}
+    public ComponentSortingProcessor(EnaGenomeConfig config) {
+        this.config = config;
+    }
 
-	public void processGenome(Genome genome) {
-		Comparator<GenomicComponent> gc = null;
-		if (!StringUtils.isEmpty(config.getComponentSorter())) {
-			final ComponentSorter cs = ComponentSorter.getComponentSorter(config.getComponentSorter());
-			if(cs==null) {
-				throw new EnaParsingException("Could not find component sorter of type "+config.getComponentSorter());
-			}
-			gc = cs.comparator;
-		}
-		if(gc==null) {
-			gc = automaticComponentComparator;
-		} 
-		Collections.sort(genome.getGenomicComponents(), gc);
-	}
+    public void processGenome(Genome genome) {
+        Comparator<GenomicComponent> gc = null;
+        if (!StringUtils.isEmpty(config.getComponentSorter())) {
+            final ComponentSorter cs = ComponentSorter.getComponentSorter(config.getComponentSorter());
+            if (cs == null) {
+                throw new EnaParsingException("Could not find component sorter of type " + config.getComponentSorter());
+            }
+            gc = cs.comparator;
+        }
+        if (gc == null) {
+            gc = automaticComponentComparator;
+        }
+        Collections.sort(genome.getGenomicComponents(), gc);
+        // attempt to set rank for chromosomes etc.
+        int rank = 0;
+        for (GenomicComponent c : genome.getGenomicComponents()) {
+            if (c.getMetaData().getComponentType() != GenomicComponentType.SUPERCONTIG
+                    || c.getMetaData().getComponentType() != GenomicComponentType.CONTIG) {
+                if (StringUtils.isNumeric(c.getMetaData().getName())) {
+                    Integer kRank = Integer.valueOf(c.getMetaData().getName());
+                    c.getMetaData().setKaryotypeRank(kRank);
+                    rank = Math.max(rank, kRank);
+                } else {
+                    c.getMetaData().setKaryotypeRank(++rank);
+                }
+            }
+        }
+    }
 }

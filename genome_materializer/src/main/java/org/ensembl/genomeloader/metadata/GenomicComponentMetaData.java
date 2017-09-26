@@ -115,6 +115,8 @@ public class GenomicComponentMetaData {
 
     private String versionedAccession;
     
+    private Integer karyotypeRank;
+    
     @JsonIgnore
     private GenomeMetaData genomeMetaData;
 
@@ -269,6 +271,14 @@ public class GenomicComponentMetaData {
 
     public GenomeMetaData getGenomeMetaData() {
         return genomeMetaData;
+    }
+
+    public Integer getKaryotypeRank() {
+        return karyotypeRank;
+    }
+
+    public void setKaryotypeRank(Integer rank) {
+        this.karyotypeRank = rank;
     }
 
 }
