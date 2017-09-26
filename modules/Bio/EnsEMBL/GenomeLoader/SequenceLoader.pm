@@ -150,7 +150,7 @@ sub load_sequence {
         Bio::EnsEMBL::Attribute->new( -CODE        => 'codon_table',
                                       -NAME        => 'Codon table ID',
                                       -DESCRIPTION => 'Codon table ID',
-                                      -VALUE       => $icomponent->{geneticCode}
+                                      -VALUE       => $icomponent->{metaData}{geneticCode}
         );
     }
   } ## end if ( $icomponent->{topLevel...})
@@ -165,11 +165,11 @@ sub load_sequence {
         -NAME => 'Rank in the karyotype',
         -DESCRIPTION =>
 'For a given seq_region, if it is part of the species karyotype, will indicate its rank',
-        -VALUE => $icomponent->{rank} ) );
+        -VALUE => $icomponent->{metaData}{karyotypeRank} ) );
   }
 
   # Add circular sequence attribute to top-level seq_region.
-  if ( $icomponent->{circular} ) {
+  if ( $icomponent->{metaData}{circular} ) {
     push( @attributes,
           Bio::EnsEMBL::Attribute->new( -CODE        => 'circular_seq',
                                         -NAME        => 'Circular sequence',

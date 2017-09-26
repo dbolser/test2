@@ -51,8 +51,8 @@ sub load_assembly {
   my $csa = $self->dba()->get_CoordSystemAdaptor;
 
   $self->log()->info( "Loading assembly for " . $genome->{name} );
-
-  # 1. iterate over components and store them
+  
+  # iterate over components and store them
   my $components_by_acc = {};
   for my $component ( @{ $genome->{genomicComponents} } ) {
 
@@ -72,7 +72,7 @@ sub load_assembly {
     }
     flush_session( $self->dba() );
   }
-  # 2. now store assembly
+  # now store assembly
   my $mappings  = {};
   my $map_pairs = {};
   my $cs        = {};
