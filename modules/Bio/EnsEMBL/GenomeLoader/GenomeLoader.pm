@@ -33,6 +33,7 @@ use Data::Dumper;
 use Bio::EnsEMBL::GenomeLoader::Constants qw(BIOTYPES CS);
 use Bio::EnsEMBL::GenomeLoader::Utils qw(start_session flush_session);
 use Bio::EnsEMBL::GenomeLoader::ComponentLoader;
+use LWP::UserAgent;
 use Digest::MD5;
 use List::MoreUtils qw(uniq);
 use base qw(Bio::EnsEMBL::GenomeLoader::BaseLoader);
@@ -76,11 +77,7 @@ sub load_genome {
   }
 
   my $ctx = Digest::MD5->new();
-#  if ( $self->config()->{addComponents} == 1 ) {
-#    $ctx->add(
-#        $self->dba()->get_MetaContainer()->single_value_by_key('genebuild.hash')
-#    );
-#  }
+
   $ctx->add( sort @hashes );
   $genome->{metaData}->{genome_hash} = $ctx->hexdigest();
 
@@ -179,6 +176,10 @@ sub load_metadata {
   $self->log()->debug("Setting meta species.taxonomy_id");
   $meta->store_key_value( 'species.taxonomy_id', $genome_metadata->{taxId} );
 
+  if ( defined $self->taxonomy_dba() ) {
+    $self->set_wikipedia_info($genome_metadata);
+  }
+
   # EG Division
   $self->log()->debug("Setting meta species.division");
   $meta->store_key_value( 'species.division', $genome_metadata->{division} );
@@ -191,6 +192,40 @@ sub load_metadata {
   flush_session( $self->dba() );
   return;
 } ## end sub load_metadata
+
+sub set_wikipedia_info {
+  my ( $self, $genome_metadata ) = @_;
+  my $meta = $self->dba()->get_MetaContainer();
+
+  my $taxid = $genome_metadata->{taxId};
+
+  my $node_adaptor = $self->taxonomy_dba()->get_TaxonomyNodeAdaptor();
+  my $node         = $node_adaptor->fetch_by_taxon_id($taxid);
+  if ( !defined $node ) {
+    $self->log()->warning("Taxonomy ID $taxid not found in taxonomy database");
+    return;
+  }
+
+  my $species = $node_adaptor->fetch_ancestor_by_rank( $node, "species" );
+
+  if ( !defined $species ) {
+    $self->log()->warning("Species not found for taxon node $taxid");
+    return;
+  }
+
+  $self->log()->info( "Found species " . $species->name() );
+  $meta->store_key_value( 'species.species_name',        $species->name() );
+  $meta->store_key_value( 'species.species_taxonomy_id', $species->taxon_id() );
+  ( my $wiki_url = 'http://en.wikipedia.org/wiki/' . $species->name() ) =~
+    s/ +/_/g;
+  my $ua = LWP::UserAgent->new();
+  if ( $ua->head($wiki_url)->is_success ) {
+    $self->log()->info("Inserting wikipedia link to  $wiki_url");
+    $meta->store_key_value( 'species.wikipedia_url',  $wiki_url );
+    $meta->store_key_value( 'species.wikipedia_name', $species->name() );
+  }
+  return;
+} ## end sub set_wikipedia_info
 
 sub set_sample_data {
   my ($self) = @_;
@@ -247,86 +282,34 @@ sub set_sample_data {
   $self->log()->info("Completed storing sample data");
   return;
 } ## end sub set_sample_data
-#
-#sub load_genome {
-#  my ( $self, $genome ) = @_;
-#  # 1. store metadata
-#  start_session( $self->dba() );
-#  $self->load_metadata($genome);
-##  $genome_metadata->{superregnum} = $genome->{superregnum};
-##  # 2. store components
-##  my $component_loader =
-##    GenomeLoader::ComponentLoader->new(
-##                                    dba             => $self->dba(),
-##                                    genome_metadata => $genome_metadata,
-##                                    log             => $self->log(),
-##                                    config          => $self->config(),
-##                                    plugins         => $self->plugins()
-##    );
-##
-##  # 2. store assembly
-##  $component_loader->load_assembly( $genome->{components} );
-##
-##  # 3. store features
-##  my @hashes = ();
-##  for my $component ( @{ $genome->{components} } ) {
-##    if ( $component->{topLevel} ) {
-##      $self->log()
-##        ->info( "Loading component " . $component->{accession} );
-##      my $chashes =
-##        $component_loader->load_features( $component,
-##                                          $genome_metadata );
-##      flush_session( $self->dba(), $self->config() );
-##      if ( defined $chashes && scalar(@$chashes) > 0 ) {
-##        @hashes = ( @hashes, @$chashes );
-##      }
-##    }
-##  }
-##  flush_session( $self->dba(), $self->config() );
-##
-##  my $ctx = Digest::MD5->new();
-##  if ( $self->config()->{addComponents} == 1 ) {
-##    $ctx->add( $self->dba()->get_MetaContainer()
-##               ->single_value_by_key('genebuild.hash') );
-##  }
-##  $ctx->add( sort @hashes );
-##  $genome_metadata->{genome_hash} = $ctx->hexdigest();
-##
-##  # 4. post-process
-##  $self->post_process_genome($genome_metadata);
-#  flush_session( $self->dba(), $self->config() );
-#
-#  return;
-#} ## end sub load_genome
-#
-#sub post_process_genome {
-#  my ( $self, $genome_metadata ) = @_;
-#  $self->log()->info("Post-processing genome");
-#  if ( $self->config()->{addComponents} != 1 ) {
-#    $self->set_sample_data();
-#    # set repeat.analysis
-#    $self->log()->debug("Storing repeat.analysis entries");
-#    for my $anal (
-#      @{$self->dba()->dbc()->sql_helper()->execute_simple(
-#          -SQL => q/
-# 	select distinct(logic_name) from analysis join repeat_feature using (analysis_id)
-# 	join seq_region using (seq_region_id)
-# 	join coord_system using (coord_system_id)
-# 	where species_id=?
-# 	/,
-#          -PARAMS => [ $self->dba()->species_id() ] ) } )
-#    {
-#      $self->dba()->get_MetaContainer()
-#        ->store_key_value( 'repeat.analysis', lc($anal) );
-#    }
-#  }
-#  # set checksum
-#  $self->log()->debug("Storing genebuild hash");
-#  $self->dba()->get_MetaContainer()->store_key_value( 'genebuild.hash',
-#                                      $genome_metadata->{genome_hash} );
-#  $self->log()->info("Completed post-processing genome");
-#  return;
-#} ## end sub post_process_genome
+
+sub post_process_genome {
+  my ( $self, $genome_metadata ) = @_;
+  $self->log()->info("Post-processing genome");
+  $self->set_sample_data();
+  # set repeat.analysis
+  $self->log()->debug("Storing repeat.analysis entries");
+  for my $anal (
+    @{$self->dba()->dbc()->sql_helper()->execute_simple(
+        -SQL => q/
+ 	select distinct(logic_name) from analysis join repeat_feature using (analysis_id)
+ 	join seq_region using (seq_region_id)
+ 	join coord_system using (coord_system_id)
+ 	where species_id=?
+ 	/,
+        -PARAMS => [ $self->dba()->species_id() ] ) } )
+  {
+    $self->dba()->get_MetaContainer()
+      ->store_key_value( 'repeat.analysis', lc($anal) );
+  }
+  # set interpro metadata
+  # set checksum
+  $self->log()->debug("Storing genebuild hash");
+  $self->dba()->get_MetaContainer()
+    ->store_key_value( 'genebuild.hash', $genome_metadata->{genome_hash} );
+  $self->log()->info("Completed post-processing genome");
+  return;
+} ## end sub post_process_genome
 
 1;
 __END__

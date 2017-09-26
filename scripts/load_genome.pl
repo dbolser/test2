@@ -24,9 +24,10 @@ use JSON;
 use File::Slurp qw/read_file/;
 use FindBin '$Bin';
 use Bio::EnsEMBL::GenomeLoader::GenomeLoader;
+use Bio::EnsEMBL::Taxonomy::DBSQL::TaxonomyDBAdaptor;
 
 my $cli_helper = Bio::EnsEMBL::Utils::CliHelper->new();
-my $optsd      = $cli_helper->get_dba_opts();
+my $optsd      = [@{$cli_helper->get_dba_opts()}, @{$cli_helper->get_dba_opts('tax_')}];
 push( @{$optsd}, "verbose|v" );
 push( @{$optsd}, "dump_file|f:s" );
 push( @{$optsd}, "genebuild:s" );
@@ -76,6 +77,12 @@ $genome->{metaData}{provider} ||= 'European Nucleotide Archive';
 $genome->{metaData}{providerUrl} ||= 'http://www.ebi.ac.uk/ena/data/view/'.$genome->{metaData}{id};
 
 my ($dba) = @{ $cli_helper->get_dbas_for_opts($opts) };
+my ($taxonomy_dba_args) = @{$cli_helper->get_dba_args_for_opts($opts, 1, 'tax_')};
+my $taxonomy_dba;
+if(defined $taxonomy_dba_args) {
+  $log->info("Connecting to taxonomy database");
+  $taxonomy_dba = Bio::EnsEMBL::Taxonomy::DBSQL::TaxonomyDBAdaptor->new(%$taxonomy_dba_args); 
+}
 
-my $loader = Bio::EnsEMBL::GenomeLoader::GenomeLoader->new(-DBA=>$dba);
+my $loader = Bio::EnsEMBL::GenomeLoader::GenomeLoader->new(-DBA=>$dba, -TAXONOMY_DBA=>$taxonomy_dba);
 $loader->load_genome($genome);
