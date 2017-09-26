@@ -486,10 +486,11 @@ sub store_proteins {
                                     $can_iprotein, ++$transcriptN );
     my $etranscript = $et->{transcript};
 
-    $etranscript->translation(
-                      $self->get_translation(
-                        $can_iprotein, $et->{eexons}, $etranscript, $itranscript
-                      ) );
+    if ( !$can_iprotein->{pseudo} ) {
+      $etranscript->translation(
+        $self->get_translation( $can_iprotein, $et->{eexons},
+                                $etranscript,  $itranscript ) );
+    }
 
     foreach my $iprotein (@iproteins) {
       if ( !$iprotein->{pseudo} ) {
@@ -541,8 +542,8 @@ sub get_cds_length {
 sub get_translation {
   my ( $self, $iprotein, $eexons, $etranscript, $itranscript ) = @_;
   $self->log()
-    ->debug(
-         "Getting translation for protein " . $iprotein->{identifyingId} . " (pseudo " . $iprotein->{pseudo} . ")" );
+    ->debug( "Getting translation for protein " . $iprotein->{identifyingId} .
+             " (pseudo " . $iprotein->{pseudo} . ")" );
 
   my $strand = $iprotein->{location}->{strand};
   my $frame  = $iprotein->{codonStart} - 1;
@@ -755,7 +756,7 @@ sub get_translation_attribs {
     push @attrs, $has_start_codon;
 
     # if bacterial, also has init met
-    if ( $self->is_prokaryote()==1) {
+    if ( $self->is_prokaryote() == 1 ) {
       push @attrs, $self->{attrs}{INIT_MET};
     }
   }
