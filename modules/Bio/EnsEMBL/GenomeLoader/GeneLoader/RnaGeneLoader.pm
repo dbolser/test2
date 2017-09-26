@@ -237,6 +237,9 @@ sub load_gene {
 # Add transcript to gene.
       $egene->add_Transcript($etranscript);
   } ## end foreach my $itranscript ( @...)
+  
+  my ($canonical_transcript) = sort {$b->length() <=> $a->length()} (@{$egene->get_all_Transcripts()});
+  $egene->canonical_transcript($canonical_transcript);
 
   $self->set_rna_display_xref( $egene, $igene );
 

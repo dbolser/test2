@@ -104,18 +104,18 @@ my $db_names = { 'prints'       => 'PRINTS',
                  'hmmpanther'   => 'PANTHER',
                  'pfam'         => 'Pfam',
                  'pirsf'        => 'PIRSF',
-                 'blastprodom ' => 'ProDom',
-                 'scanprosite'  => 'Prosite_patterns',
-                 'superfamily'  => 'Superfamily',
-                 'tigrfam'      => 'TIGRfam',
+                 'blastprodom'  => 'ProDom',
+                 'scanprosite'  => 'Prosite',
+                 'superfamily'  => 'ssf',
+                 'tigrfam'      => 'TIGRfams',
                  'ncoils'       => 'ncoils',
-                 'pfscan'       => 'Prosite_profiles',
+                 'pfscan'       => 'Prosite',
                  'tmhmm'        => 'Tmhmm',
                  'smart'        => 'Smart',
                  'signalp'      => 'SignalP',
                  'chainp'       => 'chainp',
                  'cdd'          => 'CDD',
-                 'seg'          => 'Seq' };
+                 'seg'          => 'Seg' };                
 
 my $anal_hash = {};
 

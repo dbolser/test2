@@ -301,7 +301,7 @@ sub set_display_xref {
   }
   else {
     $self->log()
-      ->warn(
+      ->debug(
            "Could not store display_xref as primary ID or display ID missing" );
   }
   return;

@@ -145,6 +145,8 @@ sub load_gene {
           $self->set_display_xref( {}, $t, $egene, ++$transcriptN );
         }
       }
+      my ($canonical_transcript) = sort {$b->length() <=> $a->length()} (@{$ts});
+      $egene->canonical_transcript($canonical_transcript);
       $self->dba()->get_GeneAdaptor->store( $egene, undef, 1 );
       my $translationCnt     = 0;
       my $translationFailCnt = 0;
@@ -191,6 +193,7 @@ sub load_gene {
                    $egene->dbID() );
       }
     };
+       
     if ($@) {
       croak( $self->store_gene_error_handler( $igene, $egene ) );
       exit;
@@ -970,7 +973,7 @@ sub check_exons {
          $eexons[ $i + 1 ]->start == 1 )
     {
       $self->log()
-        ->warn(
+        ->debug(
           'Exons ' . $eexons[$i]->start() . '-' . $eexons[$i]->end() . ':' .
             $eexons[$i]->strand() . ' and ' . $eexons[ $i + 1 ]->start() . '-' .
             $eexons[ $i + 1 ]->end() . ':' . $eexons[ $i + 1 ]->strand() .
@@ -979,14 +982,14 @@ sub check_exons {
         $eexons[$i]->end( $eexons[ $i + 1 ]->end() );
         $eexons[$i]->start( $eexons[$i]->start() );
         $self->log()
-          ->warn(
+          ->debug(
           "Merging exons together into reversed form: " . $eexons[$i]->start() .
             "-" . $eexons[$i]->end() );
         push @new_exons, $eexons[$i];
         $lastOk = 0;
       }
       else {
-        $self->log()->warn("Skipping...");
+        $self->log()->debug("Skipping...");
         @new_exons = ();
         last;
       }
@@ -996,7 +999,7 @@ sub check_exons {
         push @new_exons, $eexons[$i];
       }
       else {
-        $self->log->warn(
+        $self->log->debug(
            "Skipping exon " . $eexons[$i]->start() . "-" . $eexons[$i]->end() );
         $lastOk = 1;
       }

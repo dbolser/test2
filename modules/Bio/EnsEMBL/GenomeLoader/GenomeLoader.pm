@@ -33,9 +33,11 @@ use Data::Dumper;
 use Bio::EnsEMBL::GenomeLoader::Constants qw(BIOTYPES CS);
 use Bio::EnsEMBL::GenomeLoader::Utils qw(start_session flush_session);
 use Bio::EnsEMBL::GenomeLoader::ComponentLoader;
+use Bio::EnsEMBL::Hive::AnalysisJob;
 use LWP::UserAgent;
 use Digest::MD5;
 use List::MoreUtils qw(uniq);
+use File::Temp qw/tempdir/;
 use base qw(Bio::EnsEMBL::GenomeLoader::BaseLoader);
 
 sub new {
@@ -46,7 +48,7 @@ sub new {
 }
 
 sub load_genome {
-  my ( $self, $genome, $add ) = @_;
+  my ( $self, $genome ) = @_;
 
   if ( $self->dba()->dbc()->sql_helper()->execute_single_result(
                          -SQL => "select count(*) from meta where species_id=?",
@@ -58,9 +60,7 @@ sub load_genome {
 
   # 1. store metadata
   start_session( $self->dba() );
-  if ( !defined $add ) {
-    $self->load_metadata($genome);
-  }
+  $self->load_metadata($genome);
 
   # 2. store components
   my $component_loader =
@@ -80,6 +80,9 @@ sub load_genome {
 
   $ctx->add( sort @hashes );
   $genome->{metaData}->{genome_hash} = $ctx->hexdigest();
+
+  $self->update_statistics($genome);
+  $self->load_post_metadata($genome);
 
   return;
 } ## end sub load_genome
@@ -228,7 +231,7 @@ sub set_wikipedia_info {
 } ## end sub set_wikipedia_info
 
 sub set_sample_data {
-  my ($self) = @_;
+  my ( $self, $genome ) = @_;
   $self->log()->info("Storing sample data");
   my @genes =
     @{ $self->dba()->get_GeneAdaptor()
@@ -283,9 +286,8 @@ sub set_sample_data {
   return;
 } ## end sub set_sample_data
 
-sub post_process_genome {
-  my ( $self, $genome_metadata ) = @_;
-  $self->log()->info("Post-processing genome");
+sub load_post_metadata {
+  my ( $self, $genome ) = @_;
   $self->set_sample_data();
   # set repeat.analysis
   $self->log()->debug("Storing repeat.analysis entries");
@@ -303,13 +305,91 @@ sub post_process_genome {
       ->store_key_value( 'repeat.analysis', lc($anal) );
   }
   # set interpro metadata
+  if ( defined $genome->{metaData}{dbVersions}{interpro} ) {
+    $self->log()->debug("Storing InterPro version");
+    $self->dba()->get_MetaContainer()->store_key_value( 'interpro.version',
+                                    $genome->{metaData}{dbVersions}{interpro} );
+  }
+  while ( my ( $k, $v ) = each %{ $genome->{metaData}{dbVersions} } ) {
+    $self->log()->debug("Updating $k version");
+    $self->dba()->dbc()->sql_helper()->execute_update(
+                          -SQL => 'update analysis set db_version=? where db=?',
+                          -PARAMS => [ $v, $k ] );
+  }
   # set checksum
   $self->log()->debug("Storing genebuild hash");
   $self->dba()->get_MetaContainer()
-    ->store_key_value( 'genebuild.hash', $genome_metadata->{genome_hash} );
+    ->store_key_value( 'genebuild.hash', $genome->{metaData}->{genome_hash} );
   $self->log()->info("Completed post-processing genome");
   return;
-} ## end sub post_process_genome
+} ## end sub load_post_metadata
+
+sub update_statistics {
+  my ( $self, $genome ) = @_;
+  # set species
+  # create a job to hang things off
+  my $job = Bio::EnsEMBL::Hive::AnalysisJob->new();
+
+  # set universal params:
+  $job->param( 'dbtype',    'core' );
+  $job->param( 'bin_count', '150' );
+  $job->param( 'max_run',   '100' );
+  $job->param( 'dbtype',    'core' );
+  $job->param( 'species',   $self->dba()->species() );
+  $job->param( 'tmpdir',    tempdir( CLEANUP => 1 ) );
+
+  my $runnables = {
+    'Bio::EnsEMBL::Production::Pipeline::Production::ConstitutiveExons' =>
+      { logic_name => 'ConstitutiveExons', quick_check => 1 },
+    'Bio::EnsEMBL::Production::Pipeline::Production::PepStatsBatch' =>
+      { logic_name => 'PepStats' },
+    'Bio::EnsEMBL::Production::Pipeline::Production::GeneCount' =>
+      { logic_name => 'GeneCount' },
+    'Bio::EnsEMBL::Production::Pipeline::Production::ShortNonCodingDensity' =>
+      { logic_name => 'shortnoncodingdensity', value_type => 'sum' },
+    'Bio::EnsEMBL::Production::Pipeline::Production::LongNonCodingDensity' =>
+      { logic_name => 'longnoncodingdensity', value_type => 'sum' },
+    'Bio::EnsEMBL::Production::Pipeline::Production::PseudogeneDensity' =>
+      { logic_name => 'pseudogenedensity', value_type => 'sum' },
+    'Bio::EnsEMBL::Production::Pipeline::Production::CodingDensity' =>
+      { logic_name => 'codingdensity', value_type => 'sum' },
+    'Bio::EnsEMBL::Production::Pipeline::Production::GeneGCBatch' =>
+      { table => 'repeat', logic_name => 'percentgc', value_type => 'ratio' },
+    'Bio::EnsEMBL::Production::Pipeline::Production::PercentGC' =>
+      { table => 'repeat', logic_name => 'percentgc', value_type => 'ratio', },
+    'Bio::EnsEMBL::Production::Pipeline::Production::PercentRepeat' =>
+      { logic_name => 'percentagerepeat', value_type => 'ratio' },
+    'Bio::EnsEMBL::Production::Pipeline::Production::MetaLevels' =>
+      { logic_name => 'MetaLevels' },
+    'Bio::EnsEMBL::Production::Pipeline::Production::MetaCoords' =>
+      { logic_name => 'MetaCoord' },
+    'Bio::EnsEMBL::Production::Pipeline::Production::GenomeStats' =>
+      { logic_name => 'GenomeStats' }
+
+  };
+
+  for my $runnable_module ( keys %$runnables ) {
+
+    my $params = $runnables->{$runnable_module};
+    # set the params
+    for my $param ( keys %{$params} ) {
+      $job->param( $param, $params->{$param} );
+    }
+    $self->log()->info("Executing $runnable_module");
+    eval("use $runnable_module;");
+    if ($@) {
+      croak $@;
+    }
+    my $runnable = $runnable_module->new();
+    $runnable->{production_dba} = $self->production_dba();
+    $runnable->input_job($job);
+    $runnable->run();
+    flush_session( $self->dba() );
+
+  }
+
+  return;
+} ## end sub update_statistics
 
 1;
 __END__

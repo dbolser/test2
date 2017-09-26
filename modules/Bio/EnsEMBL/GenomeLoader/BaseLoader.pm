@@ -87,7 +87,7 @@ sub new {
 
   my $self = bless( {}, $class );
 
-  ( $self->{dba}, $self->{taxonomy_dba} ) = rearrange( ['DBA', 'TAXONOMY_DBA'], @args );
+  ( $self->{dba}, $self->{taxonomy_dba}, $self->{production_dba} ) = rearrange( ['DBA', 'TAXONOMY_DBA', 'PRODUCTION_DBA'], @args );
 
   $self->{engine} = 'InnoDB';
 
@@ -112,6 +112,11 @@ sub taxonomy_dba {
   my $self = shift;
   $self->{taxonomy_dba} = shift if @_;
   return $self->{taxonomy_dba};
+}
+sub production_dba {
+  my $self = shift;
+  $self->{production_dba} = shift if @_;
+  return $self->{production_dba};
 }
 
 sub log {
