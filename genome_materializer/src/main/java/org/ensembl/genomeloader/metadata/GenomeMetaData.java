@@ -52,6 +52,10 @@ public class GenomeMetaData {
 
     private final String id;
     private final String name;
+    private String productionName;
+    private String genebuild;
+    private String provider;
+    private String providerUrl;
     private final Map<OrganismNameType, String> organismNames = new HashMap<>();
     private final int taxId;
     private List<String> lineage;
@@ -63,7 +67,7 @@ public class GenomeMetaData {
     private String description;
     private String superregnum;
     private List<GenomicComponentMetaData> componentMetaData = new ArrayList<>();
-    private Map<String,String> dbVersions = new HashMap<>(); 
+    private Map<String, String> dbVersions = new HashMap<>();
 
     public GenomeMetaData(String id, String name, int taxId) {
         this.id = id;
@@ -159,14 +163,14 @@ public class GenomeMetaData {
         this.superregnum = superregnum;
     }
 
-    public Map<String,String> getDbVersions() {
+    public Map<String, String> getDbVersions() {
         return dbVersions;
     }
 
-    public void setDbVersions(Map<String,String> dbVersions) {
+    public void setDbVersions(Map<String, String> dbVersions) {
         this.dbVersions = dbVersions;
     }
-    
+
     public void setDbVersion(String name, String value) {
         getDbVersions().put(name, value);
     }
@@ -178,4 +182,37 @@ public class GenomeMetaData {
     public void setAssemblyDefault(String assemblyDefault) {
         this.assemblyDefault = assemblyDefault;
     }
+
+    public String getProductionName() {
+        return productionName;
+    }
+
+    public void setProductionName(String productionName) {
+        this.productionName = productionName;
+    }
+
+    public String getGenebuild() {
+        return genebuild;
+    }
+
+    public void setGenebuild(String genebuild) {
+        this.genebuild = genebuild;
+    }
+
+    public String getProvider() {
+        return provider;
+    }
+
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
+
+    public String getProviderUrl() {
+        return providerUrl;
+    }
+
+    public void setProviderUrl(String providerUrl) {
+        this.providerUrl = providerUrl;
+    }
+
 }
