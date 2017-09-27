@@ -26,15 +26,18 @@ use FindBin '$Bin';
 use Bio::EnsEMBL::GenomeLoader::GenomeLoader;
 use Bio::EnsEMBL::Taxonomy::DBSQL::TaxonomyDBAdaptor;
 use Bio::EnsEMBL::DBSQL::DBAdaptor;
+use Bio::EnsEMBL::DBSQL::DBConnection;
+use Bio::EnsEMBL::GenomeLoader::SchemaCreator;
 use Data::Dumper;
 
 my $cli_helper = Bio::EnsEMBL::Utils::CliHelper->new();
 my $optsd = [ @{ $cli_helper->get_dba_opts() },
               @{ $cli_helper->get_dba_opts('tax_') },
-              @{ $cli_helper->get_dba_opts('prod_') } ];
+              @{ $cli_helper->get_dba_opts('prod_') },
+              @{ $cli_helper->get_dba_opts('interpro_') }
+               ];
 push( @{$optsd}, "verbose|v" );
 push( @{$optsd}, "dump_file|f:s" );
-push( @{$optsd}, "genebuild:s" );
 push( @{$optsd}, "division:s" );
 
 my $usage = sub {
@@ -63,23 +66,12 @@ if ( !defined $opts->{division} ) {
 $log->info( "Parsing genome from " . $opts->{dump_file} );
 my $genome = decode_json( read_file( $opts->{dump_file} ) );
 
-if ( !defined $opts->{species} ) {
-  $opts->{species} = lc $genome->{metaData}{name};
-  $opts->{species} =~ s/[^A-z0-9_]+/_/g;
-}
-if ( !defined $opts->{genebuild} ) {
-  $opts->{genebuild} = $genome->{metaData}{updateDate};
-  $opts->{genebuild} =~ s/[0-9]+$/ENA/;
+if ( defined $opts->{species} ) {
+  $genome->{metaData}{productionName} = $opts->{species};
 }
 
-$genome->{metaData}{productionName} = $opts->{species};
-$genome->{metaData}{genebuild}      = $opts->{genebuild};
 $genome->{metaData}{division}       = $opts->{division};
-$genome->{metaData}{provider} ||= 'European Nucleotide Archive';
-$genome->{metaData}{providerUrl} ||=
-  'http://www.ebi.ac.uk/ena/data/view/' . $genome->{metaData}{id};
 
-my ($dba) = @{ $cli_helper->get_dbas_for_opts($opts) };
 my ($taxonomy_dba_args) =
   @{ $cli_helper->get_dba_args_for_opts( $opts, 1, 'tax_' ) };
 my $taxonomy_dba;
@@ -98,9 +90,28 @@ if ( defined $prod_dba_args ) {
   $prod_dba =  
     Bio::EnsEMBL::DBSQL::DBAdaptor->new(%$prod_dba_args);
 }
+
+my ($interpro_dba_args) =
+  @{ $cli_helper->get_dba_args_for_opts( $opts, 1, 'interpro_' ) };
+my $interpro_dbc;
+if ( defined $interpro_dba_args ) {
+  $log->info("Connecting to Interpro database");
+  $interpro_dbc =  
+    Bio::EnsEMBL::DBSQL::DBConnection->new(%$interpro_dba_args);
+}
+
+my $schema = Bio::EnsEMBL::GenomeLoader::SchemaCreator->new(
+                                                -TAXONOMY_DBA => $taxonomy_dba,
+                                                -PRODUCTION_DBA => $prod_dba,
+                                                -INTERPRO_DBC=>$interpro_dbc);
+
+my $dba = $schema->create_schema($opts);
+
 my $loader =
   Bio::EnsEMBL::GenomeLoader::GenomeLoader->new(-DBA          => $dba,
                                                 -TAXONOMY_DBA => $taxonomy_dba,
                                                 -PRODUCTION_DBA => $prod_dba
   );
 $loader->load_genome($genome);
+                                            
+$schema->finish_schema($genome);
