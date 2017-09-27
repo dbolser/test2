@@ -53,7 +53,7 @@ public class MetaDataProcessor implements GenomeProcessor {
 
     public void processGenome(Genome genome) {
         GenomeMetaData md = genome.getMetaData();
-        md.setProductionName(md.getName().toLowerCase().replaceAll("[^a-z0-9_]+", "_").replaceAll("[_]+", "_"));
+        md.setProductionName(md.getName().toLowerCase().replaceAll("[^a-z0-9_]+", "_").);
         md.setGenebuild(FORMATTER.format(md.getUpdateDate())+ENA);
         md.setProvider(ENA_NAME);
         md.setProviderUrl(ENA_URL + md.getId());        
