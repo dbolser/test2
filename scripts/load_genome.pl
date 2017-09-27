@@ -28,6 +28,8 @@ use Bio::EnsEMBL::Taxonomy::DBSQL::TaxonomyDBAdaptor;
 use Bio::EnsEMBL::DBSQL::DBAdaptor;
 use Bio::EnsEMBL::DBSQL::DBConnection;
 use Bio::EnsEMBL::GenomeLoader::SchemaCreator;
+use File::Temp qw/tempdir/;
+use Carp;
 use Data::Dumper;
 
 my $cli_helper = Bio::EnsEMBL::Utils::CliHelper->new();
@@ -37,8 +39,11 @@ my $optsd = [ @{ $cli_helper->get_dba_opts() },
               @{ $cli_helper->get_dba_opts('interpro_') }
                ];
 push( @{$optsd}, "verbose|v" );
-push( @{$optsd}, "dump_file|f:s" );
+push( @{$optsd}, "accession|a:s" );
+push( @{$optsd}, "jar|j:s" );
 push( @{$optsd}, "division:s" );
+push( @{$optsd}, "config_file|c:s" );
+
 
 my $usage = sub {
   print
@@ -53,7 +58,7 @@ if ( $opts->{verbose} ) {
   $Log::Log4perl::Logger::APPENDER_BY_NAME{'console'}->threshold('DEBUG');
 }
 
-if ( !defined $opts->{dump_file} ) {
+if ( !defined $opts->{accession} ) {
   $usage->();
   exit 1;
 }
@@ -63,8 +68,34 @@ if ( !defined $opts->{division} ) {
   exit 1;
 }
 
-$log->info( "Parsing genome from " . $opts->{dump_file} );
-my $genome = decode_json( read_file( $opts->{dump_file} ) );
+if ( !defined $opts->{config_file} ) {
+  $opts->{config_file} = "$Bin/../enagenome_config.xml";
+}
+
+if (! -e $opts->{config_file}) {
+  croak "Config file $opts->{config_file} does not exist";
+}
+
+if ( !defined $opts->{jar} ) {
+  my @jars = glob "$Bin/../genome_materializer/build/libs/genome_materializer-*.jar";
+  if(@jars) {
+    $opts->{jar} = $jars[0];
+  }
+}
+
+if (! -e $opts->{jar}) {
+  croak "Could not find genome_materializer jar $opts->{jar} - try running cd genome_materializer && ./gradlew fatJar"
+}
+
+my $dump_file = tempdir( ) . "/$opts->{accession}.json";
+
+my $cmd = "java -jar $opts->{jar} -c $opts->{config_file} -s $opts->{accession} -f $dump_file";
+$log->info("Dumping $opts->{accession} to $dump_file");
+$log->debug("Running $cmd");
+system($cmd)==0 ||  croak "Could not execute $cmd: $?";
+
+$log->info( "Parsing genome from " . $dump_file );
+my $genome = decode_json( read_file( $dump_file ) );
 
 if ( defined $opts->{species} ) {
   $genome->{metaData}{productionName} = $opts->{species};
@@ -113,5 +144,7 @@ my $loader =
                                                 -PRODUCTION_DBA => $prod_dba
   );
 $loader->load_genome($genome);
+                                  
+unlink $dump_file;                                  
                                             
 $schema->finish_schema($genome);
