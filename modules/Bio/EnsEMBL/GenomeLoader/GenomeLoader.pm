@@ -325,7 +325,10 @@ sub load_post_metadata {
 } ## end sub load_post_metadata
 
 sub update_statistics {
+  
   my ( $self, $genome ) = @_;
+  
+  
   # set species
   # create a job to hang things off
   my $job = Bio::EnsEMBL::Hive::AnalysisJob->new();
@@ -370,6 +373,7 @@ sub update_statistics {
 
   for my $runnable_module ( keys %$runnables ) {
 
+ 
     my $params = $runnables->{$runnable_module};
     # set the params
     for my $param ( keys %{$params} ) {
@@ -384,7 +388,6 @@ sub update_statistics {
     $runnable->{production_dba} = $self->production_dba();
     $runnable->input_job($job);
     $runnable->run();
-    flush_session( $self->dba() );
 
   }
 
