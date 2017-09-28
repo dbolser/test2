@@ -112,7 +112,7 @@ sub get_generic_xref {
       "Ensembl dbname not set for " . Dumper( $xref->{databaseReferenceType} ) )
     if ( !$ensembl_dbname );
 
-  if ( $ensembl_dbname eq XREFS()->{PROTEIN_ID} &&
+  if ( $ensembl_dbname eq XREFS()->{PROTEIN_ID} && defined $xref->{quarternaryIdentifier} &&
        $xref->{quarternaryIdentifier} eq XREFS()->{GENOMIC_DNA} )
   {
 
