@@ -226,7 +226,7 @@ sub load_interpro {
     $h->execute_update( -SQL => $ensembl_query );
   }
 
-  $self->log()->debug("Adding extra InterPro xrefs");
+  $self->log()->debug("Finding extra InterPro xrefs");
 
   # get all interpro details to supplement what we have
   my @iprs = ();
@@ -241,7 +241,8 @@ sub load_interpro {
       }
       return;
     } );
-
+    
+  $self->log()->debug("Storing ".scalar(@iprs)." extra InterPro xrefs");
   $it = natatime 1000, @iprs;
   while ( my @ipr = $it->() ) {
     my $ensembl_query =
