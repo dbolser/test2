@@ -36,14 +36,12 @@ my $cli_helper = Bio::EnsEMBL::Utils::CliHelper->new();
 my $optsd = [ @{ $cli_helper->get_dba_opts() },
               @{ $cli_helper->get_dba_opts('tax_') },
               @{ $cli_helper->get_dba_opts('prod_') },
-              @{ $cli_helper->get_dba_opts('interpro_') }
-               ];
+              @{ $cli_helper->get_dba_opts('interpro_') } ];
 push( @{$optsd}, "verbose|v" );
 push( @{$optsd}, "accession|a:s" );
 push( @{$optsd}, "jar|j:s" );
 push( @{$optsd}, "division:s" );
 push( @{$optsd}, "config_file|c:s" );
-
 
 my $usage = sub {
   print
@@ -72,36 +70,57 @@ if ( !defined $opts->{config_file} ) {
   $opts->{config_file} = "$Bin/../enagenome_config.xml";
 }
 
-if (! -e $opts->{config_file}) {
+if ( !-e $opts->{config_file} ) {
   croak "Config file $opts->{config_file} does not exist";
 }
 
+if ( !defined $opts->{interpro_dbname} ) {
+  # attempt to parse out details from config file
+  my $cfg = read_file( $opts->{config_file} );
+  if ( $cfg =~
+m/.*<interproUri>.*jdbc:oracle:thin:([^\/]+)\/([^@]+)@\/\/([^:]+):([0-9]+)\/([A-Z0-9]+).*<\/interproUri>.*/
+    )
+  {
+    $opts->{interpro_driver}   = 'Oracle';
+    $opts->{interpro_user}     = $1;
+    $opts->{interpro_password} = $2;
+    $opts->{interpro_host}     = $3;
+    $opts->{interpro_port}     = $4;
+    $opts->{interpro_dbname}   = $5;
+  }
+}
+
 if ( !defined $opts->{jar} ) {
-  my @jars = glob "$Bin/../genome_materializer/build/libs/genome_materializer-*.jar";
-  if(@jars) {
+  my @jars =
+    glob "$Bin/../genome_materializer/build/libs/genome_materializer-*.jar";
+  if (@jars) {
     $opts->{jar} = $jars[0];
   }
 }
 
-if (! -e $opts->{jar}) {
-  croak "Could not find genome_materializer jar $opts->{jar} - try running cd genome_materializer && ./gradlew fatJar"
+if ( !-e $opts->{jar} ) {
+  croak
+"Could not find genome_materializer jar $opts->{jar} - try running cd genome_materializer && ./gradlew fatJar";
 }
 
-my $dump_file = tempdir( ) . "/$opts->{accession}.json";
+my $dump_file = tempdir() . "/$opts->{accession}.json";
 
-my $cmd = "java -jar $opts->{jar} -c $opts->{config_file} -s $opts->{accession} -f $dump_file";
+my $java_opts = $ENV{JAVA_OPTS} || '';
+
+my $cmd =
+"java $java_opts -jar $opts->{jar} -c $opts->{config_file} -s $opts->{accession} -f $dump_file";
 $log->info("Dumping $opts->{accession} to $dump_file");
 $log->debug("Running $cmd");
-system($cmd)==0 ||  croak "Could not execute $cmd: $?";
+system($cmd) == 0 || croak "Could not execute $cmd: $?";
 
 $log->info( "Parsing genome from " . $dump_file );
-my $genome = decode_json( read_file( $dump_file ) );
+my $genome = decode_json( read_file($dump_file) );
 
 if ( defined $opts->{species} ) {
   $genome->{metaData}{productionName} = $opts->{species};
 }
 
-$genome->{metaData}{division}       = $opts->{division};
+$genome->{metaData}{division} = $opts->{division};
 
 my ($taxonomy_dba_args) =
   @{ $cli_helper->get_dba_args_for_opts( $opts, 1, 'tax_' ) };
@@ -117,9 +136,8 @@ my $prod_dba;
 if ( defined $prod_dba_args ) {
   $log->info("Connecting to production database");
   $prod_dba_args->{-species} = 'multi';
-  $prod_dba_args->{-group} = 'production';
-  $prod_dba =  
-    Bio::EnsEMBL::DBSQL::DBAdaptor->new(%$prod_dba_args);
+  $prod_dba_args->{-group}   = 'production';
+  $prod_dba = Bio::EnsEMBL::DBSQL::DBAdaptor->new(%$prod_dba_args);
 }
 
 my ($interpro_dba_args) =
@@ -127,24 +145,23 @@ my ($interpro_dba_args) =
 my $interpro_dbc;
 if ( defined $interpro_dba_args ) {
   $log->info("Connecting to Interpro database");
-  $interpro_dbc =  
-    Bio::EnsEMBL::DBSQL::DBConnection->new(%$interpro_dba_args);
+  $interpro_dbc = Bio::EnsEMBL::DBSQL::DBConnection->new(%$interpro_dba_args);
 }
 
-my $schema = Bio::EnsEMBL::GenomeLoader::SchemaCreator->new(
-                                                -TAXONOMY_DBA => $taxonomy_dba,
-                                                -PRODUCTION_DBA => $prod_dba,
-                                                -INTERPRO_DBC=>$interpro_dbc);
+my $schema =
+  Bio::EnsEMBL::GenomeLoader::SchemaCreator->new(-TAXONOMY_DBA => $taxonomy_dba,
+                                                 -PRODUCTION_DBA => $prod_dba,
+                                                 -INTERPRO_DBC => $interpro_dbc
+  );
 
 my $dba = $schema->create_schema($opts);
 
 my $loader =
-  Bio::EnsEMBL::GenomeLoader::GenomeLoader->new(-DBA          => $dba,
-                                                -TAXONOMY_DBA => $taxonomy_dba,
-                                                -PRODUCTION_DBA => $prod_dba
-  );
+  Bio::EnsEMBL::GenomeLoader::GenomeLoader->new( -DBA          => $dba,
+                                                 -TAXONOMY_DBA => $taxonomy_dba,
+                                                 -PRODUCTION_DBA => $prod_dba );
 $loader->load_genome($genome);
-                                  
-unlink $dump_file;                                  
-                                            
+
+unlink $dump_file;
+
 $schema->finish_schema($genome);
