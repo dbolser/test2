@@ -111,7 +111,7 @@
 	<databaseReferenceType>
 		<id>16</id>
 		<dbName>GO</dbName>
-		<type>GENE</type>
+		<type>TRANSCRIPT</type>
 		<displayName>GO</displayName>
 		<uniprotKbName>GO</uniprotKbName>
 		<ensemblName>GO</ensemblName>

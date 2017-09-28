@@ -170,7 +170,9 @@ public class UniProtXrefGenomeProcessor implements GenomeProcessor {
                             final DatabaseReferenceImpl goX = new DatabaseReferenceImpl(getType(dbName), pid,
                                     note.replaceAll(":.*", StringUtils.EMPTY));
                             goX.setSource(ref);
-                            p.addDatabaseReference(goX);
+                            for(Transcript t: p.getTranscripts()) {
+                                t.addDatabaseReference(goX);
+                            }
                         }
                         n.incrementAndGet();
                     } else {

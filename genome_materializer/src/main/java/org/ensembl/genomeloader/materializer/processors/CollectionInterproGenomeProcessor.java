@@ -40,6 +40,7 @@ import org.ensembl.genomeloader.model.Protein;
 import org.ensembl.genomeloader.model.ProteinFeature;
 import org.ensembl.genomeloader.model.ProteinFeatureSource;
 import org.ensembl.genomeloader.model.ProteinFeatureType;
+import org.ensembl.genomeloader.model.Transcript;
 import org.ensembl.genomeloader.model.impl.DatabaseReferenceImpl;
 import org.ensembl.genomeloader.model.impl.ProteinFeatureImpl;
 import org.ensembl.genomeloader.services.sql.ROResultSet;
@@ -92,13 +93,12 @@ public abstract class CollectionInterproGenomeProcessor implements GenomeProcess
 
     public void processGenome(Genome genome) {
 
-        
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
 
-            getLog().info("Retrieving InterPro features for "+genome.getId());
+            getLog().info("Retrieving InterPro features for " + genome.getId());
             // 1. get the connection
             con = ((LocalSqlService) ipSrv.getSqlService()).openConnection(ipSrv.getUri());
             getLog().debug("Preparing statement");
@@ -144,9 +144,9 @@ public abstract class CollectionInterproGenomeProcessor implements GenomeProcess
                 nFeatures += n;
                 rs.close();
                 start = end;
-            }           
-            getLog().info("Finished retrieving "+nFeatures+" InterPro features for "+size+" proteins "+genome.getId());
-
+            }
+            getLog().info("Finished retrieving " + nFeatures + " InterPro features for " + size + " proteins "
+                    + genome.getId());
 
         } catch (final SqlServiceException e) {
             throw new MaterializationUncheckedException("Could not map InterPro domains to genome " + genome.getId(),
@@ -167,10 +167,12 @@ public abstract class CollectionInterproGenomeProcessor implements GenomeProcess
                     public String mapRow(ROResultSet resultSet, int position) throws SQLException {
                         return resultSet.getString(2);
                     }
+
                     @Override
                     public Map<String, String> getMap() {
                         return new HashMap<>();
                     }
+
                     @Override
                     public void existingObject(String currentValue, ROResultSet resultSet, int position)
                             throws SQLException {
@@ -256,7 +258,9 @@ public abstract class CollectionInterproGenomeProcessor implements GenomeProcess
                     final DatabaseReferenceImpl goX = new DatabaseReferenceImpl(goType, goId, IEA_TYPE);
                     goX.setQuarternaryIdentifier(goSrc);
                     goX.setSource(iproX);
-                    protein.addDatabaseReference(goX);
+                    for (Transcript t : protein.getTranscripts()) {
+                        t.addDatabaseReference(goX);
+                    }
                 }
             }
         }
