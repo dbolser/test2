@@ -122,6 +122,7 @@ if ( defined $opts->{species} ) {
 
 $genome->{metaData}{division} = $opts->{division};
 
+$opts->{tax_dbname}||='ncbi_taxomomy';
 my ($taxonomy_dba_args) =
   @{ $cli_helper->get_dba_args_for_opts( $opts, 1, 'tax_' ) };
 my $taxonomy_dba;
@@ -130,6 +131,8 @@ if ( defined $taxonomy_dba_args ) {
   $taxonomy_dba =
     Bio::EnsEMBL::Taxonomy::DBSQL::TaxonomyDBAdaptor->new(%$taxonomy_dba_args);
 }
+
+$opts->{prod_dbname}||='ensembl_production';
 my ($prod_dba_args) =
   @{ $cli_helper->get_dba_args_for_opts( $opts, 1, 'prod_' ) };
 my $prod_dba;
