@@ -18,6 +18,7 @@ package org.ensembl.genomeloader.materializer.processors;
 
 import java.util.concurrent.Executor;
 
+import org.apache.commons.lang.StringUtils;
 import org.ensembl.genomeloader.materializer.EnaGenomeConfig;
 import org.ensembl.genomeloader.materializer.executor.SimpleExecutor;
 import org.ensembl.genomeloader.services.sql.SqlService;
@@ -43,17 +44,34 @@ public class EnaGenomeProcessor extends DelegatingGenomeProcessor {
 
     public EnaGenomeProcessor(EnaGenomeConfig config, SqlService srv, DatabaseReferenceTypeRegistry registry,
             Executor executor) {
-        super(new ComponentSortingProcessor(config), new ConXrefProcessor(config, srv, registry),
-                new PubMedCentralProcessor(registry), new LocationOverlapProcessor(config, registry),
-                new LocusTagMergeProcessor(config, registry), new AltTranslationProcessor(config, registry),
-                new UpiGenomeProcessor(config, srv, registry),
-                new UniProtDescriptionGenomeProcessor(config, srv, registry),
-                new UniProtXrefGenomeProcessor(config, srv, registry),
-                new UniProtECGenomeProcessor(config, srv, registry),
-                new UpiInterproGenomeProcessor(config, srv, registry),
-                new InterproPathwayGenomeProcessor(config, srv, registry),
-                new AssemblyContigProcessor(config, registry, executor), new RfamProcessor(config, srv, registry),
+
+        super(new ComponentSortingProcessor(config), new PubMedCentralProcessor(registry),
+                new LocationOverlapProcessor(config, registry), new LocusTagMergeProcessor(config, registry),
+                new AltTranslationProcessor(config, registry), new AssemblyContigProcessor(config, registry, executor),
                 new MetaDataProcessor(config));
+
+        if (!StringUtils.isEmpty(config.getEnaUri())) {
+            addProcessor(new ConXrefProcessor(config, srv, registry));
+        }
+
+        if (!StringUtils.isEmpty(config.getUniparcUri())) {
+            addProcessor(new UpiGenomeProcessor(config, srv, registry));
+        }
+
+        if (!StringUtils.isEmpty(config.getUniProtUri())) {
+            addProcessor(new UniProtDescriptionGenomeProcessor(config, srv, registry));
+            addProcessor(new UniProtXrefGenomeProcessor(config, srv, registry));
+            addProcessor(new UniProtECGenomeProcessor(config, srv, registry));
+        }
+
+        if (!StringUtils.isEmpty(config.getInterproUri())) {
+            addProcessor(new UpiInterproGenomeProcessor(config, srv, registry));
+            addProcessor(new InterproPathwayGenomeProcessor(config, srv, registry));
+        }
+
+        if (!StringUtils.isEmpty(config.getRfamUri())) {
+            addProcessor(new RfamProcessor(config, srv, registry));
+        }
 
         if (config.isUseAccessionsForNames()) {
             addProcessor(new ComponentAccessionNamingProcessor());
