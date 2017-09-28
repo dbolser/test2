@@ -83,7 +83,7 @@ m/.*<interproUri>.*jdbc:oracle:thin:([^\/]+)\/([^@]+)@\/\/([^:]+):([0-9]+)\/([A-
   {
     $opts->{interpro_driver}   = 'Oracle';
     $opts->{interpro_user}     = $1;
-    $opts->{interpro_password} = $2;
+    $opts->{interpro_pass}     = $2;
     $opts->{interpro_host}     = $3;
     $opts->{interpro_port}     = $4;
     $opts->{interpro_dbname}   = $5;
@@ -165,6 +165,6 @@ my $loader =
                                                  -PRODUCTION_DBA => $prod_dba );
 $loader->load_genome($genome);
 
-unlink $dump_file;
-
 $schema->finish_schema($genome);
+
+unlink $dump_file;
