@@ -68,7 +68,7 @@ sub get_alignment_analysis {
 
 sub get_go_xref {
   my ( $self, $xref ) = @_;
-  my $ensembl_dbname = $xref->{databaseReferenceType}{ensemblName};
+  my $ensembl_dbname = $xref->{databaseReferenceType};
   my $dbentry =
     Bio::EnsEMBL::OntologyXref->new( -DBNAME     => $ensembl_dbname,
                                      -PRIMARY_ID => $xref->{primaryIdentifier},
@@ -88,7 +88,7 @@ sub get_src_dbentry {
   my ( $self, $xref ) = @_;
   my $dbentry =
     Bio::EnsEMBL::DBEntry->new(
-      -DBNAME     => $xref->{databaseReferenceType}{ensemblName},
+      -DBNAME     => $xref->{databaseReferenceType},
       -PRIMARY_ID => $xref->{primaryIdentifier},
       -DISPLAY_ID => $xref->{secondaryIdentifier} || $xref->{primaryIdentifier},
       -DESCRIPTION => $xref->{description},
@@ -102,7 +102,7 @@ sub get_generic_xref {
   my $dbentry;
   my $primary_id     = $xref->{primaryIdentifier};
   my $display_id     = $primary_id;
-  my $ensembl_dbname = $xref->{databaseReferenceType}{ensemblName};
+  my $ensembl_dbname = $xref->{databaseReferenceType};
   my $eobject_type   = ref($eobject);
   my $version        = $xref->{version};
   my $description    = $xref->{description};
@@ -207,7 +207,6 @@ sub get_generic_xref {
       $dbentry->{version} = undef;
     }
   }
-  print Dumper( $dbentry->{version} );
 
   return $dbentry;
 } ## end sub get_generic_xref
@@ -215,7 +214,7 @@ sub get_generic_xref {
 sub add_xref {
   my ( $self, $xref, $eobject ) = @_;
   # Get ensembl dbname.
-  my $ensembl_dbname = $xref->{databaseReferenceType}{ensemblName};
+  my $ensembl_dbname = $xref->{databaseReferenceType};
   my $dbentry;
   if ( $ensembl_dbname eq XREFS()->{GO} ) {
     $dbentry = $self->get_go_xref($xref);
@@ -234,7 +233,7 @@ sub add_xref {
       if ( !$dbentry->primary_id() || $dbentry->primary_id() eq '' );
   }
   croak(
-      "Ensembl dbname not set for " . Dumper( $xref->{databaseReferenceType} ) )
+      "Ensembl dbname not set for " . $xref->{databaseReferenceType} )
     if ( !$ensembl_dbname || $ensembl_dbname eq '' );
   croak( "dbname not set for " . Dumper($dbentry) )
     if ( !$dbentry->dbname() || $dbentry->dbname() eq '' );
@@ -245,7 +244,7 @@ sub set_xrefs_from_list {
   # non-GO first to allow sources to be added
   foreach my $xref (
     grep {
-      ( $_->{databaseReferenceType}{ensemblName} ne XREFS()->{GO} )
+      $_->{databaseReferenceType} ne XREFS()->{GO}
     } @$irefs )
   {
     $self->add_xref( $xref, $eobject );
@@ -255,7 +254,7 @@ sub set_xrefs_from_list {
   # then GO
   foreach my $xref (
     grep {
-      ( $_->{databaseReferenceType}{ensemblName} eq XREFS()->{GO} )
+      ( $_->{databaseReferenceType} eq XREFS()->{GO} )
     } @$irefs )
   {
     $self->add_xref( $xref, $eobject );
@@ -267,7 +266,7 @@ sub set_xrefs {
   my ( $self, $iobject, $eobject ) = @_;
 
   # remove suppressed refs
-  my @irefs = grep { !$_->{suppress} } @{ $iobject->{xrefs} };
+  my @irefs = grep { !$_->{suppress} } @{ $iobject->{databaseReferences} };
   $self->set_xrefs_from_list( \@irefs, $eobject );
 
   return;

@@ -145,7 +145,8 @@ sub load_gene {
           $self->set_display_xref( {}, $t, $egene, ++$transcriptN );
         }
       }
-      my ($canonical_transcript) = sort {$b->length() <=> $a->length()} (@{$ts});
+      my ($canonical_transcript) =
+        sort { $b->length() <=> $a->length() } ( @{$ts} );
       $egene->canonical_transcript($canonical_transcript);
       $self->dba()->get_GeneAdaptor->store( $egene, undef, 1 );
       my $translationCnt     = 0;
@@ -193,7 +194,7 @@ sub load_gene {
                    $egene->dbID() );
       }
     };
-       
+
     if ($@) {
       croak( $self->store_gene_error_handler( $igene, $egene ) );
       exit;
@@ -490,20 +491,22 @@ sub store_proteins {
     my $etranscript = $et->{transcript};
 
     if ( !$can_iprotein->{pseudo} ) {
-      $etranscript->translation(
+      my $etranslation =
         $self->get_translation( $can_iprotein, $et->{eexons},
-                                $etranscript,  $itranscript ) );
+                                $etranscript,  $itranscript );
+      $self->set_xrefs( $can_iprotein, $etranslation );
+      $etranscript->translation($etranslation);
     }
 
     foreach my $iprotein (@iproteins) {
       if ( !$iprotein->{pseudo} ) {
         $self->log->debug(
                    "Processing alt translation " . $iprotein->{identifyingId} );
-
-        $etranscript->add_alternative_translation(
-                              $self->get_translation( $iprotein, $et->{eexons},
-                                                      $etranscript, $itranscript
-                              ) );
+        my $etranslation =
+          $self->get_translation( $iprotein,    $et->{eexons},
+                                  $etranscript, $itranscript );
+        $self->set_xrefs( $iprotein, $etranslation );
+        $etranscript->add_alternative_translation( $etranslation );
       }
     }
   } ## end foreach my $itranscript ( values...)
