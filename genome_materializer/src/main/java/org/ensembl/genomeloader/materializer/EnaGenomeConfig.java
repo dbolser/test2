@@ -95,7 +95,6 @@ public class EnaGenomeConfig {
 
 	private String enaUri;
 	private String etaUri;
-	private String protUri;
 	private String uniparcUri;
 	private String interproUri;
 	private String uniProtUri;
@@ -128,14 +127,6 @@ public class EnaGenomeConfig {
 
 	public void setEnaUri(String enaUri) {
 		this.enaUri = enaUri;
-	}
-
-	public String getProtUri() {
-		return protUri;
-	}
-
-	public void setProtUri(String protUri) {
-		this.protUri = protUri;
 	}
 
 	public String getUniparcUri() {
