@@ -122,7 +122,7 @@ if ( defined $opts->{species} ) {
 
 $genome->{metaData}{division} = $opts->{division};
 
-$opts->{tax_dbname}||='ncbi_taxomomy';
+$opts->{tax_dbname}||='ncbi_taxonomy';
 my ($taxonomy_dba_args) =
   @{ $cli_helper->get_dba_args_for_opts( $opts, 1, 'tax_' ) };
 my $taxonomy_dba;
