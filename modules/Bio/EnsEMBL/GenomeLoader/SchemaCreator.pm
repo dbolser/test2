@@ -99,12 +99,13 @@ sub create_schema {
   system(
 "sed -e 's/MyISAM/InnoDB/' $sql | mysql -u$opts->{user} -p$opts->{pass} -h$opts->{host} -P$opts->{port} $opts->{dbname}"
   );
-  my ($dba) = @{Bio::EnsEMBL::Utils::CliHelper->new()->get_dbas_for_opts($opts)};  
+  my ($dba) =
+    @{ Bio::EnsEMBL::Utils::CliHelper->new()->get_dbas_for_opts($opts) };
   $self->{dba} = $dba;
   $self->populate_tables();
   $self->log()->info( $opts->{dbname} . " ready for use" );
   return $dba;
-}
+} ## end sub create_schema
 
 sub populate_tables {
   my ($self) = @_;
@@ -143,24 +144,33 @@ sub populate_tables {
       } );
   }
   return;
-}
+} ## end sub populate_tables
 
 sub finish_schema {
   my ($self) = @_;
-  $self->log()->info("Running post-load steps on ".$self->dba()->dbc()->dbname());
-  $self->clean_xrefs();
+  $self->log()
+    ->info( "Running post-load steps on " . $self->dba()->dbc()->dbname() );
+  $self->clean_versions();
   $self->load_interpro();
   $self->clean_analysis();
   $self->update_analysis_descriptions();
-  $self->log()->info("Finished running post-load steps on ".$self->dba()->dbc()->dbname());
+  $self->log()
+    ->info(
+       "Finished running post-load steps on " . $self->dba()->dbc()->dbname() );
   return;
 }
 
-sub clean_xrefs {
+sub clean_versions {
   my ($self) = @_;
   $self->log()->info("Removing version 0 for xrefs");
   $self->dba()->dbc()->sql_helper()
     ->execute_update( -SQL => q/update xref set version=NULL where version=0/ );
+  $self->log()->info("Removing spurious version for features");
+  for my $table (qw/gene transcript translation exon/) {
+    $self->dba()->dbc()->sql_helper()
+      ->execute_update(
+         -SQL => qq/update $table set version=NULL where version is not null/ );
+  }
   return;
 }
 
@@ -241,8 +251,8 @@ sub load_interpro {
       }
       return;
     } );
-    
-  $self->log()->debug("Storing ".scalar(@iprs)." extra InterPro xrefs");
+
+  $self->log()->debug( "Storing " . scalar(@iprs) . " extra InterPro xrefs" );
   $it = natatime 1000, @iprs;
   while ( my @ipr = $it->() ) {
     my $ensembl_query =
