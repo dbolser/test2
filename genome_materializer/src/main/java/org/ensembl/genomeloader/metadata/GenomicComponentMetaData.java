@@ -114,10 +114,8 @@ public class GenomicComponentMetaData {
 
     private String version;
 
-    private String versionedAccession;
-    
     private Integer karyotypeRank;
-    
+
     @JsonIgnore
     private GenomeMetaData genomeMetaData;
 
@@ -187,7 +185,7 @@ public class GenomicComponentMetaData {
     }
 
     public String getVersionedAccession() {
-        return versionedAccession;
+        return getAccession() + "." + getVersion();
     }
 
     public boolean isCircular() {
@@ -264,10 +262,6 @@ public class GenomicComponentMetaData {
 
     public void setVersion(String version) {
         this.version = version;
-    }
-
-    public void setVersionedAccession(String versionedAccession) {
-        this.versionedAccession = versionedAccession;
     }
 
     public GenomeMetaData getGenomeMetaData() {
