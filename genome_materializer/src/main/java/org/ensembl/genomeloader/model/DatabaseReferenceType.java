@@ -72,6 +72,7 @@ public class DatabaseReferenceType implements Integr8ModelComponent {
 		this.qualifier = qualifier;
 		this.displayName = displayName;
 		this.uniprotKbName = uniprotKbName;
+		this.ensemblName = ensemblName;
 		this.type = type;
 	}
 
