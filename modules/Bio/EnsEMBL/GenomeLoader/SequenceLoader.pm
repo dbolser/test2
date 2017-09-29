@@ -154,6 +154,13 @@ sub load_sequence {
         );
     }
   } ## end if ( $icomponent->{topLevel...})
+  
+  if(defined $icomponent->{metaData}{description}) {
+     push @attributes,
+        Bio::EnsEMBL::Attribute->new( -CODE        => 'description',
+                                      -VALUE       => $icomponent->{metaData}{description}
+        );
+  }
 
   if ( $slice->coord_system_name() eq CS()->{CHROMOSOME} ||
        $slice->coord_system_name() eq CS()->{PLASMID} )
