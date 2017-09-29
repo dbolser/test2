@@ -352,7 +352,7 @@ where q.upi = t.COLUMN_VALUE)
 	</sql>
 
 	<sql name="conConXrefQuery">
-		select x.protein_acc, xrefid,
+		select x.protein_acc, d.xref,
 		xref_primary_acc,xref_secondary_acc from
 		scaffold cs join scaffold css
 		on (css.scaffold_acc=cs.contig_acc) join
