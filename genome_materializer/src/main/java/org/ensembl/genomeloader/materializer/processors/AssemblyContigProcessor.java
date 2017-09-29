@@ -188,7 +188,7 @@ public class AssemblyContigProcessor implements GenomeProcessor {
                     if (!newComponents.containsKey(seq.getAccession())) {
                         try {
                             // get the component
-                            GenomicComponentMetaData md = new GenomicComponentMetaData(seq.getAccession(), component.getGenome().getMetaData());                            
+                            GenomicComponentMetaData md = new GenomicComponentMetaData(seq.getAccession(), component.getMetaData().getGenomeMetaData());                            
                             final GenomicComponent assComp = materializer.getComponent(md);
                             newComponents.put(seq.getAccession(), assComp);
                             assComp.setTopLevel(false);
