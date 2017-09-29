@@ -103,7 +103,7 @@ if ( !-e $opts->{jar} ) {
 "Could not find genome_materializer jar $opts->{jar} - try running cd genome_materializer && ./gradlew fatJar";
 }
 
-my $dump_file = tempdir() . "/$opts->{accession}.json";
+my $dump_file = tempdir(-CLEANUP=>1) . "/$opts->{accession}.json";
 
 my $java_opts = $ENV{JAVA_OPTS} || '';
 
