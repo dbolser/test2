@@ -24,6 +24,7 @@ package org.ensembl.genomeloader.metadata;
 
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.ensembl.genomeloader.metadata.impl.DefaultGenomicComponentDescriptionHandler;
@@ -105,7 +106,7 @@ public class GenomicComponentMetaData {
 
     private String olnRegexp = null;
 
-    private Set<String> synonyms;
+    private Set<String> synonyms = new HashSet<>();
 
     private int type;
 
