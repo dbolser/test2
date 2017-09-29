@@ -3,3 +3,4 @@ requires 'Readonly';
 requires 'JSON';
 requires 'File::Slurp';
 requires 'LWP::UserAgent';
+requires 'DBD::Oracle';
