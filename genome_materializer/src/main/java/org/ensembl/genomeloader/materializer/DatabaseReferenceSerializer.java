@@ -26,6 +26,10 @@ public class DatabaseReferenceSerializer extends JsonSerializer<DatabaseReferenc
         writeStringFieldIfNotEmpty(gen, "secondaryIdentifier", ref.getSecondaryIdentifier());
         writeStringFieldIfNotEmpty(gen, "tertiaryIdentifier", ref.getTertiaryIdentifier());
         writeStringFieldIfNotEmpty(gen, "quarternaryIdentifier", ref.getQuarternaryIdentifier());
+        if(ref.getDatabaseReferenceType().getEnsemblName()==null) {
+            throw new NullPointerException("Null ensemblName for "+ref);
+        }
+           
         gen.writeStringField("databaseReferenceType", ref.getDatabaseReferenceType().getEnsemblName());
         if (ref.isIdentityXref()) {
             gen.writeBooleanField("isIdentityXref", ref.isIdentityXref());
