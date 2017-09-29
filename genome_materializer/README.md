@@ -1,3 +1,7 @@
+Overview
+========
+This Java project contains code needed to materialize a specified INSDC assembly as JSON. It is used by the [ensembl-genomeloader](https://github.com/Ensembl/ensembl-genomeloader) project.
+
 Compilation
 ===========
 To build a jar file containing all :
