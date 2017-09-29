@@ -670,8 +670,7 @@ sub get_translation {
           'Could not create protein feature ' . $iprotein_feature->{id} . '/' .
             $iprotein_feature->{type} . ' as it ends (' .
             $iprotein_feature->{end} . ') beyond the end of the translation (' .
-            $tlen . ') of ' . $iprotein->{identifyingId} . ' (' .
-            $iprotein->{persistableId} . ')' );
+            $tlen . ') of ' . $iprotein->{identifyingId} );
       }
       else {
         my $eprotein_feature =
