@@ -64,6 +64,7 @@ A particularly important processor which straddles both these camps is `Assembly
 After processing, the `Genome` instance is passed to an instance of `GenomeValidator` for a series of checks to make sure the model is valid for loading into Ensembl. The main validator is `EnaGenomeValidator` which again delegates to other validators, found in `org.ensembl.genomeloader.materializer.validator`.
 
 ## Dump code
+Dumping is carried out using the Jackson JSON serialisation library. An entire `Genome` object is dumped to a single file, with a handful of custom serializers for some objects that can be found in `org.ensembl.genomeloader.materializer`. These are used to simplify the data structure for the load process. Note that classes used in the Genome object have been annotated with Jackson-specific annotations to prevent problems with loops caused by 2-way references.
 
 ## Auxillary services
 The code used is based on part of a much larger framework from the old Integr8 project, and as such contains some generic services and utilites for database interaction, location manipulation etc. These classes can be found in `org.ensembl.genomeloader.util` and `org.ensembl.genomeloader.services`.
