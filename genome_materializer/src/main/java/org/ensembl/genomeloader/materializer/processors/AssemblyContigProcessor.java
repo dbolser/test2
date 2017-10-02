@@ -58,7 +58,7 @@ public class AssemblyContigProcessor implements GenomeProcessor {
     }
 
     public AssemblyContigProcessor(EnaGenomeConfig config, EnaContigParser parser, GenomeProcessor processor) {
-        this(config, new EnaGenomeMaterializer(config, parser, processor));
+        this(config, new EnaGenomeMaterializer(config.getEnaXmlUrl(), parser));
     }
 
     public AssemblyContigProcessor(EnaGenomeConfig config, EnaGenomeMaterializer materializer) {

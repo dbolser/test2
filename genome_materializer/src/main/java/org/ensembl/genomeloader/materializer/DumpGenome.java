@@ -25,6 +25,8 @@ import org.ensembl.genomeloader.model.GeneName;
 import org.ensembl.genomeloader.model.Genome;
 import org.ensembl.genomeloader.services.sql.SqlService;
 import org.ensembl.genomeloader.services.sql.impl.LocalSqlService;
+import org.ensembl.genomeloader.validator.EnaGenomeValidator;
+import org.ensembl.genomeloader.xrefregistry.impl.XmlDatabaseReferenceTypeRegistry;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.Version;
@@ -91,20 +93,24 @@ public class DumpGenome {
         log.info("Retrieving metadata for " + setChain);
         GenomeCollections gc = new OracleGenomeCollections(config, srv);
         GenomeMetaData genomeMetaData = gc.getGenomeForSetChain(setChain);
-        if(genomeMetaData==null) {
-            throw new MaterializationUncheckedException("Could not find assembly for "+setChain);
+        if (genomeMetaData == null) {
+            throw new MaterializationUncheckedException("Could not find assembly for " + setChain);
         }
         log.info("Retrieved metadata for " + setChain);
         return materializeGenome(genomeMetaData);
     }
 
     public Genome materializeGenome(GenomeMetaData genomeMetaData) {
-        EnaGenomeMaterializer matfer = new EnaGenomeMaterializer(config, new EnaGenomeProcessor(config, srv),
-                new FileLockExecutor(config.getLockFileDir(), config.getMaxEnaConnections()));
+        EnaGenomeMaterializer matfer = new EnaGenomeMaterializer(config.getEnaXmlUrl(),
+                new EnaParser(new FileLockExecutor(config.getLockFileDir(), config.getMaxEnaConnections()),
+                        new XmlDatabaseReferenceTypeRegistry()),
+                new EnaGenomeProcessor(config, srv), new EnaGenomeValidator(config));
         log.info("Dumping data for " + genomeMetaData.getId());
         Genome genome = matfer.getGenome(genomeMetaData);
         log.info("Processing genome for " + genomeMetaData.getId());
         matfer.processGenome(genome);
+        log.info("Validating genome for " + genomeMetaData.getId());
+        matfer.validateGenome(genome);
         return genome;
     }
 
@@ -122,7 +128,8 @@ public class DumpGenome {
             mapper.writeValue(file, genome);
             log.info("Completed writing json for " + genome.getIdString());
         } catch (IOException e) {
-            throw new GenomeDumpException("Could not write JSON for " + genome.getIdString() + " to " + file.getPath(), e);
+            throw new GenomeDumpException("Could not write JSON for " + genome.getIdString() + " to " + file.getPath(),
+                    e);
         }
     }
 

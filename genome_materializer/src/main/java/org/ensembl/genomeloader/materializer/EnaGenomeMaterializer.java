@@ -23,24 +23,22 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
-import java.util.concurrent.Executor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ensembl.genomeloader.materializer.executor.SimpleExecutor;
 import org.ensembl.genomeloader.materializer.impl.MaterializationUncheckedException;
+import org.ensembl.genomeloader.materializer.processors.EnaGenomeProcessor;
 import org.ensembl.genomeloader.materializer.processors.GenomeProcessor;
-import org.ensembl.genomeloader.materializer.processors.LocationIdEnaGenomeProcessor;
 import org.ensembl.genomeloader.metadata.GenomeMetaData;
 import org.ensembl.genomeloader.metadata.GenomicComponentMetaData;
 import org.ensembl.genomeloader.model.Genome;
 import org.ensembl.genomeloader.model.GenomicComponent;
 import org.ensembl.genomeloader.model.impl.GenomeImpl;
-import org.ensembl.genomeloader.services.sql.SqlService;
-import org.ensembl.genomeloader.services.sql.impl.LocalSqlService;
 import org.ensembl.genomeloader.util.collections.CollectionUtils;
 import org.ensembl.genomeloader.util.templating.TemplateBuilder;
-import org.ensembl.genomeloader.xrefregistry.impl.XmlDatabaseReferenceTypeRegistry;
+import org.ensembl.genomeloader.validator.EnaGenomeValidator;
+import org.ensembl.genomeloader.validator.GenomeValidationException;
+import org.ensembl.genomeloader.validator.GenomeValidator;
 
 /**
  * Merge
@@ -60,6 +58,24 @@ public class EnaGenomeMaterializer {
         }
     }
 
+    private final String enaXmlLoc;
+    private final EnaParser parser;
+    private final GenomeProcessor processor;
+    private final GenomeValidator validator;
+
+    public EnaGenomeMaterializer(String enaXmlLoc, EnaParser parser) {
+        this.enaXmlLoc = enaXmlLoc;
+        this.parser = parser;
+        this.processor = null;
+        this.validator = null;
+    }
+    public EnaGenomeMaterializer(String enaXmlLoc, EnaParser parser, EnaGenomeProcessor processor, EnaGenomeValidator validator) {
+        this.enaXmlLoc = enaXmlLoc;
+        this.parser = parser;
+        this.processor = processor;
+        this.validator = validator;
+    }
+
     private Log log;
 
     protected Log getLog() {
@@ -67,41 +83,6 @@ public class EnaGenomeMaterializer {
             log = LogFactory.getLog(this.getClass());
         }
         return log;
-    }
-
-    private final String enaXmlLoc;
-    private final EnaParser parser;
-    private final GenomeProcessor processor;
-
-    public EnaGenomeMaterializer(EnaGenomeConfig config) {
-        this(config, new LocalSqlService(), new SimpleExecutor());
-    }
-
-    public EnaGenomeMaterializer(EnaGenomeConfig config, SqlService srv, Executor executor) {
-        this(config, new EnaParser(executor, new XmlDatabaseReferenceTypeRegistry()),
-                new LocationIdEnaGenomeProcessor(config, srv));
-    }
-
-    public EnaGenomeMaterializer(EnaGenomeConfig config, GenomeProcessor processor) {
-        this(config, processor, new SimpleExecutor());
-    }
-
-    public EnaGenomeMaterializer(EnaGenomeConfig config, GenomeProcessor processor, Executor executor) {
-        this(config, new EnaParser(executor, new XmlDatabaseReferenceTypeRegistry()), processor);
-    }
-
-    public EnaGenomeMaterializer(EnaGenomeConfig config, EnaParser parser) {
-        this(config.getEnaXmlUrl(), parser, null);
-    }
-
-    public EnaGenomeMaterializer(EnaGenomeConfig config, EnaParser parser, GenomeProcessor processor) {
-        this(config.getEnaXmlUrl(), parser, processor);
-    }
-
-    public EnaGenomeMaterializer(String string, EnaParser parser, GenomeProcessor processor) {
-        this.parser = parser;
-        this.enaXmlLoc = string;
-        this.processor = processor;
     }
 
     public Genome materializeData(GenomeMetaData genomeMetaData) {
@@ -117,6 +98,20 @@ public class EnaGenomeMaterializer {
         if (processor != null) {
             getLog().info("Processing genome " + g.getName());
             processor.processGenome(g);
+        }
+    }
+
+    /**
+     * @param g
+     */
+    protected void validateGenome(Genome g) {
+        if (validator != null) {
+            getLog().info("Validating genome " + g.getName());
+            try {
+                validator.validateGenome(g);
+            } catch (GenomeValidationException e) {
+                throw new MaterializationUncheckedException("Failed to validate genome " + g.getName(), e);
+            }
         }
     }
 

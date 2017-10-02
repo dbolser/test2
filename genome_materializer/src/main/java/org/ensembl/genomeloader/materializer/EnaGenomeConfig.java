@@ -112,6 +112,9 @@ public class EnaGenomeConfig {
 	private int maxEnaConnections = 10;
 	private String lockFileDir = System.getProperty("user.dir");
 	private boolean loadTrackingReferences = true;
+    private boolean allowEmptyGenomes = false;
+    private int minGeneCount = 50;
+    private boolean allowMixedCoordSystems = false;
 
 	public String getEnaXmlUrl() {
 		return enaXmlUrl;
@@ -269,6 +272,30 @@ public class EnaGenomeConfig {
 
     public void setLoadTrackingReferences(boolean loadTrackingReferences) {
         this.loadTrackingReferences = loadTrackingReferences;
+    }
+
+    public boolean isAllowEmptyGenomes() {
+        return allowEmptyGenomes;
+    }
+
+    public void setAllowEmptyGenomes(boolean allowEmptyGenomes) {
+        this.allowEmptyGenomes = allowEmptyGenomes;
+    }
+
+    public int getMinGeneCount() {
+        return minGeneCount;
+    }
+
+    public boolean isAllowMixedCoordSystems() {
+        return allowMixedCoordSystems;
+    }
+
+    public void setMinGeneCount(int minGeneCount) {
+        this.minGeneCount = minGeneCount;
+    }
+
+    public void setAllowMixedCoordSystems(boolean allowMixedCoordSystems) {
+        this.allowMixedCoordSystems = allowMixedCoordSystems;
     }
 
 }
