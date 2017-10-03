@@ -104,7 +104,6 @@ public class EnaGenomeConfig {
 	private Date strictDate = EnaGenomeMaterializer.parseEnaDate("2004-01-01");
 	private double nullCdsTagThreshold = 0.02;
 	private String wgsPolicy = GcWgsPolicy.AUTOMATIC.name();
-	private boolean interProBatch = true;
 	private String componentSorter = "automatic";
 	private boolean loadAssembly = true;
 	private boolean allowMissingUpis = false;
@@ -186,20 +185,6 @@ public class EnaGenomeConfig {
 
 	public void setWgsPolicy(String wgsPolicy) {
 		this.wgsPolicy =wgsPolicy;
-	}
-
-	/**
-	 * @return the interProBatch
-	 */
-	public boolean isInterProBatch() {
-		return interProBatch;
-	}
-
-	/**
-	 * @param interProBatch the interProBatch to set
-	 */
-	public void setInterProBatch(boolean interProBatch) {
-		this.interProBatch = interProBatch;
 	}
 
 	public String getComponentSorter() {
