@@ -150,7 +150,7 @@ public class GeneFeatureParser extends CdsFeatureParser {
                     gene.addAnnotatedGene(geneNames);
                     gene.setDescription(getDescription(qualifiers));
                     ProteinImpl protein = new ProteinImpl();
-                    protein.setPseudo(qualifiers.containsKey("pseudo") || isFrameshift);
+                    protein.setPseudo(qualifiers.containsKey("pseudo") || isFrameshift || protein.getLocation().getCircularLength()<3);                    
                     gene.addProtein(protein);
                     if (protein.isPseudo()) {
                         gene.setBiotype("pseudogene");
