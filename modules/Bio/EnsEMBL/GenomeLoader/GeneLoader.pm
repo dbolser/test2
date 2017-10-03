@@ -215,6 +215,9 @@ sub add_xref {
   my ( $self, $xref, $eobject ) = @_;
   # Get ensembl dbname.
   my $ensembl_dbname = $xref->{databaseReferenceType};
+  croak(
+      "Ensembl dbname not set for " . Dumper($xref))
+    if ( !$ensembl_dbname || $ensembl_dbname eq '' );
   my $dbentry;
   if ( $ensembl_dbname eq XREFS()->{GO} ) {
     $dbentry = $self->get_go_xref($xref);
@@ -222,6 +225,8 @@ sub add_xref {
   else {
     $dbentry = $self->get_generic_xref( $xref, $eobject );
   }
+  croak( "dbname not set for " . Dumper($dbentry) )
+    if ( !$dbentry->dbname() || $dbentry->dbname() eq '' );
   if ( $xref->{description} ) {
     $dbentry->description( $xref->{description} );
   }
@@ -232,11 +237,6 @@ sub add_xref {
     carp( "primary_id not set for " . Dumper($dbentry) )
       if ( !$dbentry->primary_id() || $dbentry->primary_id() eq '' );
   }
-  croak(
-      "Ensembl dbname not set for " . $xref->{databaseReferenceType} )
-    if ( !$ensembl_dbname || $ensembl_dbname eq '' );
-  croak( "dbname not set for " . Dumper($dbentry) )
-    if ( !$dbentry->dbname() || $dbentry->dbname() eq '' );
 } ## end sub add_xref
 
 sub set_xrefs_from_list {
