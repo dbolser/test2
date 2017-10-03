@@ -40,7 +40,7 @@ The application requires an XML configuration file at the root of the project, f
 ```
 cp genome_materializer/src/main/etc/enagenome_config.xml
 ```
-You should edit the config file to contain the database locations and credentials required.
+You should edit the config file to contain the database locations and credentials required. Please see [CONFIG.md] for more details.
 
 ## Loading single genomes
 
