@@ -719,4 +719,12 @@
 		<uniprotKbName>MetaCyc</uniprotKbName>
 		<ensemblName>MetaCyc</ensemblName>
 	</databaseReferenceType>
+	<databaseReferenceType>
+    <id>122</id>
+    <dbName>KEGG_Enzyme</dbName>
+    <type>PROTEIN</type>
+    <displayName>KEGG Enzyme</displayName>
+    <uniprotKbName>KEGG_Enzyme</uniprotKbName>
+    <ensemblName>KEGG_Enzyme</ensemblName>
+  </databaseReferenceType>
 </databaseReferenceTypes>

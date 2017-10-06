@@ -150,6 +150,10 @@ public class InterproPathwayGenomeProcessor implements GenomeProcessor {
                 if (type == null) {
                     getLog().warn("Could not find database reference type " + pathwayDb);
                 } else {
+                    // use a different db type for KEGG - different things get labelled as KEGG by InterPro and UniProt
+                    if(type.getDbName().equals("KEGG")) {
+                        type = registry.getTypeForName("KEGG_Enzyme");
+                    }
                     Collection<DatabaseReference> refs = pathways.get(interProAc);
                     if (refs == null) {
                         refs = CollectionUtils.createArrayList();
