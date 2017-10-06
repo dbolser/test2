@@ -162,6 +162,9 @@ sub finish_schema {
 
 sub clean_versions {
   my ($self) = @_;
+  $self->log()->info("Removing blank version for coord_system");
+  $self->dba()->dbc()->sql_helper()
+    ->execute_update( -SQL => q/update coord_system set version=NULL where version=''/ );
   $self->log()->info("Removing version 0 for xrefs");
   $self->dba()->dbc()->sql_helper()
     ->execute_update( -SQL => q/update xref set version=NULL where version=0/ );
