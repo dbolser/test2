@@ -35,6 +35,7 @@ import org.ensembl.genomeloader.materializer.EnaGenomeConfig;
 import org.ensembl.genomeloader.metadata.GenomeMetaData;
 import org.ensembl.genomeloader.metadata.GenomeMetaData.OrganismNameType;
 import org.ensembl.genomeloader.metadata.GenomicComponentMetaData;
+import org.ensembl.genomeloader.metadata.GenomicComponentMetaData.GenomicComponentType;
 import org.ensembl.genomeloader.services.sql.ROResultSet;
 import org.ensembl.genomeloader.services.sql.SqlService;
 import org.ensembl.genomeloader.util.collections.CollectionUtils;
@@ -88,6 +89,22 @@ public class OracleGenomeCollections implements GenomeCollections {
             final String[] acc = vAcc.split("\\.");
             final GenomicComponentMetaData md = new GenomicComponentMetaData(acc[0], genomeMetaData);
             md.setVersion(acc[1]);
+            final String typeStr = rs.getString(2);
+            if (!StringUtils.isEmpty(typeStr)) {
+                if (GenomicComponentMetaData.PLASMID_PATTERN.matcher(typeStr).matches()) {
+                    md.setComponentType(GenomicComponentType.PLASMID);
+                    md.setName(typeStr);
+                } else if (GenomicComponentMetaData.CHROMOSOME_PATTERN.matcher(typeStr).matches()) {
+                    md.setComponentType(GenomicComponentType.CHROMOSOME);
+                    md.setName(typeStr);
+                } else {
+                    md.setComponentType(GenomicComponentType.SUPERCONTIG);
+                }
+            }
+            final String name = rs.getString(3);
+            if (!StringUtils.isEmpty(name)) {
+                md.setName(name);
+            }
             return md;
         }
     };

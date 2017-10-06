@@ -26,6 +26,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.ensembl.genomeloader.metadata.impl.DefaultGenomicComponentDescriptionHandler;
 
@@ -41,7 +42,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public class GenomicComponentMetaData {
 
+    public final static Pattern PLASMID_PATTERN = Pattern.compile(".*plasmid*", Pattern.CASE_INSENSITIVE);
+    public final static Pattern CHROMOSOME_PATTERN = Pattern.compile(
+            ".*chromosome|Linkage Group|Plastid|Mitochondrion|Chloroplast|Kinetoplast|Apicoplast|Nucleomorph*",
+            Pattern.CASE_INSENSITIVE);
+
     public static enum GenomicComponentType {
+
         CHROMOSOME(1), CONTIG(4), PLASMID(2), SUPERCONTIG(3);
         int rank;
 

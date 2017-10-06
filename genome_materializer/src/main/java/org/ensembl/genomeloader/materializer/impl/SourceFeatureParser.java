@@ -33,6 +33,7 @@ import org.ensembl.genomeloader.materializer.EnaParsingException;
 import org.ensembl.genomeloader.materializer.impl.XomUtils.ElementsIterable;
 import org.ensembl.genomeloader.metadata.GenomeMetaData;
 import org.ensembl.genomeloader.metadata.GenomeMetaData.OrganismNameType;
+import org.ensembl.genomeloader.metadata.GenomicComponentMetaData.GenomicComponentType;
 import org.ensembl.genomeloader.metadata.GenomicComponentMetaData;
 import org.ensembl.genomeloader.util.collections.CollectionUtils;
 
@@ -92,7 +93,11 @@ public class SourceFeatureParser {
         if (!StringUtils.isEmpty(substrain) && gmd.getOrganismName(OrganismNameType.SUBSTRAIN) == null) {
             gmd.setOrganismName(OrganismNameType.SUBSTRAIN, substrain);
         }
-
+        final String chromosome = CollectionUtils.getFirstElement(qualifiers.get("chromosome"), null);
+        if (!StringUtils.isEmpty(chromosome)) {
+            md.setComponentType(GenomicComponentType.CHROMOSOME);
+            md.setName(chromosome);
+        }
     }
 
 }
