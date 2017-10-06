@@ -4,12 +4,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
-import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.MissingOptionException;
-import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,14 +39,14 @@ public class DumpGenome {
     public static final void main(String[] args) throws Exception {
 
         Options options = new Options();
-        options.addOption(OptionBuilder.withArgName("accession").withLongOpt("set_chain")
-                .withDescription("INSDC set chain (unversioned)").hasArg().isRequired().create("s"));
-        options.addOption(OptionBuilder.withArgName("file").withLongOpt("dump_file").withDescription("JSON output file")
-                .hasArg().isRequired(false).create("f"));
-        options.addOption(OptionBuilder.withArgName("config_file").withLongOpt("config_file")
-                .withDescription("XML config file").hasArg().isRequired(false).create("c"));
-        Log log = LogFactory.getLog(DumpGenome.class);
-        CommandLineParser parser = new BasicParser();
+        options.addOption(Option.builder("s").longOpt("set_chain").desc("INSDC set chain (unversioned)").hasArg()
+                .required().build());
+        options.addOption(Option.builder("f").longOpt("dump_file").desc("JSON output file").hasArg().required(false)
+                .hasArg().build());
+        options.addOption(
+                Option.builder("c").longOpt("config_file").desc("XML config file").required(false).hasArg().build());
+        Log log = LogFactory.getLog(DumpGenomeFromComponents.class);
+        CommandLineParser parser = new DefaultParser();
         try {
             CommandLine cmd = parser.parse(options, args);
             String setChain = cmd.getOptionValue('s');
@@ -104,7 +104,7 @@ public class DumpGenome {
         EnaGenomeMaterializer matfer = new EnaGenomeMaterializer(config.getEnaXmlUrl(),
                 new EnaParser(new FileLockExecutor(config.getLockFileDir(), config.getMaxEnaConnections()),
                         new XmlDatabaseReferenceTypeRegistry()),
-                new EnaGenomeProcessor(config, srv), new EnaGenomeValidator(config));
+                new EnaGenomeProcessor(config, srv), new EnaGenomeValidator(config)kymab);
         log.info("Dumping data for " + genomeMetaData.getId());
         Genome genome = matfer.getGenome(genomeMetaData);
         log.info("Processing genome for " + genomeMetaData.getId());
