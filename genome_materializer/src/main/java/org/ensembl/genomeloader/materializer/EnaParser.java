@@ -412,7 +412,9 @@ public class EnaParser {
         md.setUpdateDate(EnaGenomeMaterializer.parseEnaDate(entryElem.getAttributeValue("lastUpdated")));
         md.setLength(Integer.parseInt(entryElem.getAttribute("sequenceLength").getValue()));
         md.setDescription(getFirstChild(entryElem, "description").getValue());
-        md.getDescriptionHandler().parseComponentDescription(md);
+        if(md.getComponentType()==null || StringUtils.isEmpty(md.getName())) {
+            md.getDescriptionHandler().parseComponentDescription(md);
+        }
         Attribute topoElem = entryElem.getAttribute("topology");
         if (topoElem == null) {
             getLog().warn("Topology not set for " + acc.getValue());
