@@ -37,7 +37,7 @@
      AND gp.project_acc =gsp.project_acc
 	</sql>
 	<sql name="getRepliconComponentsForGenome">
-		select gr.replicon_acc
+		select gr.replicon_acc, gr.replicon_type, gr.name
 		from gc_assembly_set gas
 		join
 		gc_replicon gr on (gr.set_acc=gas.set_acc)
@@ -47,7 +47,7 @@
 		gr.replicon_order
 	</sql>
 	<sql name="getUnplacedComponentsForGenome">
-		select gr.acc
+		select gr.acc, 'supercontig', gr.name
 		from gc_assembly_set gas
 		join
 		gc_unplaced gr
@@ -55,7 +55,7 @@
 		where gas.set_chain=? and gas.set_version=?
 	</sql>
 	<sql name="getUnlocalisedComponentsForGenome">
-		select gr.acc
+		select gr.acc, 'supercontig', gr.name
 		from gc_assembly_set gas
 		join
 		gc_unlocalised
@@ -72,14 +72,14 @@
 		gas.set_version=?
 	</sql>
 	<sql name="getWgsComponentsForPrefix">
-		select dbe.primaryacc#||'.'||bs.version
+		select dbe.primaryacc#||'.'||bs.version, '', ''
 		from
 		dbentry@ENAPRO.ENA_READER dbe
 		join bioseq@ENAPRO.ENA_READER bs on (bioseqid=seqid)
 		where dbe.primaryacc# like ? AND dbe.statusid=4 and dbe.entry_type!=8
 	</sql>
 	<sql name="getWgsComponentsForGenome">
-		select dbe.primaryacc#||'.'|bs.version
+		select dbe.primaryacc#||'.'|bs.version, '', ''
 		from
 		gc_assembly_set gas
 		join gc_wgs_set wgs on (wgs.set_acc=gas.set_acc)

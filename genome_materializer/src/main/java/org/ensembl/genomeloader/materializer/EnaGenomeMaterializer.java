@@ -173,20 +173,6 @@ public class EnaGenomeMaterializer {
      *            component and metadata as parsed
      */
     protected void addComponent(Genome g, GenomicComponentMetaData md, GenomicComponent c) {
-        md.setCreationDate(c.getMetaData().getCreationDate());
-        md.setUpdateDate(c.getMetaData().getUpdateDate());
-        md.setDescription(c.getMetaData().getDescription());
-        // compare translation tables
-        if (md.getGeneticCode() == GenomicComponentMetaData.NULL_GENETIC_CODE) {
-            // no parsed version found
-            if (c.getMetaData().getGeneticCode() == GenomicComponentMetaData.NULL_GENETIC_CODE) {
-                // no information
-                setDefaultGeneticCode(g, md);
-            } else {
-                // use the annotated version
-                md.setGeneticCode(c.getMetaData().getGeneticCode());
-            }
-        }
         if (g.getMetaData().getCreationDate() == null
                 || md.getCreationDate().before(g.getMetaData().getCreationDate())) {
             g.getMetaData().setCreationDate(md.getCreationDate());
@@ -194,10 +180,7 @@ public class EnaGenomeMaterializer {
         if (g.getMetaData().getUpdateDate() == null || md.getUpdateDate().after(g.getMetaData().getUpdateDate())) {
             g.getMetaData().setUpdateDate(md.getUpdateDate());
         }
-        c.setMetaData(md);
         c.setGenome(g);
-        md.setComponentType(null);
-        md.getDescriptionHandler().parseComponentDescription(md);
         g.addGenomicComponent(c);
     }
 
