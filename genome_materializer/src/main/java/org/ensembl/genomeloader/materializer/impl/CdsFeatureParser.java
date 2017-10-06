@@ -174,7 +174,7 @@ public class CdsFeatureParser extends XmlEnaFeatureParser {
 		gene.setLocation(getLocation(element, qualifiers));
 		protein.setLocation(getLocation(element, qualifiers));
 		// set pseudo for sub-codon sequences
-		if(protein.getLocation().getCircularLength()<3) {
+		if(ModelUtils.getEntityLocationLength(protein.getLocation())<3) {
 		    protein.setPseudo(true);
 		    gene.setBiotype("pseudogene");
 		}
