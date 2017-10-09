@@ -104,7 +104,7 @@ public class DumpGenome {
         EnaGenomeMaterializer matfer = new EnaGenomeMaterializer(config.getEnaXmlUrl(),
                 new EnaParser(new FileLockExecutor(config.getLockFileDir(), config.getMaxEnaConnections()),
                         new XmlDatabaseReferenceTypeRegistry()),
-                new EnaGenomeProcessor(config, srv), new EnaGenomeValidator(config)kymab);
+                new EnaGenomeProcessor(config, srv), new EnaGenomeValidator(config));
         log.info("Dumping data for " + genomeMetaData.getId());
         Genome genome = matfer.getGenome(genomeMetaData);
         log.info("Processing genome for " + genomeMetaData.getId());
