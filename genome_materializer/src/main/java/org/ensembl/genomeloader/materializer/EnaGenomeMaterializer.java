@@ -139,6 +139,9 @@ public class EnaGenomeMaterializer {
                     GenomicComponent c = getComponent(md);
                     success = true;
                     addComponent(g, md, c);
+                    if(c.getMetaData().getGeneticCode() == GenomicComponentMetaData.NULL_GENETIC_CODE) {
+                        setDefaultGeneticCode(g, c.getMetaData());
+                    }
                 } catch (Throwable e) {
                     throw e;
                     // if (retry_count++ > 3) {
