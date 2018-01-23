@@ -1,3 +1,4 @@
+
 =head1 LICENSE
 
 Copyright [2009-2015] EMBL-European Bioinformatics Institute
@@ -29,26 +30,32 @@ Simple Runnable to delete a genome from a multispecies database
 dstaines
 
 =cut
-package Bio::EnsEMBL::GenomeLoader::Pipeline::DeleteGenome; 
+
+package Bio::EnsEMBL::GenomeLoader::Pipeline::DeleteGenome;
 
 use strict;
 use warnings;
 use base qw/Bio::EnsEMBL::Production::Pipeline::Common::Base/;
 use Bio::EnsEMBL::Production::Utils::GenomeCopier;
-use  Bio::EnsEMBL::DBSQL::DBAdaptor;
+use Bio::EnsEMBL::DBSQL::DBAdaptor;
+
 sub run {
-    my ($self) = @_;
-      my $dba =
-    Bio::EnsEMBL::DBSQL::DBAdaptor->new( -host   => $self->param_required('host'),
-                                         -port   => $self->param('port'),
-                                         -user   => $self->param_required('user'),
-                                         -pass   => $self->param('pass'),
-                                         -dbname => $self->param_required('dbname'),
-                                         -species_id=>$self->param_required('species_id') );
-    
-    $self->log()->info("Deleting genome ".$dba->species_id()." from ".$dba->dbc()->dbname());
-    Bio::EnsEMBL::Production::Utils::GenomeCopier->new()->delete($dba);
-    return;
+  my ($self) = @_;
+  my $dba =
+    Bio::EnsEMBL::DBSQL::DBAdaptor->new(
+                              -host       => $self->param_required('host'),
+                              -port       => $self->param('port'),
+                              -user       => $self->param_required('user'),
+                              -pass       => $self->param('pass'),
+                              -dbname     => $self->param_required('dbname'),
+                              -species_id => $self->param_required('species_id')
+    );
+
+  $self->log()
+    ->info( "Deleting genome " . $dba->species_id() . " from " .
+            $dba->dbc()->dbname() );
+  Bio::EnsEMBL::Production::Utils::GenomeCopier->new()->delete($dba);
+  return;
 }
 
 1;

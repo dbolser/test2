@@ -37,9 +37,10 @@ use base qw/Bio::EnsEMBL::Production::Pipeline::Common::Base/;
 
 sub run {
     my ($self) = @_;
-    # accession
-    # jar
-    # config file
+    my $db_specs = [];
+    for my $db_spec (@$db_specs) {
+      
+    }
     return;
 }
 
