@@ -77,14 +77,16 @@ sub load_assembly {
   my $map_pairs = {};
   my $cs        = {};
   for my $component ( @{ $genome->{genomicComponents} } ) {
-    if ( defined $component->{assembly} &&
-         scalar( @{ $component->{assembly} } ) > 0 )
+
+    if ( defined $component->{assemblyElements} &&
+         scalar( @{ $component->{assemblyElements} } ) > 0 )
     {
       $self->log()
         ->info(
         "Storing assembly for component " . $component->{metaData}{name} . "/" .
           $component->{accession} );
-      for my $ass ( @{ $component->{assembly} } ) {
+
+      for my $ass ( @{ $component->{assemblyElements} } ) {
         my $ass_slice = $component->{slice};
         if ( !defined $ass_slice ) {
           croak "Component " . $component->{metaData}{name} . "/" .
@@ -102,6 +104,7 @@ sub load_assembly {
         my $map_str =
           $ass_slice->coord_system_name() . "-" .
           $ass_comp_slice->coord_system_name();
+
         if ( !$mappings->{$map_str} ) {
           $self->log()->info("Storing mapping for $map_str");
           $self->store_mapping_path( $ass_slice->coord_system(),
