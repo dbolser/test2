@@ -127,20 +127,20 @@ public abstract class CollectionInterproGenomeProcessor implements GenomeProcess
                     end = size;
                 }
                 final List<String> keySub = keys.subList(start, end);
-                getLog().debug("Adding features for batch of " + keySub.size() + " (" + end + "/" + size + ")");
-                getLog().debug("Building array of " + keySub.size() + " keys");
+                getLog().info("Adding features for batch of " + keySub.size() + " (" + end + "/" + size + ")");
+                getLog().info("Building array of " + keySub.size() + " keys");
                 final ARRAY arr = new ARRAY(arrayDescriptor, con.getMetaData().getConnection(),
                         keySub.toArray(new String[keySub.size()]));
                 ps.setArray(1, arr);
-                getLog().debug("Running query");
+                getLog().info("Running query");
                 rs = ps.executeQuery();
-                getLog().debug("Getting results");
+                getLog().info("Getting results");
                 int n = 0;
                 while (rs.next()) {
                     n++;
                     addFeatures(proteinsByKey, features, goLessFeatures, rs);
                 }
-                getLog().debug("Got " + n + " results");
+                getLog().info("Got " + n + " results");
                 nFeatures += n;
                 rs.close();
                 start = end;
@@ -186,7 +186,7 @@ public abstract class CollectionInterproGenomeProcessor implements GenomeProcess
     protected Map<String, List<Protein>> hashProteins(Genome genome) {
         final Map<String, List<Protein>> proteinsByKey = CollectionUtils.createHashMap();
         for (final GenomicComponent genomicComponent : genome.getGenomicComponents()) {
-            getLog().debug("Hashing proteins for component " + genomicComponent.getAccession());
+            getLog().info("Hashing proteins for component " + genomicComponent.getAccession());
             for (final Gene gene : genomicComponent.getGenes()) {
                 for (final Protein protein : gene.getProteins()) {
                     // remove preexisting interpro xrefs as they may be stale

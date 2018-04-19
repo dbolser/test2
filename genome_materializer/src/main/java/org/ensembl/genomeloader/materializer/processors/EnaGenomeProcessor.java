@@ -16,11 +16,9 @@
 
 package org.ensembl.genomeloader.materializer.processors;
 
-import java.util.concurrent.Executor;
-
 import org.apache.commons.lang.StringUtils;
 import org.ensembl.genomeloader.materializer.EnaGenomeConfig;
-import org.ensembl.genomeloader.materializer.executor.SimpleExecutor;
+import org.ensembl.genomeloader.materializer.EnaXmlRetriever;
 import org.ensembl.genomeloader.services.sql.SqlService;
 import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 import org.ensembl.genomeloader.xrefregistry.impl.XmlDatabaseReferenceTypeRegistry;
@@ -35,19 +33,19 @@ import org.ensembl.genomeloader.xrefregistry.impl.XmlDatabaseReferenceTypeRegist
 public class EnaGenomeProcessor extends DelegatingGenomeProcessor {
 
     public EnaGenomeProcessor(EnaGenomeConfig config, SqlService srv) {
-        this(config, srv, new XmlDatabaseReferenceTypeRegistry(), new SimpleExecutor());
+        this(config, srv, new XmlDatabaseReferenceTypeRegistry(), new EnaXmlRetriever(config.getEnaEntryUrl()));
     }
 
-    public EnaGenomeProcessor(EnaGenomeConfig config, SqlService srv, Executor executor) {
+    public EnaGenomeProcessor(EnaGenomeConfig config, SqlService srv, EnaXmlRetriever executor) {
         this(config, srv, new XmlDatabaseReferenceTypeRegistry(), executor);
     }
 
     public EnaGenomeProcessor(EnaGenomeConfig config, SqlService srv, DatabaseReferenceTypeRegistry registry,
-            Executor executor) {
+            EnaXmlRetriever retriever) {
 
         super(new ComponentSortingProcessor(config), new PubMedCentralProcessor(registry),
                 new LocationOverlapProcessor(config, registry), new LocusTagMergeProcessor(config, registry),
-                new AltTranslationProcessor(config, registry), new AssemblyContigProcessor(config, registry, executor),
+                new AltTranslationProcessor(config, registry), new AssemblyContigProcessor(config, registry, retriever),
                 new MetaDataProcessor(config));
 
         if (!StringUtils.isEmpty(config.getEnaUri())) {

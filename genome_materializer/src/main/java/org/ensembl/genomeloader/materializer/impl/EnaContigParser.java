@@ -16,9 +16,8 @@
 
 package org.ensembl.genomeloader.materializer.impl;
 
-import java.util.concurrent.Executor;
-
 import org.ensembl.genomeloader.materializer.EnaParser;
+import org.ensembl.genomeloader.materializer.EnaXmlRetriever;
 import org.ensembl.genomeloader.model.impl.GenomicComponentImpl;
 import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 
@@ -26,20 +25,19 @@ import nu.xom.Element;
 
 /**
  * Minimal parser that only deals with parsing the sequence and CON of an entry
+ * 
  * @author dstaines
  *
  */
 public class EnaContigParser extends EnaParser {
 
-	public EnaContigParser(Executor executor,
-			DatabaseReferenceTypeRegistry registry) {
-		super(executor, registry);
-	}
+    public EnaContigParser(EnaXmlRetriever retriever, DatabaseReferenceTypeRegistry registry) {
+        super(retriever, registry);
+    }
 
-	@Override
-	protected void parseFeatures(GenomicComponentImpl component,
-			Element entryElem) {
-		// do nothing with features
-	}
+    @Override
+    protected void parseFeatures(GenomicComponentImpl component, Element entryElem) {
+        // do nothing with features
+    }
 
 }

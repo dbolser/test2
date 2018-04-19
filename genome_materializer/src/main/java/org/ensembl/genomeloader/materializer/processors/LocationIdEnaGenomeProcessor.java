@@ -17,7 +17,7 @@
 package org.ensembl.genomeloader.materializer.processors;
 
 import org.ensembl.genomeloader.materializer.EnaGenomeConfig;
-import org.ensembl.genomeloader.materializer.executor.SimpleExecutor;
+import org.ensembl.genomeloader.materializer.EnaXmlRetriever;
 import org.ensembl.genomeloader.services.sql.SqlService;
 import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 import org.ensembl.genomeloader.xrefregistry.impl.XmlDatabaseReferenceTypeRegistry;
@@ -30,7 +30,7 @@ public class LocationIdEnaGenomeProcessor extends EnaGenomeProcessor {
 
     public LocationIdEnaGenomeProcessor(EnaGenomeConfig config, SqlService srv,
             DatabaseReferenceTypeRegistry registry) {
-        super(config, srv, registry, new SimpleExecutor());
+        super(config, srv, registry, new EnaXmlRetriever(config.getEnaEntryUrl()));
         this.addProcessor(new LocationIdProcessor(registry));
     }
 

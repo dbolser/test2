@@ -19,13 +19,13 @@ package org.ensembl.genomeloader.materializer.processors;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ensembl.genomeloader.materializer.EnaGenomeConfig;
 import org.ensembl.genomeloader.materializer.EnaGenomeMaterializer;
 import org.ensembl.genomeloader.materializer.EnaParsingException;
+import org.ensembl.genomeloader.materializer.EnaXmlRetriever;
 import org.ensembl.genomeloader.materializer.impl.EnaContigParser;
 import org.ensembl.genomeloader.materializer.impl.MaterializationUncheckedException;
 import org.ensembl.genomeloader.metadata.GenomicComponentMetaData;
@@ -53,12 +53,13 @@ public class AssemblyContigProcessor implements GenomeProcessor {
     private final EnaGenomeConfig config;
     private final Log log;
 
-    public AssemblyContigProcessor(EnaGenomeConfig config, DatabaseReferenceTypeRegistry registry, Executor executor) {
-        this(config, new EnaContigParser(executor, registry), null);
+    public AssemblyContigProcessor(EnaGenomeConfig config, DatabaseReferenceTypeRegistry registry,
+            EnaXmlRetriever retriever) {
+        this(config, new EnaContigParser(retriever, registry), null);
     }
 
     public AssemblyContigProcessor(EnaGenomeConfig config, EnaContigParser parser, GenomeProcessor processor) {
-        this(config, new EnaGenomeMaterializer(config.getEnaXmlUrl(), parser));
+        this(config, new EnaGenomeMaterializer(config.getEnaEntryUrl(), parser));
     }
 
     public AssemblyContigProcessor(EnaGenomeConfig config, EnaGenomeMaterializer materializer) {
@@ -188,7 +189,8 @@ public class AssemblyContigProcessor implements GenomeProcessor {
                     if (!newComponents.containsKey(seq.getAccession())) {
                         try {
                             // get the component
-                            GenomicComponentMetaData md = new GenomicComponentMetaData(seq.getAccession(), component.getMetaData().getGenomeMetaData());                            
+                            GenomicComponentMetaData md = new GenomicComponentMetaData(seq.getAccession(),
+                                    component.getMetaData().getGenomeMetaData());
                             final GenomicComponent assComp = materializer.getComponent(md);
                             newComponents.put(seq.getAccession(), assComp);
                             assComp.setTopLevel(false);

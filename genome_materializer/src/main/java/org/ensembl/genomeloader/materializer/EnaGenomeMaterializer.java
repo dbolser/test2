@@ -58,19 +58,19 @@ public class EnaGenomeMaterializer {
         }
     }
 
-    private final String enaXmlLoc;
+    private final String enaFlatfileLoc;
     private final EnaParser parser;
     private final GenomeProcessor processor;
     private final GenomeValidator validator;
 
-    public EnaGenomeMaterializer(String enaXmlLoc, EnaParser parser) {
-        this.enaXmlLoc = enaXmlLoc;
+    public EnaGenomeMaterializer(String enaFlatfileLoc, EnaParser parser) {
+        this.enaFlatfileLoc = enaFlatfileLoc;
         this.parser = parser;
         this.processor = null;
         this.validator = null;
     }
-    public EnaGenomeMaterializer(String enaXmlLoc, EnaParser parser, EnaGenomeProcessor processor, EnaGenomeValidator validator) {
-        this.enaXmlLoc = enaXmlLoc;
+    public EnaGenomeMaterializer(String enaFlatfileLoc, EnaParser parser, EnaGenomeProcessor processor, EnaGenomeValidator validator) {
+        this.enaFlatfileLoc = enaFlatfileLoc;
         this.parser = parser;
         this.processor = processor;
         this.validator = validator;
@@ -185,6 +185,7 @@ public class EnaGenomeMaterializer {
         }
         c.setGenome(g);
         g.addGenomicComponent(c);
+        
     }
 
     public static final int DEFAULT_CODE = 1;
@@ -204,7 +205,7 @@ public class EnaGenomeMaterializer {
     }
 
     protected URL getUrl(String accession) {
-        String url = TemplateBuilder.template(this.enaXmlLoc, "ac", accession);
+        String url = TemplateBuilder.template(this.enaFlatfileLoc, "ac", accession);
         try {
             return new URL(url);
         } catch (MalformedURLException e) {

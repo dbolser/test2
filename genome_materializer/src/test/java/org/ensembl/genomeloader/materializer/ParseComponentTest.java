@@ -48,7 +48,7 @@ public class ParseComponentTest {
     @Test
     public void testAP001918() throws Exception {
         InputStream is = InputOutputUtils.openGzippedClasspathResource("/AP001918.xml.gz");
-        EnaParser parser = new EnaParser(new SimpleExecutor(), reg);
+        EnaParser parser = new EnaParser(null, reg);
         GenomeMetaData gmd = new GenomeMetaData("1", "", 0);
         GenomicComponent gc = parser.parse(new GenomicComponentMetaData("AP001918", gmd), is);
         assertNotNull(gc);
@@ -60,7 +60,7 @@ public class ParseComponentTest {
     @Test
     public void testU00096() throws Exception {
         InputStream is = InputOutputUtils.openGzippedClasspathResource("/U00096.xml.gz");
-        EnaParser parser = new EnaParser(new SimpleExecutor(), reg);
+        EnaParser parser = new EnaParser(null, reg);
         GenomeMetaData gmd = new GenomeMetaData("1", "", 0);
         GenomicComponent gc = parser.parse(new GenomicComponentMetaData("U00096", gmd), is);
         assertNotNull(gc);

@@ -29,6 +29,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -80,6 +81,9 @@ import nu.xom.Element;
 import nu.xom.Elements;
 import nu.xom.ParsingException;
 import nu.xom.ValidityException;
+import uk.ac.ebi.embl.api.validation.ValidationResult;
+import uk.ac.ebi.embl.flatfile.reader.embl.EmblEntryReader;
+import uk.ac.ebi.embl.flatfile.writer.xml.XmlEntryWriter;
 
 /**
  * @author dstaines
@@ -103,8 +107,6 @@ public class EnaParser {
         }
     }
 
-    private static final int MAX_TRIES = 3;
-
     /**
      * Lookup for parsers for each class
      */
@@ -126,15 +128,14 @@ public class EnaParser {
         }
     };
 
-    private static final long SLEEP_TIME = 30000;
-    private final Executor executor;
     private Log log;
 
     private final DatabaseReferenceType pubmedType;
     private final DatabaseReferenceTypeRegistry registry;
+    private final EnaXmlRetriever retriever;
 
-    public EnaParser(Executor executor, DatabaseReferenceTypeRegistry registry) {
-        this.executor = executor;
+    public EnaParser(EnaXmlRetriever retriever, DatabaseReferenceTypeRegistry registry) {
+        this.retriever = retriever;
         this.registry = registry;
         pubmedType = registry.getTypeForName("PUBMED");
     }
@@ -181,10 +182,7 @@ public class EnaParser {
     public GenomicComponentImpl parse(GenomicComponentMetaData md, Document doc) {
 
         GenomicComponentImpl component = new GenomicComponentImpl(md);
-        Element entryElem = getFirstChild(doc.getRootElement(), "entry");
-        if (entryElem == null) {
-            throw new EnaParsingException("entry element not found - record not available");
-        }
+        Element entryElem = doc.getRootElement();
         // metadata needs parsing first to pick up version of record which is
         // used by other parsers
         parseMetaData(md, entryElem);
@@ -222,47 +220,7 @@ public class EnaParser {
     }
 
     public GenomicComponent parse(GenomicComponentMetaData md, final URL url) {
-        try {
-            final File f = File.createTempFile("ENA", ".xml");
-            executor.execute(new Runnable() {
-                public void run() {
-                    int tries = 0;
-                    InputStream is = null;
-                    while (tries < MAX_TRIES) {
-                        try {
-                            URLConnection uc = url.openConnection();
-                            is = uc.getInputStream();
-                            InputOutputUtils.copyInputStreamToFileSystem(is, f);
-                            break;
-                        } catch (IOException e) {
-                            if (tries++ < MAX_TRIES) {
-                                getLog().warn("Could not parse ENA record from URL " + url + ": retrying", e);
-                                try {
-                                    Thread.sleep(SLEEP_TIME);
-                                } catch (InterruptedException e1) {
-                                    getLog().warn("Woke up from sleep", e1);
-                                }
-                            } else {
-                                throw new EnaParsingException("Could not parse ENA record from URL " + url, e);
-                            }
-                        } finally {
-                            InputOutputUtils.closeQuietly(is);
-                        }
-                    }
-                }
-            });
-            if (f == null) {
-                throw new EnaParsingException("Could not parse ENA record from URL " + url);
-            }
-            try {
-                return parse(md, f);
-            } finally {
-                f.delete();
-            }
-        } catch (IOException e) {
-            throw new EnaParsingException(e);
-        }
-
+        return parse(md, retriever.getFileForEntry(md.getAccession()));
     }
 
     protected void parseContig(GenomicComponentImpl component, Element entryElem) {
@@ -385,10 +343,11 @@ public class EnaParser {
 
     protected void parseMetaData(GenomicComponentMetaData md, Element entryElem) {
 
-        // parse out source first so we can set it into the genome metadata if required
+        // parse out source first so we can set it into the genome metadata if
+        // required
         for (Element elem : new ElementsIterable(entryElem.getChildElements("feature"))) {
             if ("source".equals(elem.getAttributeValue("name"))) {
-               new SourceFeatureParser().parseFeature(md, elem);
+                new SourceFeatureParser().parseFeature(md, elem);
             }
         }
 
@@ -412,7 +371,7 @@ public class EnaParser {
         md.setUpdateDate(EnaGenomeMaterializer.parseEnaDate(entryElem.getAttributeValue("lastUpdated")));
         md.setLength(Integer.parseInt(entryElem.getAttribute("sequenceLength").getValue()));
         md.setDescription(getFirstChild(entryElem, "description").getValue());
-        if(md.getComponentType()==null || StringUtils.isEmpty(md.getName())) {
+        if (md.getComponentType() == null || StringUtils.isEmpty(md.getName())) {
             md.getDescriptionHandler().parseComponentDescription(md);
         }
         Attribute topoElem = entryElem.getAttribute("topology");
@@ -468,7 +427,8 @@ public class EnaParser {
     }
 
     protected Sequence parseSequence(Element entryElem) {
-        Sequence seq = new Sequence(entryElem.getChildElements("sequence").get(0).getValue().replaceAll("\\s+", ""));
+        Elements seqElem = entryElem.getChildElements("sequence");
+        Sequence seq = new Sequence(seqElem.get(0).getValue().replaceAll("\\s+", ""));
         seq.setProperties(getProperties(entryElem));
         return seq;
     }

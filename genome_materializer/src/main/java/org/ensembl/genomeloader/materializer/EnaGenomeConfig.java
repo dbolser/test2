@@ -98,7 +98,7 @@ public class EnaGenomeConfig {
 	private String uniparcUri;
 	private String interproUri;
 	private String uniProtUri;
-	private String enaXmlUrl;
+	private String enaEntryUrl = "https://www.ebi.ac.uk/ena/data/view/$ac$&display=text&expanded=true";
 	private String idUri;
 	private String rfamUri;
 	private Date strictDate = EnaGenomeMaterializer.parseEnaDate("2004-01-01");
@@ -113,14 +113,14 @@ public class EnaGenomeConfig {
 	private boolean loadTrackingReferences = true;
     private boolean allowEmptyGenomes = false;
     private int minGeneCount = 50;
-    private boolean allowMixedCoordSystems = false;
+    private boolean allowMixedCoordSystems = true;
 
-	public String getEnaXmlUrl() {
-		return enaXmlUrl;
+	public String getEnaEntryUrl() {
+		return enaEntryUrl;
 	}
 
-	public void setEnaXmlUrl(String enaXmlUrl) {
-		this.enaXmlUrl = enaXmlUrl;
+	public void setenaEntryUrl(String enaEntryUrl) {
+		this.enaEntryUrl = enaEntryUrl;
 	}
 
 	public String getEnaUri() {
