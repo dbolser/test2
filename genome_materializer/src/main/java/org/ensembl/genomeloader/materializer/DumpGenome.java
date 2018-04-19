@@ -13,6 +13,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.biojavax.bio.seq.RichLocation;
 import org.ensembl.genomeloader.materializer.executor.FileLockExecutor;
 import org.ensembl.genomeloader.materializer.genome_collections.GenomeCollections;
 import org.ensembl.genomeloader.materializer.genome_collections.OracleGenomeCollections;
@@ -45,7 +46,7 @@ public class DumpGenome {
                 .hasArg().build());
         options.addOption(
                 Option.builder("c").longOpt("config_file").desc("XML config file").required(false).hasArg().build());
-        Log log = LogFactory.getLog(DumpGenomeFromComponents.class);
+        Log log = LogFactory.getLog(DumpGenome.class);
         CommandLineParser parser = new DefaultParser();
         try {
             CommandLine cmd = parser.parse(options, args);
@@ -101,10 +102,11 @@ public class DumpGenome {
     }
 
     public Genome materializeGenome(GenomeMetaData genomeMetaData) {
-        EnaGenomeMaterializer matfer = new EnaGenomeMaterializer(config.getEnaXmlUrl(),
-                new EnaParser(new FileLockExecutor(config.getLockFileDir(), config.getMaxEnaConnections()),
-                        new XmlDatabaseReferenceTypeRegistry()),
-                new EnaGenomeProcessor(config, srv), new EnaGenomeValidator(config));
+        EnaXmlRetriever retriever = new EnaXmlRetriever(
+                new FileLockExecutor(config.getLockFileDir(), config.getMaxEnaConnections()), config.getEnaEntryUrl());
+        EnaGenomeMaterializer matfer = new EnaGenomeMaterializer(config.getEnaEntryUrl(),
+                new EnaParser(retriever, new XmlDatabaseReferenceTypeRegistry()), new EnaGenomeProcessor(config, srv),
+                new EnaGenomeValidator(config));
         log.info("Dumping data for " + genomeMetaData.getId());
         Genome genome = matfer.getGenome(genomeMetaData);
         log.info("Processing genome for " + genomeMetaData.getId());
@@ -120,6 +122,7 @@ public class DumpGenome {
         mapper.setSerializationInclusion(Include.NON_EMPTY);
         SimpleModule simpleModule = new SimpleModule("SimpleModule", new Version(1, 0, 0, null, null, null));
         simpleModule.addSerializer(EntityLocation.class, new EntityLocationSerializer());
+        simpleModule.addSerializer(RichLocation.class, new RichLocationSerializer());
         simpleModule.addSerializer(DatabaseReference.class, new DatabaseReferenceSerializer());
         simpleModule.addSerializer(Date.class, new DateSerializer());
         simpleModule.addSerializer(GeneName.class, new GeneNameSerializer());
