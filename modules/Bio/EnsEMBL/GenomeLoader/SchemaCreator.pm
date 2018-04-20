@@ -126,7 +126,9 @@ sub populate_tables {
     external_db => [
       qw/external_db_id db_name db_release status priority db_display_name type secondary_db_name secondary_db_table description/
     ],
-    attrib_type => [qw/attrib_type_id code  name description/] };
+    attrib_type => [qw/attrib_type_id code  name description/],
+    biotype => [qw/biotype_id name object_type db_type attrib_type_id description biotype_group so_acc/]
+     };
   while ( my ( $table, $columns ) = each %$tables ) {
     $self->log()->debug("Loading controlled table $table");
     $ph->execute_no_return(
