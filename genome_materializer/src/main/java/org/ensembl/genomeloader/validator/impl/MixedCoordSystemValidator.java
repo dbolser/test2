@@ -38,7 +38,9 @@ public class MixedCoordSystemValidator implements GenomeValidator {
 		Set<GenomicComponentType> types = CollectionUtils.createHashSet(genome
 				.getGenomicComponents().size());
 		for (GenomicComponent component : genome.getGenomicComponents()) {
-			types.add(component.getMetaData().getComponentType());
+		    if(component.isTopLevel()) {
+		        types.add(component.getMetaData().getComponentType());
+		    }
 		}
 		if (types.contains(GenomicComponentType.SUPERCONTIG)
 				&& (types.contains(GenomicComponentType.PLASMID) || types
