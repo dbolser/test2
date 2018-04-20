@@ -84,67 +84,7 @@ public class AssemblyContigProcessor implements GenomeProcessor {
         for (final GenomicComponent newComponent : newComponents.values()) {
             genome.getGenomicComponents().add(newComponent);
         }
-        if (config.isLoadAssembly() && assemblyValid) {
-            // 3. check for and fix 3 level assemblies
-            for (GenomicComponent newComponent : resolveThreeLevel(genome)) {
-                genome.getGenomicComponents().add(newComponent);
-            }
-        }
-
         log.info("Finished processing contigs for genome " + genome.getName());
-    }
-
-    private Set<GenomicComponent> resolveThreeLevel(Genome genome) {
-        // 1. hash components for ease of use
-        Map<String, GenomicComponent> components = CollectionUtils.createHashMap();
-        for (GenomicComponent component : genome.getGenomicComponents()) {
-            components.put(component.getAccession(), component);
-        }
-        // 2. build list of paths with components
-        Map<String, Set<GenomicComponent>> paths = CollectionUtils.createHashMap();
-        for (GenomicComponent component : genome.getGenomicComponents()) {
-            GenomicComponentType cType = component.getMetaData().getComponentType();
-            if (cType != GenomicComponentType.CONTIG) {
-                GenomicComponentType assType = null;
-                for (AssemblyElement assElem : component.getAssemblyElements()) {
-                    if (AssemblySequence.class.isAssignableFrom(assElem.getClass())) {
-                        final String acc = ((AssemblySequence) assElem).getAccession();
-                        GenomicComponentType cAssType = components.get(acc).getMetaData().getComponentType();
-                        if (assType == null) {
-                            assType = cAssType;
-                        } else {
-                            if (!assType.equals(cAssType)) {
-                                throw new MaterializationUncheckedException("Component " + component.getAccession()
-                                        + " has assembly components from both " + assType + " and " + cAssType);
-                            }
-                        }
-                    }
-                }
-                String key = cType + "-" + assType;
-                log.debug(component.getAccession() + " has path " + key);
-                Set<GenomicComponent> comps = paths.get(key);
-                if (comps == null) {
-                    comps = CollectionUtils.createHashSet();
-                    paths.put(key, comps);
-                }
-                comps.add(component);
-            }
-        }
-        // 3. check paths to see if we have a mixture
-        String chromSuperConKey = GenomicComponentType.CHROMOSOME + "-" + GenomicComponentType.SUPERCONTIG;
-        String chromConKey = GenomicComponentType.CHROMOSOME + "-" + GenomicComponentType.CONTIG;
-        Set<GenomicComponent> newComponents = CollectionUtils.createHashSet();
-        if (paths.containsKey(chromSuperConKey) && paths.containsKey(chromConKey)) {
-            // find the 1-step assemblies and add intermediate components
-            log.info("Resolving mixed assembly");
-            for (GenomicComponent cComp : paths.get(chromConKey)) {
-                String newName = cComp.getMetaData().getName() + "_supercontig";
-                String newAcc = cComp.getAccession() + "_supercontig";
-                log.info("Adding intermediate component " + newAcc + "/" + newName + " for " + cComp.getAccession());
-                newComponents.add(addChildComponent(cComp, GenomicComponentType.SUPERCONTIG, newAcc, newName));
-            }
-        }
-        return newComponents;
     }
 
     private void processTopLevelComponent(GenomicComponent topLevel, Map<String, GenomicComponent> newComponents) {
