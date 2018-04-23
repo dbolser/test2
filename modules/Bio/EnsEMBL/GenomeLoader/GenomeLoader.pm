@@ -1,7 +1,7 @@
 
 =head1 LICENSE
 
-Copyright [2009-2014] EMBL-European Bioinformatics Institute
+Copyright [2009-2018] EMBL-European Bioinformatics Institute
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,15 +15,27 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
+=head1 NAME
+
+Bio::EnsEMBL::GenomeLoader::GenomeLoader
+
+=head1 SYNOPSIS
+
+=over 4
+my $loader =
+  Bio::EnsEMBL::GenomeLoader::GenomeLoader->new( -DBA          => $dba,
+                                                 -TAXONOMY_DBA => $taxonomy_dba,
+                                                 -PRODUCTION_DBA => $prod_dba );
+$loader->load_genome($genome);
+
+=back
+
+=head1 DESCRIPTION
+
+Module to load genome model from supplied hash into Ensembl MySQL database using the supplied DBAdaptor.
+
 =cut
 
-# $Source$
-# $Revision$
-# $Date$
-# $Author$
-#
-# Object for loading data into an ensembl database
-#
 package Bio::EnsEMBL::GenomeLoader::GenomeLoader;
 use warnings;
 use strict;
@@ -40,6 +52,18 @@ use List::MoreUtils qw(uniq);
 use File::Temp qw/tempdir/;
 use base qw(Bio::EnsEMBL::GenomeLoader::BaseLoader);
 
+=head1 METHODS
+
+=head2 new
+
+  Description: Constructor. Invokes BaseLoader->new as well
+  Args       : -DBA - DBAdaptor to write genome to
+  Args       : -TAXONOMY_DBA - DBAdaptor for ncbi taxonomy database
+  Args       : -PRODUCTION_DBA - DBAdaptor for production database
+  Returns    : new instance
+
+=cut
+
 sub new {
   my $caller = shift;
   my $class  = ref($caller) || $caller;
@@ -47,8 +71,20 @@ sub new {
   return $self;
 }
 
+=head2 load_genome
+
+  Description: load genome model
+  Args       : genome as hash
+  Args       : (optional) species_id (default is 1)  
+
+=cut
+
 sub load_genome {
-  my ( $self, $genome ) = @_;
+  my ( $self, $genome, $species_id ) = @_;
+
+  if ($species_id) {
+    $self->dba()->species_id($species_id);
+  }
 
   if ( $self->dba()->dbc()->sql_helper()->execute_single_result(
                          -SQL => "select count(*) from meta where species_id=?",
@@ -69,15 +105,16 @@ sub load_genome {
   $component_loader->load_assembly($genome);
 
   # 3. store features
-  my @hashes = ();
+  my @hashes = ();    # keep hash of features for each component
   for my $component ( @{ $genome->{genomicComponents} } ) {
     if ( $component->{topLevel} ) {
       push @hashes, $component_loader->load_features($component);
     }
   }
 
+  # 4. post process loaded genome
+  # generate cumulative hash
   my $ctx = Digest::MD5->new();
-
   $ctx->add( sort @hashes );
   $genome->{metaData}->{genome_hash} = $ctx->hexdigest();
 
@@ -86,6 +123,13 @@ sub load_genome {
 
   return;
 } ## end sub load_genome
+
+=head2 load_metadata
+
+  Description: Store the metadata found in the metaData key of the supplied genome model
+  Args       : genome model as hash
+  
+=cut
 
 sub load_metadata {
   my ( $self, $genome ) = @_;
@@ -135,7 +179,8 @@ sub load_metadata {
   $genome_metadata->{lineage}->[0] = 'unknown'
     unless @{ $genome_metadata->{lineage} };
   $self->log()->debug("Setting meta species.classification");
-  foreach my $class ( uniq( @{ $genome_metadata->{lineage} } ) ) {
+  # note that Ensembl wants the lineage backwards
+  foreach my $class ( reverse uniq( @{ $genome_metadata->{lineage} } ) ) {
     $meta->store_key_value( 'species.classification', $class );
   }
 
@@ -196,6 +241,13 @@ sub load_metadata {
   return;
 } ## end sub load_metadata
 
+=head2 set_wikipedia_info
+
+  Description: Determine species to which genome belongs and find if there is a wikipedia entry
+  Args       : genome metadata as hash
+  
+=cut
+
 sub set_wikipedia_info {
   my ( $self, $genome_metadata ) = @_;
   my $meta = $self->dba()->get_MetaContainer();
@@ -209,6 +261,7 @@ sub set_wikipedia_info {
     return;
   }
 
+  # determine the species to which the genome belongs
   my $species = $node_adaptor->fetch_ancestor_by_rank( $node, "species" );
 
   if ( !defined $species ) {
@@ -216,9 +269,12 @@ sub set_wikipedia_info {
     return;
   }
 
+  # store metadata on species
   $self->log()->info( "Found species " . $species->name() );
   $meta->store_key_value( 'species.species_name',        $species->name() );
   $meta->store_key_value( 'species.species_taxonomy_id', $species->taxon_id() );
+
+  # retrieve wikipedia entry for species
   ( my $wiki_url = 'http://en.wikipedia.org/wiki/' . $species->name() ) =~
     s/ +/_/g;
   my $ua = LWP::UserAgent->new();
@@ -230,8 +286,19 @@ sub set_wikipedia_info {
   return;
 } ## end sub set_wikipedia_info
 
+=head2 set_sample_data
+
+  Description: Find a gene to use as an example and store sample metadata
+  Args       : genome model as hash
+  
+=cut
+
 sub set_sample_data {
+
   my ( $self, $genome ) = @_;
+
+  # find a random gene with a name to use as a sample
+
   $self->log()->info("Storing sample data");
   my @genes =
     @{ $self->dba()->get_GeneAdaptor()
@@ -286,9 +353,19 @@ sub set_sample_data {
   return;
 } ## end sub set_sample_data
 
+=head2 load_post_metadata
+
+  Description: Store metadata about genome using models that have been stored
+  Args       : genome model as hash
+  
+=cut
+
 sub load_post_metadata {
   my ( $self, $genome ) = @_;
+
+  # set samples
   $self->set_sample_data();
+
   # set repeat.analysis
   $self->log()->debug("Storing repeat.analysis entries");
   for my $anal (
@@ -324,13 +401,18 @@ sub load_post_metadata {
   return;
 } ## end sub load_post_metadata
 
+=head2 update_statistics
+
+  Description: calculate statistics about stored genome and store in database
+  Args       : genome hash
+  
+=cut
+
 sub update_statistics {
-  
+
   my ( $self, $genome ) = @_;
-  
-  
-  # set species
-  # create a job to hang things off
+
+# This uses hive modules from ensembl-production so we need a fake hive job to run them
   my $job = Bio::EnsEMBL::Hive::AnalysisJob->new();
 
   # set universal params:
@@ -373,7 +455,6 @@ sub update_statistics {
 
   for my $runnable_module ( keys %$runnables ) {
 
- 
     my $params = $runnables->{$runnable_module};
     # set the params
     for my $param ( keys %{$params} ) {
@@ -396,43 +477,3 @@ sub update_statistics {
 
 1;
 __END__
-
-=head1 NAME
-
-GenomeLoader::GenomeLoader
-
-=head1 SYNOPSIS
-
-Module to load a specified genome and its components into a preexisting Ensembl schema.
-
-=head1 AUTHORS
-
-Dan Staines <dstaines@ebi.ac.uk>
-
-=head1 METHODS
-
-=head2 new
-  Title      : new
-  Description: Constructor. Invokes BaseLoader->new as well
-  Args       : Hash of arguments
-  Returns    : new instance
-
-=head2 load_genome_data
-  Title      : load_genome_data
-  Description: load general genome data (meta table, coord systems) needed for component loading
-  Args       : genome metadata hash
-
-=head2 load_component
-  Title      : load_component
-  Description: load the supplied component into the current Ensembl database using GenomeLoader::ComponentLoader
-  Args       : component hash
-
-=head2 post_process_genome
-  Title      : post_process_genome
-  Description: run post-processing for genome (mapping paths, sample data)
-  Args       : genome metadata hash
-
-=head2 set_sample_data
-  Title      : set_sample_data
-  Description: set the sample data in the meta table for the current genome
-  Args       : none
