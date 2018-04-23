@@ -21,28 +21,28 @@ The classes describing the genome data can be found in `org.ensembl.genomeloader
 
 The principal object model is:
 * Genome
- * GenomeMetaData
- * GenomicComponent (1..n)
-  * GenomicComponentMetaData
-  * Sequence
-  * AssemblyElements (1..n)
-  * DatabaseReference (1..n)
-  * Gene (1..n)
-   * EntityLocation
-   * DatabaseReference (1..n)
-   * Protein (1..n)
-    * EntityLocation
-    * DatabaseReference (1..n)
-    * Transcript (n..m)
-     * EntityLocation
-     * DatabaseReference (1..n)
-     * Operon (n..m)
-  * RnaGene (1..n)
-   * EntityLocation
-   * DatabaseReference (1..n)
-   * Transcript (1..n)
-    * DatabaseReference (1..n)
-    * EntityLocation
+    * GenomeMetaData
+    * GenomicComponent (1..n)
+        * GenomicComponentMetaData
+        * Sequence
+        * AssemblyElements (1..n)
+        * DatabaseReference (1..n)
+        * Gene (1..n)
+            * EntityLocation
+            * DatabaseReference (1..n)
+            * Protein (1..n)
+                * EntityLocation
+                * DatabaseReference (1..n)
+                * Transcript (n..m)
+                    * EntityLocation
+                    * DatabaseReference (1..n)
+                    * Operon (n..m)
+        * RnaGene (1..n)
+            * EntityLocation
+            * DatabaseReference (1..n)
+            * Transcript (1..n)
+                * DatabaseReference (1..n)
+                * EntityLocation
 
 Note that the relationship between Protein and Transcript is an inversion of the usual Ensembl Gene-Transcript-Translation model. This is to support prokaryotic genomes where there may be polycistronic transcripts, though these are not currently found in the ENA models retrieved.
 
