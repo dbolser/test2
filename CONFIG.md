@@ -21,7 +21,7 @@ Database properties
     * UniProt Oracle instance
 * rfamUri
     * Location of MySQL RFAM database
-* enaXmlUrl
+* enaEntryUrl
     * URL for ENA REST service
 * maxEnaConnections = 10
     * Maximum number of connections to ENA REST
