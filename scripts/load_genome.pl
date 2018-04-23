@@ -1,19 +1,160 @@
-#!/bin/env perl
-# Copyright [2017] EMBL-European Bioinformatics Institute
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+#!/usr/bin/env perl
 
-# script for loading a single genome into a prepared core database
+=head1 LICENSE
+
+Copyright [2009-2014] EMBL-European Bioinformatics Institute
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+=head1 NAME
+
+load_genome.pl
+
+=head1 SYNOPSIS
+
+Usage: load_genome.pl --user user [--password pass] --host host --port port --dbname dbname [--species_id species_id] [--verbose]
+  --division division --accession assembly_setchain [--production_name production_name] [--display_name display_name]
+  [--config_file config_file] [--jar jar_file]
+  --tax_user user [--tax_password pass] --tax_host host --tax_port port --tax_dbname dbname
+  --prod_user user [--prod_password pass] --prod_host host --prod_port port --prod_dbname dbname
+  [--interpro_user user [--interpro_password pass] --interpro_host host --interpro_port port --interpro_dbname dbname]
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--help>
+
+Print a brief help message and exits.
+
+=item B<--verbose>
+
+Print verbose debug messages during processing
+
+=item B<--user>
+
+User for database where core will be created
+
+=item B<--password>
+
+Password for core database server (optional)
+
+=item B<--host>
+
+Core database host name
+
+=item B<--port>
+
+Core database host port
+
+=item B<--dbname>
+
+Name of core database to create
+
+=item B<--species_id>
+
+Species ID to use (default is 1)
+
+=item B<--division>
+
+Ensembl Genomes division name
+
+=item B<--accession>
+
+Set chain of assembly to load (e.g GCA12345 - not the versioned accession!)
+
+=item B<--production_name>
+
+Optional compute-safe name to use during load (default is derived from assembly record)
+
+=item B<--display_name>
+
+Optional human-readable name to use during load (default is derived from assembly record)
+
+=item B<--config_file>
+
+File containing genomeloader configuration (default is etc/enagenome_config.xml)
+
+=item B<--jar>
+
+Fat JAR containing GenomeLoader dump code. Default is genome_materializer/build/libs/genome_materializer-*.jar
+
+=item B<--tax_user>
+
+User for database server containing taxonomy database
+
+=item B<--tax_password>
+
+Password for database server containing taxonomy database
+
+=item B<--tax_host> 
+
+Hostname of database server containing taxonomy database
+
+=item B<--tax_port>
+
+Port of database server containing taxonomy database
+
+=item B<--tax_dbname>
+
+Name of taxonomy database
+
+=item B<--prod_user>
+
+User for database server containing Ensembl production database
+
+=item B<--prod_password>
+
+Password for database server containing Ensembl production database
+
+=item B<--prod_host> 
+
+Hostname of database server containing Ensembl production database
+
+=item B<--prod_port>
+
+Port of database server containing Ensembl production database
+
+=item B<--prod_dbname>
+
+Name of Ensembl production database
+
+=item B<--interpro_user>
+
+User for database server containing Interpro database (default details come from config file)
+
+=item B<--interpro_password>
+
+Password for database server containing Interpro database
+
+=item B<--interpro_host> 
+
+Hostname of database server containing Interpro database
+
+=item B<--interpro_port>
+
+Port of database server containing Interpro database
+
+=item B<--interpro_dbname>
+
+Name of Interpro database
+
+=back
+
+=head1 DESCRIPTION
+
+This script retrieves the data from ENA for a specified assembly, generates a genome model and loads that model into the specified Ensembl core MySQL database
+
+=cut
 
 use strict;
 use warnings;
@@ -38,6 +179,8 @@ my $optsd = [ @{ $cli_helper->get_dba_opts() },
               @{ $cli_helper->get_dba_opts('prod_') },
               @{ $cli_helper->get_dba_opts('interpro_') } ];
 push( @{$optsd}, "verbose|v" );
+push( @{$optsd}, "production_name:s" );
+push( @{$optsd}, "display_name:s" );
 push( @{$optsd}, "accession|a:s" );
 push( @{$optsd}, "jar|j:s" );
 push( @{$optsd}, "division:s" );
@@ -45,7 +188,13 @@ push( @{$optsd}, "config_file|c:s" );
 
 my $usage = sub {
   print
-"Usage: $0 --user user [-password pass] --host host --port port --dbname dbname --species_id species_id --division division --dump_file file [--verbose]\n";
+qq/Usage: load_genome.pl --user user [--password pass] --host host --port port --dbname dbname [--species_id species_id] [--verbose]
+  --division division --accession assembly_setchain [--species species_name]
+  [--config_file config_file] [--jar jar_file]
+  --tax_user user [--tax_password pass] --tax_host host --tax_port port --tax_dbname dbname
+  --prod_user user [--prod_password pass] --prod_host host --prod_port port --prod_dbname dbname
+  [--interpro_user user [--interpro_password pass] --interpro_host host --interpro_port port --interpro_dbname dbname]
+/;
 };
 
 my $opts = $cli_helper->process_args( $optsd, $usage );
@@ -103,24 +252,8 @@ if ( !-e $opts->{jar} ) {
 "Could not find genome_materializer jar $opts->{jar} - try running cd genome_materializer && ./gradlew fatJar";
 }
 
-my $dump_file = tempdir(-CLEANUP=>1) . "/$opts->{accession}.json";
 
 my $java_opts = $ENV{JAVA_OPTS} || '';
-
-my $cmd =
-"java $java_opts -jar $opts->{jar} -c $opts->{config_file} -s $opts->{accession} -f $dump_file";
-$log->info("Dumping $opts->{accession} to $dump_file");
-$log->debug("Running $cmd");
-system($cmd) == 0 || croak "Could not execute $cmd: $?";
-
-$log->info( "Parsing genome from " . $dump_file );
-my $genome = decode_json( read_file($dump_file) );
-
-if ( defined $opts->{species} ) {
-  $genome->{metaData}{productionName} = $opts->{species};
-}
-
-$genome->{metaData}{division} = $opts->{division};
 
 $opts->{tax_dbname}||='ncbi_taxonomy';
 my ($taxonomy_dba_args) =
@@ -163,8 +296,34 @@ my $loader =
   Bio::EnsEMBL::GenomeLoader::GenomeLoader->new( -DBA          => $dba,
                                                  -TAXONOMY_DBA => $taxonomy_dba,
                                                  -PRODUCTION_DBA => $prod_dba );
+
+my $dump_file = tempdir(-CLEANUP=>1) . "/$opts->{accession}.json";
+
+my $cmd =
+"java $java_opts -jar $opts->{jar} -c $opts->{config_file} -s $opts->{accession} -f $dump_file";
+$log->info("Dumping $opts->{accession} to $dump_file");
+$log->debug("Running $cmd");
+system($cmd) == 0 || croak "Could not execute $cmd: $?";
+
+$log->info( "Parsing genome from " . $dump_file );
+my $genome = decode_json( read_file($dump_file) );
+
+if ( defined $opts->{production_name} ) {
+  $log->info("Using production name ".$opts->{production_name});
+  $genome->{metaData}{productionName} = $opts->{production_name};
+}
+
+if ( defined $opts->{display_name} ) {
+  $log->info("Using display name ".$opts->{display_name});
+  $genome->{metaData}{name} = $opts->{display_name};
+}
+
+$genome->{metaData}{division} = $opts->{division};
+
+$log->info( "Loading genome into schema" );
 $loader->load_genome($genome);
 
+$log->info( "Post-processing schema" );
 $schema->finish_schema($genome);
 
 unlink $dump_file;
