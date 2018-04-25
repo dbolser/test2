@@ -1,7 +1,7 @@
 # Ensembl GenomeLoader
 
 ## Overview
-This codebase supports the loading of genomes from ENA into Ensembl core databases, either singly or in batch using collections. For more information on design, please see [DESIGN.md].
+This codebase supports the loading of genomes from ENA into Ensembl core databases, either singly or in batch using collections. For more information on design, please see [DESIGN.md](DESIGN.md).
 
 **Currently this code can only be run from within the EBI due to dependencies on internal databases. This may change in future as alternative services become available**
 
