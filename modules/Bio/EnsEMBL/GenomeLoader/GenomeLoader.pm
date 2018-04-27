@@ -46,6 +46,7 @@ use Bio::EnsEMBL::GenomeLoader::Constants qw(BIOTYPES CS);
 use Bio::EnsEMBL::GenomeLoader::Utils qw(start_session flush_session);
 use Bio::EnsEMBL::GenomeLoader::ComponentLoader;
 use Bio::EnsEMBL::Hive::AnalysisJob;
+use Bio::EnsEMBL::Hive::Worker;
 use LWP::UserAgent;
 use Digest::MD5;
 use List::MoreUtils qw(uniq);
@@ -412,8 +413,9 @@ sub update_statistics {
 
   my ( $self, $genome ) = @_;
 
-# This uses hive modules from ensembl-production so we need a fake hive job to run them
+# This uses hive modules from ensembl-production so we need a fake hive job and worker to run them
   my $job = Bio::EnsEMBL::Hive::AnalysisJob->new();
+  my $worker = Bio::EnsEMBL::Hive::Worker->new();
 
   # set universal params:
   $job->param( 'dbtype',    'core' );
@@ -468,6 +470,7 @@ sub update_statistics {
     my $runnable = $runnable_module->new();
     $runnable->{production_dba} = $self->production_dba();
     $runnable->input_job($job);
+    $runnable->worker($worker);
     $runnable->run();
 
   }
