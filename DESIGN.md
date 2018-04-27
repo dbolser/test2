@@ -61,6 +61,8 @@ Elements from the feature table are handled by different implementations of `Xml
 ## Processor and validation code
 Once a `Genome` instance has been produced by `EnaGenomeMaterializer`, it is passed to an instance of `GenomeProcessor` for secondary processing. This is currently `EnaGenomeProcessor` which delegates to a series of other processors, found in `org.ensembl.genomeloader.materializer.processors`. These can be divided into two main categories, those which further manipulate the model to handle complex locations, and those which decorate the model with additional data from other sources.
 
+Note that many of these processors use other EBI resources including ENA, InterPro, UniProt and UniParc Oracle instances.
+
 A particularly important processor which straddles both these camps is `AssemblyProcessor` which is essential to retrieve and arrange the entries comprising a CON entry from ENA. This uses the assembly elements parsed out by the main ENA parser to retrieve the sequence components that make up that entry. This is particularly important in larger assemblies with longer sequences.
 
 After processing, the `Genome` instance is passed to an instance of `GenomeValidator` for a series of checks to make sure the model is valid for loading into Ensembl. The main validator is `EnaGenomeValidator` which again delegates to other validators, found in `org.ensembl.genomeloader.materializer.validator`.
