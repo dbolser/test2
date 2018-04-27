@@ -78,8 +78,8 @@ The load process uses the Ensembl Perl API to load a MySQL core schema with data
 
 ## SchemaCreator
 The code found in `Bio::EnsEMBL::GenomeLoader::SchemaCreator` carries out two main functions:
-# creation of an empty MySQL Ensembl core schema and population of controlled tables
-# updating of a complete schema to add additional shared data used by all genomes found in that schema
+* creation of an empty MySQL Ensembl core schema and population of controlled tables
+* updating of a complete schema to add additional shared data used by all genomes found in that schema
 
 ### Creating a schema
 The first piece of functionality is invoked by `create_schema`. This creates the database (dropping if needed) and loads DDL from the .sql files found in the core Ensembl repo, It then uses the `ensembl_production` database to populate controlled tables such as `external_db` and `biotype` from master copies of those tables. SchemaCreator returns a `DBAdaptor` instance.  Note that this is set to `species_id` 1, so would need to be changed for accessing other species.

@@ -88,8 +88,9 @@ sub populate_tables {
       qw/external_db_id db_name db_release status priority db_display_name type secondary_db_name secondary_db_table description/
     ],
     attrib_type => [qw/attrib_type_id code  name description/],
-    biotype => [qw/biotype_id name object_type db_type attrib_type_id description biotype_group so_acc/]
-     };
+    biotype     => [
+      qw/biotype_id name object_type db_type attrib_type_id description biotype_group so_acc/
+    ] };
   while ( my ( $table, $columns ) = each %$tables ) {
     $self->log()->debug("Loading controlled table $table");
     $ph->execute_no_return(
@@ -117,6 +118,7 @@ sub finish_schema {
   $self->load_interpro();
   $self->clean_analysis();
   $self->update_analysis_descriptions();
+  $self->convert_engine();
   $self->log()
     ->info(
        "Finished running post-load steps on " . $self->dba()->dbc()->dbname() );
@@ -127,7 +129,8 @@ sub clean_versions {
   my ($self) = @_;
   $self->log()->info("Removing blank version for coord_system");
   $self->dba()->dbc()->sql_helper()
-    ->execute_update( -SQL => q/update coord_system set version=NULL where version=''/ );
+    ->execute_update(
+             -SQL => q/update coord_system set version=NULL where version=''/ );
   $self->log()->info("Removing version 0 for xrefs");
   $self->dba()->dbc()->sql_helper()
     ->execute_update( -SQL => q/update xref set version=NULL where version=0/ );
@@ -292,7 +295,24 @@ sub update_analysis_descriptions {
         -PARAMS => [ $row->[1], $des->[0], $des->[1], $des->[2] ] );
     }
   }
+  $self->log()->info("Completed updating analysis description");
   return;
 } ## end sub update_analysis_descriptions
+
+sub convert_engine {
+  my ($self) = @_;
+  my $tables =
+    $self->dba()->dbc()->sql_helper()->execute_simple(
+     -SQL =>
+       q/select table_name from information_schema.tables where table_schema=? and engine<>'MyISAM'/,
+     -PARAMS => [ $self->dba()->dbc()->dbname() ] );
+  $self->log()->info("Converting tables to MyISAM");
+  for my $table (@{$tables}) {
+    $self->log()->debug("Converting $table to MyISAM");
+    $self->dba()->dbc()->sql_helper()->execute_update(-SQL=>"ALTER TABLE $table ENGINE=MyISAM");
+  }
+  $self->log()->info("Completed converting tables to MyISAM");
+  return;
+}
 
 1;
