@@ -34,7 +34,10 @@ import org.ensembl.genomeloader.validator.GenomeValidationUncheckedException;
 import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 
 /**
- * Class to identify where proteins have internal overlaps and resolve them
+ * Processor to identify where proteins have internal overlaps and resolve them
+ * using {@link ModelUtils}. This is where INSDC locations have overlapping
+ * joins which Ensembl cannot handle. These are converted into non-overlapping
+ * exons with sequence modifiers.
  * 
  * @author dstaines
  * 

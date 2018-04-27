@@ -26,7 +26,7 @@ import org.ensembl.genomeloader.metadata.GenomeMetaData;
 import org.ensembl.genomeloader.model.Genome;
 
 /**
- * {@link GenomeProcessor} to set additional metadata needed for the load
+ * {@link GenomeProcessor} to set additional metadata needed for the load. These items include names and dates.
  * 
  * @author dstaines
  * 

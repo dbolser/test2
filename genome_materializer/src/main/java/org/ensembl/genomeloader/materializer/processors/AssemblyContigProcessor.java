@@ -42,7 +42,8 @@ import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 
 /**
  * Use assembly information for CON sequences to replicate assembly in an
- * Ensembl-compatible way
+ * Ensembl-compatible way. This involves retrieving contigs referenced by CONs
+ * as additional {@link GenomicComponent}s.
  * 
  * @author dstaines
  *

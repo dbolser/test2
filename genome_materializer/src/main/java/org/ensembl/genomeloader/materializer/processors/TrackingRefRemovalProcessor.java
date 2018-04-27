@@ -15,6 +15,14 @@ import org.ensembl.genomeloader.model.RnaTranscript;
 import org.ensembl.genomeloader.model.Rnagene;
 import org.ensembl.genomeloader.model.Transcript;
 
+/**
+ * Processor to remove the artificial xrefs added to features so they can be
+ * traced back to original ENA features. These xrefs are quite large and not
+ * always helpful.
+ * 
+ * @author dstaines
+ *
+ */
 public class TrackingRefRemovalProcessor implements GenomeProcessor {
 
     private final Log log = LogFactory.getLog(this.getClass());

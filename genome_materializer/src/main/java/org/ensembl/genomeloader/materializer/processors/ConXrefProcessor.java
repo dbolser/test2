@@ -49,7 +49,7 @@ import org.ensembl.genomeloader.util.sql.SqlServiceTemplateImpl;
 import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 
 /**
- * Processor that deals with inadequacies of the CON expansion code where CDS
+ * Processor that deals with inadequacies of the ENA CON expansion code where CDS
  * feature xrefs are not included in the expanded entry
  * 
  * @author dstaines

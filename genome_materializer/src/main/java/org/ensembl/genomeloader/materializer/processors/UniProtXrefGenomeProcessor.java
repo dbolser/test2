@@ -47,7 +47,9 @@ import org.ensembl.genomeloader.util.sql.SqlServiceTemplateImpl;
 import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 
 /**
- * Processor to add transitive xrefs from UniProt based on UniProt mappings
+ * Processor to add transitive xrefs from UniProt based on UniProt mappings.
+ * Note that only xrefs from databases listed in the whitelist file are
+ * included.
  * 
  * @author dstaines
  *

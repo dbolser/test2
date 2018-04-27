@@ -43,7 +43,9 @@ import org.ensembl.genomeloader.util.sql.SqlServiceTemplateImpl;
 import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 
 /**
- * Processor that adds missing descriptions to UniProt xrefs
+ * Processor that adds missing descriptions to UniProt xrefs. This is because
+ * the ENA records just contain the accession, but Ensembl requires the
+ * description
  * 
  * @author dstaines
  *

@@ -24,30 +24,29 @@ import org.ensembl.genomeloader.validator.GenomeValidationException;
 import org.ensembl.genomeloader.validator.GenomeValidator;
 
 /**
- * Validator that checks the genome description does not match a blacklist
+ * Validator that checks the genome description does not match a blacklist. This
+ * to to catch genomes that are partial, or from meta genomics or targeted locus
+ * projects.
  * 
  * @author dstaines
  * 
  */
 public class GenomeDescriptionValidator implements GenomeValidator {
 
-	private Pattern[] PATTERNS = {
-			Pattern.compile(".*metagenom.*", Pattern.CASE_INSENSITIVE),
-			Pattern.compile(".*Targeted Locus.*", Pattern.CASE_INSENSITIVE),
-			Pattern.compile(".*Partial Genome.*", Pattern.CASE_INSENSITIVE) };
+    private Pattern[] PATTERNS = { Pattern.compile(".*metagenom.*", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*Targeted Locus.*", Pattern.CASE_INSENSITIVE),
+            Pattern.compile(".*Partial Genome.*", Pattern.CASE_INSENSITIVE) };
 
-	public void validateGenome(Genome genome) throws GenomeValidationException {
-		if (!StringUtils.isEmpty(genome.getMetaData().getDescription())) {
-			for (Pattern p : PATTERNS) {
-				if (p.matcher(genome.getMetaData().getDescription()).matches()) {
-					throw new GenomeValidationGeneCountException("Genome "
-							+ genome.getName()
-							+ " has blacklisted description \""
-							+ genome.getMetaData().getDescription() + "\" (matches /"
-							+ p.pattern() + "/)");
-				}
-			}
-		}
-	}
+    public void validateGenome(Genome genome) throws GenomeValidationException {
+        if (!StringUtils.isEmpty(genome.getMetaData().getDescription())) {
+            for (Pattern p : PATTERNS) {
+                if (p.matcher(genome.getMetaData().getDescription()).matches()) {
+                    throw new GenomeValidationGeneCountException(
+                            "Genome " + genome.getName() + " has blacklisted description \""
+                                    + genome.getMetaData().getDescription() + "\" (matches /" + p.pattern() + "/)");
+                }
+            }
+        }
+    }
 
 }

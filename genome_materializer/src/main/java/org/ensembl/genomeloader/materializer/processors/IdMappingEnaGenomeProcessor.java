@@ -22,6 +22,11 @@ import org.ensembl.genomeloader.services.sql.SqlService;
 import org.ensembl.genomeloader.xrefregistry.DatabaseReferenceTypeRegistry;
 import org.ensembl.genomeloader.xrefregistry.impl.XmlDatabaseReferenceTypeRegistry;
 
+/**
+ * Extension of EnaGenomeProcessor that tries to handle duplicate identifiers ahead of time
+ * @author dstaines
+ *
+ */
 public class IdMappingEnaGenomeProcessor extends EnaGenomeProcessor {
 
     public IdMappingEnaGenomeProcessor(EnaGenomeConfig config, SqlService srv) {

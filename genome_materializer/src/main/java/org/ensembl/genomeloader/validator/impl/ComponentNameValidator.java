@@ -28,6 +28,11 @@ import org.ensembl.genomeloader.validator.ComponentNameLengthValidationException
 import org.ensembl.genomeloader.validator.GenomeValidationException;
 import org.ensembl.genomeloader.validator.GenomeValidator;
 
+/**
+ * Checks that components have valid names (content, length etc.)
+ * @author dstaines
+ *
+ */
 public class ComponentNameValidator implements GenomeValidator {
 
 	private final Log log = LogFactory.getLog(ComponentNameValidator.class);

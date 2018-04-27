@@ -32,6 +32,12 @@ import org.ensembl.genomeloader.validator.ComponentNameValidationException;
 import org.ensembl.genomeloader.validator.GenomeValidationException;
 import org.ensembl.genomeloader.validator.GenomeValidator;
 
+/**
+ * Checks for components with duplicate names
+ * 
+ * @author dstaines
+ *
+ */
 public class UniqueComponentNameValidator implements GenomeValidator {
 
 	private final Log log = LogFactory

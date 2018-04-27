@@ -27,27 +27,27 @@ import org.ensembl.genomeloader.validator.GenomeValidator;
 
 /**
  * Validator that checks the genome does not mix chromosome/plasmid and
- * supercontig coord systems
+ * supercontig coord systems. This is used to catch issues where a genome
+ * contains supercontig as well as chromosome/plasmid systems. Not run by
+ * default.
  * 
  * @author dstaines
  * 
  */
 public class MixedCoordSystemValidator implements GenomeValidator {
 
-	public void validateGenome(Genome genome) throws GenomeValidationException {
-		Set<GenomicComponentType> types = CollectionUtils.createHashSet(genome
-				.getGenomicComponents().size());
-		for (GenomicComponent component : genome.getGenomicComponents()) {
-		    if(component.isTopLevel()) {
-		        types.add(component.getMetaData().getComponentType());
-		    }
-		}
-		if (types.contains(GenomicComponentType.SUPERCONTIG)
-				&& (types.contains(GenomicComponentType.PLASMID) || types
-						.contains(GenomicComponentType.CHROMOSOME))) {
-			throw new GenomeValidationMixedCoordException("Genome " + genome.getName()
-					+ " mixes supercontig and chromosome/plasmid components");
-		}
-	}
+    public void validateGenome(Genome genome) throws GenomeValidationException {
+        Set<GenomicComponentType> types = CollectionUtils.createHashSet(genome.getGenomicComponents().size());
+        for (GenomicComponent component : genome.getGenomicComponents()) {
+            if (component.isTopLevel()) {
+                types.add(component.getMetaData().getComponentType());
+            }
+        }
+        if (types.contains(GenomicComponentType.SUPERCONTIG)
+                && (types.contains(GenomicComponentType.PLASMID) || types.contains(GenomicComponentType.CHROMOSOME))) {
+            throw new GenomeValidationMixedCoordException(
+                    "Genome " + genome.getName() + " mixes supercontig and chromosome/plasmid components");
+        }
+    }
 
 }

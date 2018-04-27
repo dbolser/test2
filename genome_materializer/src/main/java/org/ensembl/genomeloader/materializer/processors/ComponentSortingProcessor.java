@@ -30,7 +30,7 @@ import org.ensembl.genomeloader.model.Genome;
 import org.ensembl.genomeloader.model.GenomicComponent;
 
 /**
- * Processor that sorts components according to specific rules
+ * Processor that sorts components according to specific rules. This is required to set the karyotype rank.
  * 
  * @author dstaines
  *
