@@ -277,22 +277,21 @@ sub update_analysis_descriptions {
   my $h  = $self->dba()->dbc()->sql_helper();
   my $ph = $self->production_dba()->dbc()->sql_helper();
   for my $row (
-     @{ $h->execute( -SQL => 'select analysis_id,logic_name from analysis' ) } )
+     @{ $h->execute( -SQL => 'select analysis_id,logic_name from analysis order by analysis_id' ) } )
   {
-    $self->log()->debug( "Updating analysis description for " . $row->[1] );
-    for my $des (
-      @{$ph->execute(
+    $self->log()->debug( "Updating analysis description for " . $row->[1] . "(analysis_id=".$row->[0].")" );
+    my ($des) =  @{$ph->execute(
           -SQL => q/select ad.description, ad.display_label, w.data 
       from analysis_description ad 
       left join web_data w on (w.web_data_id=ad.default_web_data_id) 
       where logic_name=?/,
-          -PARAMS => [ $row->[1] ] ) } )
-    {
+          -PARAMS => [ $row->[1] ] )};
+    if($des) {
       $h->execute_update(
         -SQL => q/
         insert ignore into analysis_description(analysis_id, description, display_label, web_data)
         values(?,?,?,?)/,
-        -PARAMS => [ $row->[1], $des->[0], $des->[1], $des->[2] ] );
+        -PARAMS => [ $row->[0], $des->[0], $des->[1], $des->[2] ] );
     }
   }
   $self->log()->info("Completed updating analysis description");
