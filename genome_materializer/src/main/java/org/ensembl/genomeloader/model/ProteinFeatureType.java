@@ -14,12 +14,6 @@
  * limitations under the License.
  */
 
-/**
- * File: ProteinFeatureType.java
- * Created by: dstaines
- * Created on: Nov 23, 2007
- * CVS:  $Id$
- */
 package org.ensembl.genomeloader.model;
 
 /**
@@ -37,7 +31,7 @@ public enum ProteinFeatureType {
 			"PIRSF", ""), PRINTS("PRINTS", ""), PROFILE("PFSCAN", ""), PROSITE(
 			"SCANPROSITE", ""), SMART("SMART", ""), SSF("SUPERFAMILY", "SSF"), TIGRFAM(
 			"TIGRFAMs", ""), PRODOM("PRODOM", ""), HAMAP("HAMAP", ""), CDD("CDD",""),
-			SFLD("SFLD","");
+	                SFLD("SFLD",""), CATHGENE3D("CATHGENE3D","");
 
 	final String uniprotType;
 	final String emblType;
