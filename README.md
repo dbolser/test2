@@ -22,7 +22,9 @@ In addition, you should install the CPAN modules listed in [cpanfile](cpanfile) 
 cpanm --installdeps .
 ```
 
-Note that one of the dependencies is [DBD::Oracle](http://search.cpan.org/~pythian/DBD-Oracle-1.74/lib/DBD/Oracle.pm) which requires the installation of Oracle libraries such as those provided via [instantclient](http://www.oracle.com/technetwork/database/features/instant-client/index-097480.html).
+Note that one of the dependencies is [DBD::Oracle](http://search.cpan.org/~pythian/DBD-Oracle-1.74/lib/DBD/Oracle.pm) which requires the installation of Oracle libraries such as those provided via [instantclient](http://www.oracle.com/technetwork/database/features/instant-client/index-097480.html). You will need to make sure that your environment is correctly set up and exported or you will see problems with connecting to Oracle databases. This includes ensuring:
+* `TNS_ADMIN` points to the location of a `tnsnames.ora` file
+* `LD_LIBRARY_PATH` includes the Oracle client libraries
 
 ### Java dependencies
 The Java code used by the application should be compiled into a "fat jar" containing all specified dependencies, as follows:
