@@ -43,7 +43,7 @@ use Carp;
 use Bio::EnsEMBL::CoordSystem;
 use Data::Dumper;
 use Bio::EnsEMBL::GenomeLoader::Constants qw(BIOTYPES CS);
-use Bio::EnsEMBL::GenomeLoader::Utils qw(start_session flush_session);
+use Bio::EnsEMBL::GenomeLoader::Utils qw(start_session flush_session disable_transactions);
 use Bio::EnsEMBL::GenomeLoader::ComponentLoader;
 use Bio::EnsEMBL::Hive::AnalysisJob;
 use Bio::EnsEMBL::Hive::Worker;
@@ -413,6 +413,8 @@ sub update_statistics {
 
   my ( $self, $genome ) = @_;
 
+  disable_transactions( $self->dba() );
+
 # This uses hive modules from ensembl-production so we need a fake hive job and worker to run them
   my $job = Bio::EnsEMBL::Hive::AnalysisJob->new();
   my $worker = Bio::EnsEMBL::Hive::Worker->new();
@@ -472,7 +474,6 @@ sub update_statistics {
     $runnable->input_job($job);
     $runnable->worker($worker);
     $runnable->run();
-
   }
 
   return;
