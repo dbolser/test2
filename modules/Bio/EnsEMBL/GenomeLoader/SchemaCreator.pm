@@ -127,19 +127,28 @@ sub finish_schema {
 
 sub clean_versions {
   my ($self) = @_;
+
   $self->log()->info("Removing blank version for coord_system");
   $self->dba()->dbc()->sql_helper()
     ->execute_update(
              -SQL => q/update coord_system set version=NULL where version=''/ );
+
+  $self->log()->info("Removing blank align_type for protein_feature");
+  $self->dba()->dbc()->sql_helper()
+    ->execute_update(
+             -SQL => q/update protein_feature set align_type=NULL where align_type=''/ );
+
   $self->log()->info("Removing version 0 for xrefs");
   $self->dba()->dbc()->sql_helper()
     ->execute_update( -SQL => q/update xref set version=NULL where version=0/ );
+
   $self->log()->info("Removing spurious version for features");
   for my $table (qw/gene transcript translation exon/) {
     $self->dba()->dbc()->sql_helper()
       ->execute_update(
          -SQL => qq/update $table set version=NULL where version is not null/ );
   }
+
   return;
 }
 
@@ -240,6 +249,7 @@ sub clean_analysis {
     ->execute_update( -SQL =>
 q/delete dt.* from density_type dt left join density_feature df using (density_type_id) where df.density_type_id is null/
     );
+
   $self->log()->info("Cleaning up analysis types");
   my %valid_analysis_ids = ();
   for my $table ( 'data_file',             'density_type',
@@ -256,11 +266,12 @@ q/delete dt.* from density_type dt left join density_feature df using (density_t
                               -SQL => "select distinct(analysis_id) from $table"
                         ) } )
     {
+      $self->log()->debug("$table analysis -> $anal_id");
       $valid_analysis_ids{$anal_id} = 1;
     }
   }
   my $sql =
-"delete a.*,ad.* from analysis a left join analysis_description ad using (analysis_id) where analysis_id not in ("
+"delete a.*,ad.* from analysis a left join analysis_description ad using (analysis_id) where a.analysis_id not in ("
     . join( ',', keys %valid_analysis_ids ) . ")";
   $self->log()->debug("Executing $sql");
   $self->dba()->dbc()->sql_helper()->execute_update( -SQL => $sql );
