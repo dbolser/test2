@@ -210,6 +210,10 @@ if ( !defined $opts->{accession} ) {
   exit 1;
 }
 
+if($opts->{accession} !~ m/^GCA_[0-9]+$/) {
+  croak "Accession must be of the form GCA_[0-9]+ with no version";
+}
+
 if ( !defined $opts->{division} ) {
   $usage->();
   exit 1;
