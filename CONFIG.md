@@ -47,6 +47,9 @@ Model validation properties
 * allowMixedCoordSystems
     * Allow a mixture of supercontig and chromosome/plasmid coordinate systems
     * default `false`
+* skipBrokenLocations
+    * Remove genes that fail location validation from the model and continue the load
+    * default `false`
 
 Misc
 ----

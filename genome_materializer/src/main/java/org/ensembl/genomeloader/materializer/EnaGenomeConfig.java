@@ -114,6 +114,7 @@ public class EnaGenomeConfig {
     private boolean allowEmptyGenomes = false;
     private int minGeneCount = 50;
     private boolean allowMixedCoordSystems = true;
+    private boolean skipBrokenLocations = false;
 
 	public String getEnaEntryUrl() {
 		return enaEntryUrl;
@@ -281,6 +282,14 @@ public class EnaGenomeConfig {
 
     public void setAllowMixedCoordSystems(boolean allowMixedCoordSystems) {
         this.allowMixedCoordSystems = allowMixedCoordSystems;
+    }
+
+    public boolean isSkipBrokenLocations() {
+        return skipBrokenLocations;
+    }
+
+    public void setSkipBrokenLocations(boolean skipBrokenLocations) {
+        this.skipBrokenLocations = skipBrokenLocations;
     }
 
 }

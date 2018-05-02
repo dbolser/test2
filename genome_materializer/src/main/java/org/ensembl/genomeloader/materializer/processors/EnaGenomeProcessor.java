@@ -52,32 +52,32 @@ public class EnaGenomeProcessor extends DelegatingGenomeProcessor {
             addProcessor(new ConXrefProcessor(config, srv, registry));
         }
 
-        if (!StringUtils.isEmpty(config.getUniparcUri())) {
-            addProcessor(new UpiGenomeProcessor(config, srv, registry));
-        }
-
-        if (!StringUtils.isEmpty(config.getUniProtUri())) {
-            addProcessor(new UniProtDescriptionGenomeProcessor(config, srv, registry));
-            addProcessor(new UniProtXrefGenomeProcessor(config, srv, registry));
-            addProcessor(new UniProtECGenomeProcessor(config, srv, registry));
-        }
-
-        if (!StringUtils.isEmpty(config.getInterproUri())) {
-            addProcessor(new UpiInterproGenomeProcessor(config, srv, registry));
-            addProcessor(new InterproPathwayGenomeProcessor(config, srv, registry));
-        }
-
-        if (!StringUtils.isEmpty(config.getRfamUri())) {
-            addProcessor(new RfamProcessor(config, srv, registry));
-        }
-
-        if (config.isUseAccessionsForNames()) {
-            addProcessor(new ComponentAccessionNamingProcessor());
-        }
-
-        if (!config.isLoadTrackingReferences()) {
-            addProcessor(new TrackingRefRemovalProcessor());
-        }
+//        if (!StringUtils.isEmpty(config.getUniparcUri())) {
+//            addProcessor(new UpiGenomeProcessor(config, srv, registry));
+//        }
+//
+//        if (!StringUtils.isEmpty(config.getUniProtUri())) {
+//            addProcessor(new UniProtDescriptionGenomeProcessor(config, srv, registry));
+//            addProcessor(new UniProtXrefGenomeProcessor(config, srv, registry));
+//            addProcessor(new UniProtECGenomeProcessor(config, srv, registry));
+//        }
+//
+//        if (!StringUtils.isEmpty(config.getInterproUri())) {
+//            addProcessor(new UpiInterproGenomeProcessor(config, srv, registry));
+//            addProcessor(new InterproPathwayGenomeProcessor(config, srv, registry));
+//        }
+//
+//        if (!StringUtils.isEmpty(config.getRfamUri())) {
+//            addProcessor(new RfamProcessor(config, srv, registry));
+//        }
+//
+//        if (config.isUseAccessionsForNames()) {
+//            addProcessor(new ComponentAccessionNamingProcessor());
+//        }
+//
+//        if (!config.isLoadTrackingReferences()) {
+//            addProcessor(new TrackingRefRemovalProcessor());
+//        }
 
     }
 

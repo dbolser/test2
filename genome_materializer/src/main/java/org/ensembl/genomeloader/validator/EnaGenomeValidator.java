@@ -52,7 +52,7 @@ public class EnaGenomeValidator extends DelegatingGenomeValidator {
         if (!config.isAllowMixedCoordSystems())
             validators.add(new MixedCoordSystemValidator());
         validators.add(new ComponentSizeValidator());
-        validators.add(new EntityLocationValidator());
+        validators.add(new EntityLocationValidator(config));
         validators.add(new XrefLengthGenomeValidator());
         validators.add(new AssemblyValidator());
         return validators;
@@ -105,6 +105,8 @@ public class EnaGenomeValidator extends DelegatingGenomeValidator {
                     if (!c.getMetaData().getComponentType().equals(GenomicComponentType.CONTIG)) {
                         c.getMetaData().setComponentType(GenomicComponentType.SUPERCONTIG);
                     }
+                    
+                    
                 }
             } catch (final XrefLengthValidationException e) {
                 final DatabaseReferenceType type = e.getReference().getDatabaseReferenceType();

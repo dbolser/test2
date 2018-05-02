@@ -8,7 +8,7 @@ Processors
 The first group of processors deal with the genome as materialized from ENA:
 * `ComponentSortingProcessor` - Processor that sorts components according to specific rules. This is required to set the karyotype rank.
 * `PubMedCentralProcessor` - Processor that converts PMC xrefs from ENA into PubMed IDs for consistency with other Ensembl entries
-* `LocationOverlapProcessor` - Processor to identify where proteins have internal overlaps and resolve them. This is where INSDC locations have overlapping joins which Ensembl cannot handle. These are converted into non-overlapping exons with sequence modifiers.
+* `LocationOverlapProcessor` - Processor to identify where proteins have internal overlaps and resolve them. This is where INSDC locations have overlapping joins which Ensembl cannot handle. These are converted into non-overlapping exons with sequence modifiers. This is carried out by logic in `ModelUtils`
 * `LocusTagMergeProcessor` - Processor that identifies genes from ENA which share the same locus tag and attempts to merge them (either as origin-split genes, or as alternative transcripts)
 * `AltTranslationProcessor` - Processor that identifies proteins belonging to the same gene that share the same uniprot accession and merges the transcript
 * `AssemblyContigProcessor` - Processor that uses assembly information for CON sequences to replicate assembly in an Ensembl-compatible way. 
