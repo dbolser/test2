@@ -93,8 +93,11 @@ public class SourceFeatureParser {
         if (!StringUtils.isEmpty(substrain) && gmd.getOrganismName(OrganismNameType.SUBSTRAIN) == null) {
             gmd.setOrganismName(OrganismNameType.SUBSTRAIN, substrain);
         }
+        
+        // if chromosome is set (and its not a mapped source) we can use the value explicitly
         final String chromosome = CollectionUtils.getFirstElement(qualifiers.get("chromosome"), null);
-        if (!StringUtils.isEmpty(chromosome)) {
+        final String map = CollectionUtils.getFirstElement(qualifiers.get("map"), null);
+        if (!StringUtils.isEmpty(chromosome) && StringUtils.isEmpty(map)) {
             md.setComponentType(GenomicComponentType.CHROMOSOME);
             md.setName(chromosome);
         }

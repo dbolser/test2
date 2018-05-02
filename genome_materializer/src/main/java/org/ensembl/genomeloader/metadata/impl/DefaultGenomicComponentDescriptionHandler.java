@@ -29,12 +29,22 @@ import org.ensembl.genomeloader.metadata.GenomicComponentDescriptionHandler;
 import org.ensembl.genomeloader.metadata.GenomicComponentMetaData;
 import org.ensembl.genomeloader.metadata.GenomicComponentMetaData.GenomicComponentType;
 
+/**
+ * This class is responsible for trying to turn an INSDC description into a type and a name.
+ * 
+ * @author dstaines
+ *
+ */
 public class DefaultGenomicComponentDescriptionHandler implements GenomicComponentDescriptionHandler, Serializable {
 
     private static final long serialVersionUID = 3021506479423171650L;
     protected final static Pattern WGS_DES = Pattern.compile(".*? +[^ ]+ +([^ ,]+), whole genome shotgun.*",
             Pattern.CASE_INSENSITIVE);
     protected final static Pattern CHR_DES = Pattern.compile(".* chromosome[ :]+([^ ,.]+)?.*",
+            Pattern.CASE_INSENSITIVE);
+    protected final static Pattern CHR_SCA_DES = Pattern.compile(".* chromosome [^ ]+ genomic scaffold,.*",
+            Pattern.CASE_INSENSITIVE);
+    protected final static Pattern CHR_SCA_NOM_DES = Pattern.compile(".* chromosome [^ ]+ unlocalized genomic scaffold ([^ ,]+),.*",
             Pattern.CASE_INSENSITIVE);
     protected final static Pattern LG_DES = Pattern.compile(".* linkage group ([^ ,.]+)?.*", Pattern.CASE_INSENSITIVE);
     protected final static Pattern LG2_DES = Pattern.compile(".* linkage group LG ([^ ,.]+)?.*",
@@ -70,6 +80,8 @@ public class DefaultGenomicComponentDescriptionHandler implements GenomicCompone
     };
     protected static final Map<Pattern, GenomicComponentType> typeMap = new HashMap<Pattern, GenomicComponentType>() {
         {
+            put(CHR_SCA_DES, GenomicComponentType.SUPERCONTIG);
+            put(CHR_SCA_NOM_DES, GenomicComponentType.SUPERCONTIG);
             put(CHR_DES, GenomicComponentType.CHROMOSOME);
             put(LG2_DES, GenomicComponentType.CHROMOSOME);
             put(LG_DES, GenomicComponentType.CHROMOSOME);
@@ -123,7 +135,7 @@ public class DefaultGenomicComponentDescriptionHandler implements GenomicCompone
     }
 
     protected final static Pattern[] PATTERNS = { LG2_DES, LG_DES, PLA_DES, PLA2_DES, PLA3_DES, MIT_DES, CHL_DES,
-            SEG_DES, SCA_DES, CON_DES, CHR_DES, WGS_DES };
+            SEG_DES, SCA_DES, CON_DES, CHR_SCA_NOM_DES, CHR_SCA_DES, CHR_DES, WGS_DES };
 
     /**
      * Attempt to parse out the description using a series of patterns for both
@@ -157,10 +169,6 @@ public class DefaultGenomicComponentDescriptionHandler implements GenomicCompone
         }
         if (StringUtils.isEmpty(md.getName())) {
             md.setName(md.getAccession());
-        }
-        if (md.getComponentType() != GenomicComponentType.CHROMOSOME
-                && md.getName().toLowerCase().matches(CHROMOSOME.toLowerCase())) {
-            md.setComponentType(GenomicComponentType.CHROMOSOME);
         }
         if (md.getComponentType() == null) {
             md.setComponentType(GenomicComponentType.SUPERCONTIG);
