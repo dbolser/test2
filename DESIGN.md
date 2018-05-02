@@ -12,7 +12,7 @@ The materializer carries out the following processes
 The materializer is written in Java, and can be compiled using `gradle` into an executable "fat" jar containing all required dependencies.
 
 ## Materializer entry point
-The main entry point is `org.ensembl.genomeloader.materializer.DumpEnaGenome` which accepts an INSDC assembly and (optionally) the file path for the JSON dump. This class retrieves the metadata for the genome, retrieves and parses it from ENA into model classes, processes them and dumps them as JSON. Each step is described below.
+The main entry point is `org.ensembl.genomeloader.materializer.DumpEnaGenome` which accepts an INSDC assembly and (optionally) the file path for the JSON dump. This class retrieves the metadata for the genome, retrieves and parses it from ENA into model classes, processes them and dumps them as JSON. Each step is described below. 
 
 Configuration is via an XML file (`enagenome_config.xml`) which is parsed into a bean of the class `org.ensembl.genomeloader.materializer.EnaGenomeConfig`
 
@@ -47,7 +47,7 @@ The principal object model is:
 Note that the relationship between Protein and Transcript is an inversion of the usual Ensembl Gene-Transcript-Translation model. This is to support prokaryotic genomes where there may be polycistronic transcripts, though these are not currently found in the ENA models retrieved.
 
 ## INDSC assembly identification code
-Metadata for a specific INSDC assembly accession is retrieved via the interface `org.ensembl.genomeloader.materializer.genome_collections`. The current implementation, `OracleGenomeCollections`, uses the ENA Oracle instances `ETAPRO` (for assembly data) and `ENAPRO` (for retrieving WGS components). It may be possible in future to use the ENA "REST" interface for this data but further work is required. 
+Metadata for a specific INSDC assembly accession is retrieved via the interface `org.ensembl.genomeloader.materializer.genome_collections`. The current implementation, `OracleGenomeCollections`, uses the ENA Oracle instances `ETAPRO` (for assembly data) and `ENAPRO` (for retrieving WGS components). It may be possible in future to use the ENA "REST" interface for this data but further work is required. Note that this currently has a step (in `OracleGenomeCollections` which uses ENA to determine whether to use WGS or assembled components for an assembly, depending on the relative numbers of features. This is a very expensive operation and might need review.
 
 Metadata is stored in instances of `org.ensembl.genomeloader.metadata.GenomeMetadata` which in turn contains instances of `org.ensembl.genomeloader.metadata.GenomeComponentMetadata` for each ENA entry.
 
@@ -57,6 +57,15 @@ Once metadata has been retrieved, `org.ensembl.genomeloader.materializer.EnaGeno
 Once data has been retrieved, parsing is carried out using `org.ensembl.genomeloader.materializer.EnaParser`, which uses `nu.xom` to parse the large XML document into elements, which are then passed to different classes in `org.ensembl.genomeloader.materializer.impl` depending on the element being parsed. 
 
 Elements from the feature table are handled by different implementations of `XmlEnaFeatureParser`. A sequential approach is necessary to ensure different elements from the feature table are parsed in the right order. For instance, gene and CDS features need to be parsed before mRNA features. This is specified by the `dependsOn` method of each parser which can be used to build a dependency tree. This is handled by `EnaParser` which sorts parsers by dependency before passing each over the feature table entries in turn.
+
+Whats in a name?
+----------------
+
+One particular crucial piece of code is `DefaultGenomicComponentDescriptionHandler` which is used when a description is parsed to populate `GenomicComponentMetaData` from an INSDC record. This is used to determine the component type and name, which correspond directly to the `coord_system` and `seq_region` loaded by Ensembl. If these are not correctly set, the assembly may not be correctly loaded. A symptom of this is an exception indicating that parent and child sequences in the assembly have the same component type, which will not work when loaded into Ensembl.
+
+The test `DescriptionParsing` is crucial for maintaining the complex parsing logic in `DefaultGenomicComponentDescriptionHandler`. The situation is confused more by `SourceParser` also picking up the `chromosome` feature key which is also sometimes set for unplaced scaffolds which can override the description-based name.
+
+There might be more robust general approaches to use in future. It may be that the sequence report linked from the XML assembly record can give an authorative and consistent name and type for some (but not all) seq regions. This would mean a major overhaul of the code for setting metadata though, and would assume that the assembly record is complete, accurate and consistent.
 
 ## Processor and validation code
 Once a `Genome` instance has been produced by `EnaGenomeMaterializer`, it is passed to an instance of `GenomeProcessor` for secondary processing. This is currently `EnaGenomeProcessor` which delegates to a series of other processors, found in `org.ensembl.genomeloader.materializer.processors`. The current processors are listed in `PROCESSORS.md`.
