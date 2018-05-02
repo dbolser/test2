@@ -27,3 +27,7 @@ To specify a different file, use:
 ```
 java -jar build/libs/genome_materializer-1.0.jar -s GCA_000008085 -c /path/to/ena_genomeconfig.xml
 ```
+
+Important: You _cannot_ use a versioned accession such as `GCA_000002725.2` - just the unversioned set chain (`GCA_000002725`)
+
+
